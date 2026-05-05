@@ -58,7 +58,13 @@
   .section-label::after { content: ''; flex: 1; height: 0.5px; background: var(--border); }
   h2 { font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 3rem; }
 
-  .exp-grid { display: grid; gap: 1rem; }
+  .impact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; }
+  .impact-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: 14px; padding: 1.5rem; display: flex; gap: 1rem; align-items: flex-start; transition: border-color 0.2s; }
+  .impact-card:hover { border-color: rgba(0,129,165,0.35); }
+  .impact-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+  .impact-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .impact-desc { font-size: 13px; color: var(--muted); line-height: 1.65; }
+  .impact-desc strong { color: var(--accent-light); font-weight: 600; }
   .exp-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: 16px; padding: 2rem; transition: border-color 0.2s; }
   .exp-card:hover { border-color: rgba(0,129,165,0.35); }
   .exp-top { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.25rem; }
@@ -113,6 +119,7 @@
   <span class="nav-name">Kristin Dohn</span>
   <div class="nav-links">
     <a href="#experience">Experience</a>
+    <a href="#impact">Impact</a>
     <a href="#skills">Skills</a>
     <a href="#education">Education</a>
     <a href="#contact">Contact</a>
@@ -128,6 +135,55 @@
     <div><div class="hstat-num">5</div><div class="hstat-label">Federal agencies</div></div>
     <div><div class="hstat-num">100+</div><div class="hstat-label">Products launched</div></div>
     <div><div class="hstat-num">650%</div><div class="hstat-label">Peak KPI growth</div></div>
+  </div>
+</section>
+
+<section id="impact">
+  <div class="section-label">Impact</div>
+  <h2>Signature accomplishments</h2>
+  <div class="impact-grid">
+    <div class="impact-card">
+      <div class="impact-icon">🎯</div>
+      <div class="impact-body">
+        <div class="impact-title">Cross-functional strategic leadership</div>
+        <div class="impact-desc">Led matrixed teams across dozens of simultaneous initiatives, managing competing priorities and consistently exceeding targets.</div>
+      </div>
+    </div>
+    <div class="impact-card">
+      <div class="impact-icon">📈</div>
+      <div class="impact-body">
+        <div class="impact-title">Data-driven strategy &amp; adoption</div>
+        <div class="impact-desc">Drove a <strong>150% increase in strategic KPIs</strong> and <strong>90% platform adoption lift</strong> within one month of launch through analytics-informed product strategy.</div>
+      </div>
+    </div>
+    <div class="impact-card">
+      <div class="impact-icon">🤝</div>
+      <div class="impact-body">
+        <div class="impact-title">Executive &amp; stakeholder engagement</div>
+        <div class="impact-desc">Embedded Voice-of-the-Customer insights into director-level decisions — increasing team productivity <strong>nearly 4×</strong> and delivering KPI gains of <strong>200–650%</strong>.</div>
+      </div>
+    </div>
+    <div class="impact-card">
+      <div class="impact-icon">⚙️</div>
+      <div class="impact-body">
+        <div class="impact-title">Agency-wide platform modernization</div>
+        <div class="impact-desc">Revived a stalled infrastructure transformation — building executive buy-in and delivering end-to-end modernization that cut workflow complexity <strong>75%</strong> and platform costs <strong>50%</strong>.</div>
+      </div>
+    </div>
+    <div class="impact-card">
+      <div class="impact-icon">🌐</div>
+      <div class="impact-body">
+        <div class="impact-title">Large-scale digital standardization</div>
+        <div class="impact-desc">Modernized and standardized <strong>80+ organizational websites</strong> in two years, establishing brand and experience standards that improved user satisfaction by <strong>300%+</strong>.</div>
+      </div>
+    </div>
+    <div class="impact-card">
+      <div class="impact-icon">🚀</div>
+      <div class="impact-body">
+        <div class="impact-title">Organizational transformation</div>
+        <div class="impact-desc">Transformed a multi-business marketing and communications division into a top-performing unit, achieving a <strong>200% increase</strong> in participation and sales.</div>
+      </div>
+    </div>
   </div>
 </section>
 
