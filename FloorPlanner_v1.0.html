@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FloorCraft Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #f2f2f7;
+  --bg2:      #ffffff;
+  --bg3:      #f2f2f7;
+  --border:   #e5e5ea;
+  --border2:  #d1d1d6;
+  --ink:      #1c1c1e;
+  --ink2:     #3a3a3c;
+  --ink3:     #636366;
+  --ink4:     #aeaeb2;
+  --blue:     #007aff;
+  --blue-lt:  #e8f2ff;
+  --green:    #34c759;
+  --green-lt: #e6f9ec;
+  --red:      #ff3b30;
+  --red-lt:   #fff0ef;
+  --orange:   #ff9500;
+  --orange-lt:#fff4e0;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow:    0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+  --radius:    12px;
+  --radius-sm: 8px;
+  --radius-xs: 6px;
+}
+
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 960px; margin: 0 auto; padding: 48px 20px 100px; }
+
+/* ── HEADER ── */
+.header {
+  margin-bottom: 36px;
+  padding-bottom: 0;
+  border-bottom: none;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.logo { line-height: 1; }
+.logo-main {
+  font-size: 2rem; font-weight: 700; color: var(--ink);
+  letter-spacing: -0.03em;
+}
+.logo-main em { font-style: normal; color: var(--blue); }
+.logo-sub {
+  font-size: 0.72rem; font-weight: 400; letter-spacing: 0.01em;
+  color: var(--ink4); margin-top: 3px;
+}
+.header-meta {
+  font-size: 0.7rem; color: var(--ink4); text-align: right; line-height: 1.8;
+}
+
+/* ── CARD / SECTION ── */
+.section {
+  background: var(--bg2);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
+  border: none;
+}
+.section-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border); padding-bottom: 12px;
+}
+.section-num {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--blue); color: white;
+  font-size: 0.72rem; font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+}
+.section-title {
+  font-size: 0.8rem; font-weight: 600; color: var(--ink2);
+  letter-spacing: -0.01em;
+}
+
+/* ── FIELDS ── */
+.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(148px, 1fr)); gap: 12px; }
+.field label {
+  display: block; font-size: 0.68rem; font-weight: 500;
+  color: var(--ink3); margin-bottom: 5px; letter-spacing: -0.01em;
+}
+.field input, .field select {
+  width: 100%; background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius-xs); color: var(--ink);
+  font-family: inherit; font-size: 0.9rem; font-weight: 400;
+  padding: 9px 11px; outline: none; transition: border-color .15s, box-shadow .15s;
+  -webkit-appearance: none; appearance: none;
+}
+.field input:focus, .field select:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(0,122,255,0.15);
+  background: white;
+}
+.field .note { font-size: 0.62rem; color: var(--ink4); margin-top: 4px; }
+
+/* pill toggle */
+.pill-row {
+  display: flex; gap: 0;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius-xs); overflow: hidden; width: fit-content; padding: 2px;
+}
+.pill {
+  font-size: 0.75rem; font-weight: 500;
+  padding: 6px 14px; cursor: pointer;
+  background: transparent; color: var(--ink3);
+  border: none; border-radius: 6px;
+  transition: background .15s, color .15s; white-space: nowrap;
+}
+.pill.active { background: white; color: var(--ink); box-shadow: var(--shadow-sm); }
+
+/* corner picker */
+.corner-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; width: 170px; }
+.corner-btn {
+  font-size: 0.68rem; font-weight: 500;
+  padding: 7px 8px; border: 1px solid var(--border); border-radius: var(--radius-xs);
+  background: var(--bg3); color: var(--ink3); cursor: pointer; transition: all .12s;
+  text-align: center;
+}
+.corner-btn.active { background: var(--blue); color: white; border-color: var(--blue); }
+
+/* board length chips */
+.len-chips { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+.len-chip {
+  display: flex; align-items: center; gap: 5px;
+  background: var(--blue-lt); border: none; border-radius: 20px;
+  padding: 4px 12px; font-size: 0.8rem; font-weight: 500; color: var(--blue);
+}
+.len-chip button { background: none; border: none; cursor: pointer; color: var(--blue); font-size: 1rem; padding: 0; line-height: 1; opacity: 0.6; }
+.len-chip button:hover { opacity: 1; color: var(--red); }
+.add-len-row { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+.add-len-row input {
+  width: 90px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-xs);
+  color: var(--ink); font-family: inherit; font-size: 0.88rem; padding: 7px 10px; outline: none;
+}
+.add-len-row input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
+
+/* L-shape toggle */
+.l-toggle { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.toggle-switch {
+  position: relative; width: 44px; height: 26px;
+  background: var(--border2); border-radius: 13px; cursor: pointer;
+  transition: background .2s;
+}
+.toggle-switch.on { background: var(--blue); }
+.toggle-switch::after {
+  content: ''; position: absolute; top: 3px; left: 3px;
+  width: 20px; height: 20px; border-radius: 50%; background: white;
+  transition: left .2s; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.toggle-switch.on::after { left: 21px; }
+.toggle-label { font-size: 0.8rem; font-weight: 500; color: var(--ink2); }
+
+
+
+/* slider */
+.slider-wrap { margin: 4px 0; }
+.slider-labels { display: flex; justify-content: space-between; margin-bottom: 8px; }
+.slider-labels span { font-size: 0.68rem; color: var(--ink4); font-weight: 500; }
+input[type=range] {
+  width: 100%; -webkit-appearance: none; appearance: none;
+  height: 4px; border-radius: 2px; background: var(--border2); outline: none; cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--blue); border: 2px solid white;
+  box-shadow: 0 2px 6px rgba(0,122,255,0.35); cursor: pointer;
+}
+.slider-val {
+  text-align: center; font-size: 0.72rem; font-weight: 500;
+  color: var(--blue); margin-top: 6px;
+  background: var(--blue-lt); border-radius: 20px;
+  padding: 3px 12px; display: inline-block; margin-left: 50%; transform: translateX(-50%);
+}
+
+/* buttons */
+.btn {
+  font-family: inherit; font-weight: 500; font-size: 0.82rem;
+  border: 1px solid var(--border); background: var(--bg2);
+  color: var(--ink); border-radius: var(--radius-xs);
+  padding: 9px 18px; cursor: pointer; transition: all .12s;
+  box-shadow: var(--shadow-sm);
+}
+.btn:hover { background: var(--bg3); }
+.btn-primary {
+  background: var(--blue); color: white; border-color: var(--blue);
+  padding: 12px 32px; font-size: 0.88rem; border-radius: var(--radius-sm);
+  box-shadow: 0 4px 12px rgba(0,122,255,0.3);
+}
+.btn-primary:hover { background: #0066dd; border-color: #0066dd; }
+.action-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 20px; }
+
+/* direction note */
+.dir-note { font-size: 0.68rem; margin-top: 6px; padding: 4px 8px; background: var(--orange-lt); border-radius: var(--radius-xs); color: var(--orange); font-weight: 500; display: none; }
+
+/* ── RESULTS ── */
+#results { display: none; margin-top: 24px; }
+
+.results-banner {
+  background: var(--blue); color: white;
+  padding: 18px 22px; border-radius: var(--radius); margin-bottom: 16px;
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+  box-shadow: 0 4px 16px rgba(0,122,255,0.3);
+}
+.results-banner h2 { font-size: 1.4rem; font-weight: 700; color: white; letter-spacing: -0.02em; }
+.regen-btn {
+  font-family: inherit; font-size: 0.78rem; font-weight: 500;
+  background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3);
+  color: white; border-radius: var(--radius-xs); padding: 7px 14px; cursor: pointer; transition: all .15s;
+}
+.regen-btn:hover { background: rgba(255,255,255,0.3); }
+
+/* rip callout */
+.rip-callout {
+  background: var(--bg2); border-radius: var(--radius); border: none;
+  box-shadow: var(--shadow-sm);
+  padding: 16px 20px; margin-bottom: 12px;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px;
+  border-left: 4px solid var(--orange);
+}
+.rip-item { display: flex; flex-direction: column; gap: 3px; }
+.rip-label { font-size: 0.62rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink4); }
+.rip-val { font-size: 1.5rem; font-weight: 700; color: var(--orange); letter-spacing: -0.02em; }
+.rip-note { font-size: 0.68rem; color: var(--ink3); }
+.rip-input {
+  font-size: 1.4rem; font-weight: 700; color: var(--orange);
+  letter-spacing: -0.02em; width: 100%; background: transparent;
+  border: none; border-bottom: 2px solid var(--border2);
+  padding: 2px 0 4px; outline: none; font-family: inherit;
+  -webkit-appearance: none; appearance: none;
+  transition: border-color .15s;
+}
+.rip-input:focus { border-bottom-color: var(--orange); }
+
+/* stats */
+.stats-row {
+  display: flex; gap: 0; margin-bottom: 16px;
+  background: var(--bg2); border-radius: var(--radius);
+  box-shadow: var(--shadow-sm); overflow: hidden;
+}
+.stat {
+  flex: 1; padding: 14px 16px; border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 3px;
+}
+.stat:last-child { border-right: none; }
+.stat .sl { font-size: 0.6rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink4); }
+.stat .sv { font-size: 1.25rem; font-weight: 700; color: var(--ink); letter-spacing: -0.02em; }
+
+/* floor canvas */
+.floor-section { margin-bottom: 20px; }
+.floor-section-title {
+  font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.04em; color: var(--ink4); margin-bottom: 10px;
+}
+.legend { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.68rem; font-weight: 500; color: var(--ink3); }
+.legend-swatch { width: 18px; height: 10px; border-radius: 3px; }
+
+.dl { font-size: 0.62rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink4); margin: 10px 0 6px; }
+.dl:first-child { margin-top: 0; }
+
+#floorCanvas {
+  display: block; border-radius: var(--radius); max-width: 100%;
+  box-shadow: var(--shadow);
+}
+.canvas-wrap { position: relative; overflow-x: auto; }
+
+/* accordion */
+.row-accordion { display: flex; flex-direction: column; gap: 6px; }
+.racc {
+  background: var(--bg2); border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm); overflow: hidden; border: none;
+}
+.racc-head {
+  display: flex; align-items: center; gap: 0;
+  padding: 12px 16px; cursor: pointer; user-select: none; transition: background .1s;
+}
+.racc-head:hover { background: var(--bg3); }
+.racc.open .racc-head { border-bottom: 1px solid var(--border); }
+.racc-rn {
+  font-size: 0.78rem; font-weight: 600; color: var(--ink3);
+  min-width: 58px; letter-spacing: -0.01em;
+}
+.racc-info { flex: 1; }
+.racc-info .ri { font-size: 0.82rem; font-weight: 500; color: var(--ink); }
+.racc-info .re { font-size: 0.68rem; color: var(--ink4); margin-top: 2px; }
+.badge {
+  font-size: 0.62rem; font-weight: 600; letter-spacing: 0.02em;
+  text-transform: uppercase; padding: 3px 8px; border-radius: 20px;
+  border: none; margin-right: 6px;
+}
+.badge-scrap { color: var(--green); background: var(--green-lt); }
+.badge-rip   { color: var(--orange); background: var(--orange-lt); }
+.badge-bad   { color: var(--red); background: var(--red-lt); }
+.tarr { font-size: 0.7rem; color: var(--ink4); transition: transform .2s; }
+.racc.open .tarr { transform: rotate(90deg); }
+.racc-body { display: none; padding: 12px 16px; background: var(--bg3); }
+.racc.open .racc-body { display: block; }
+.seq { display: flex; gap: 5px; flex-wrap: wrap; }
+.chip {
+  background: white; border: 1px solid var(--border); border-radius: 20px;
+  padding: 3px 10px; font-size: 0.72rem; font-weight: 500;
+}
+.chip.sc       { background: var(--green-lt);  color: var(--green);  border-color: transparent; }
+.chip.rip-chip { background: var(--orange-lt); color: var(--orange); border-color: transparent; }
+.chip.end-ok   { background: var(--blue-lt);   color: var(--blue);   border-color: transparent; }
+.chip.end-bad  { background: var(--red-lt);    color: var(--red);    border-color: transparent; }
+.scrap-out {
+  margin-top: 8px; padding: 10px 12px; border-radius: var(--radius-xs);
+  background: var(--green-lt); font-size: 0.72rem; line-height: 1.8; color: var(--green); font-weight: 500;
+}
+
+@media (max-width: 600px) {
+  .logo-main { font-size: 1.6rem; }
+  .stats-row { flex-wrap: wrap; }
+  .stat { min-width: 40%; }
+  .wrap { padding: 28px 16px 80px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="header">
+  <div class="logo">
+    <div class="logo-main">Floor<em>Craft</em></div>
+    <div class="logo-sub">Universal Hardwood Planner</div>
+  </div>
+  <div class="header-meta">
+    Plan · Calculate · Visualize<br>
+    Scrap-smart · Stagger-aware
+  </div>
+</header>
+
+<!-- 1. ROOM SHAPE -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">1</span>
+    <span class="section-title">Room Dimensions</span>
+  </div>
+  <div class="fields" style="margin-bottom:16px;">
+    <div class="field">
+      <label>Room Length (in)</label>
+      <input type="number" id="roomLen" value="165" min="1" step="0.25">
+      <div class="note">Longest wall the boards run along</div>
+    </div>
+    <div class="field">
+      <label>Room Width (in)</label>
+      <input type="number" id="roomWidth" value="144" min="1" step="0.25">
+      <div class="note">Wall the rows stack across</div>
+    </div>
+  </div>
+
+  <!-- L-shape extension -->
+  <div class="l-toggle">
+    <div class="toggle-switch" id="lToggle" onclick="toggleSection('lToggle','lshapeFields',function(v){lshapeOn=v;})"></div>
+    <span class="toggle-label">Add Extension / Closet</span>
+  </div>
+  <div id="lshapeFields" style="display:none;">
+    <div class="fields">
+      <div class="field">
+        <label>Extension Length (in)</label>
+        <input type="number" id="extLen" value="32" min="1" step="0.25">
+        <div class="note">How far it sticks out</div>
+      </div>
+      <div class="field">
+        <label>Extension Width (in)</label>
+        <input type="number" id="extWidth" value="72" min="1" step="0.25">
+        <div class="note">How wide the opening is</div>
+      </div>
+      <div class="field">
+        <label>Extension on Which Wall</label>
+        <select id="extWall">
+          <option value="left">Left wall</option>
+          <option value="right">Right wall</option>
+        </select>
+        <div class="note">Left/right walls only (boards run lengthwise)</div>
+      </div>
+      <div class="field">
+        <label>Distance from Top Wall (in)</label>
+        <input type="number" id="extOffset" value="0" min="0" step="0.25">
+        <div class="note">How far down before the opening starts</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Door bump-out -->
+  <div class="l-toggle" style="margin-top:12px;">
+    <div class="toggle-switch" id="doorToggle" onclick="toggleSection('doorToggle','doorFields',function(v){doorOn=v;})"></div>
+    <span class="toggle-label">Add Door / Threshold</span>
+  </div>
+  <div id="doorFields" style="display:none;">
+    <div class="fields">
+      <div class="field">
+        <label>Door Opening Width (in)</label>
+        <input type="number" id="doorWidth" value="36" min="1" step="0.25">
+        <div class="note">Span of the door opening</div>
+      </div>
+      <div class="field">
+        <label>Threshold Depth (in)</label>
+        <input type="number" id="doorDepth" value="3" min="0.5" step="0.25">
+        <div class="note">How far boards extend into threshold</div>
+      </div>
+      <div class="field">
+        <label>Door on Which Wall</label>
+        <select id="doorWall" onchange="onDoorWallChange()">
+          <option value="right">Right wall (row end)</option>
+          <option value="left">Left wall (row start)</option>
+          <option value="bottom">Bottom wall (last row)</option>
+        </select>
+      </div>
+      <div class="field" id="doorOffsetField">
+        <label>Distance from Left Wall (in)</label>
+        <input type="number" id="doorOffset" value="0" min="0" step="0.25">
+        <div class="note" id="doorOffsetNote">Where the door opening begins (left/right walls only)</div>
+      </div>
+    </div>
+    <div style="font-size:0.68rem;color:var(--ink3);margin-top:8px;line-height:1.6;" id="doorDesc">
+      Left/Right: rows in the door zone are extended by the threshold depth.<br>
+      Bottom: the last row extends outward by the threshold depth across the door opening width.
+    </div>
+  </div>
+</div>
+
+<!-- 2. BOARD SPECS -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">2</span>
+    <span class="section-title">Board Specifications</span>
+  </div>
+  <div class="fields" style="margin-bottom:14px;">
+    <div class="field">
+      <label>Board Width (in)</label>
+      <input type="number" id="boardWidth" value="3.5" min="1" step="0.125">
+      <div class="note">Face width of each board</div>
+    </div>
+    <div class="field">
+      <label>Min Piece Length (in)</label>
+      <input type="number" id="minPiece" value="8" min="1" step="0.25">
+      <div class="note">Manufacturer minimum</div>
+    </div>
+    <div class="field">
+      <label>Min Seam Stagger (in)</label>
+      <input type="number" id="minStagger" value="6" min="0" step="1">
+      <div class="note">Between adjacent rows</div>
+    </div>
+  </div>
+  <div style="margin-bottom:6px;">
+    <div class="dl" style="margin-bottom:8px;">Board Lengths Available</div>
+    <div id="lenChips" class="len-chips"></div>
+    <div class="add-len-row">
+      <input type="number" id="newLen" placeholder="inches" min="1" step="0.5">
+      <button class="btn" onclick="addLen()">+ Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- 3. LAYOUT OPTIONS -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">3</span>
+    <span class="section-title">Layout Options</span>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;">
+    <div>
+      <div class="dl" style="margin-bottom:8px;">Board Direction</div>
+
+      <div class="pill-row">
+        <button class="pill active" id="dir-h" onclick="setDir('h')">→ Horizontal</button>
+        <button class="pill" id="dir-v" onclick="setDir('v')">↓ Vertical</button>
+      </div>
+      <!-- Clarify what direction means for the room dimensions -->
+      <div id="dir-note-h" class="dir-note show" style="display:block;">Boards run along Room Length. Rows stack across Room Width.</div>
+      <div id="dir-note-v" class="dir-note" style="display:none;">Boards run along Room Width. Rows stack across Room Length.</div>
+    </div>
+    <div>
+      <div class="dl" style="margin-bottom:8px;">Starting Corner</div>
+      <div class="corner-grid">
+        <button class="corner-btn active" id="c-tl" onclick="setCorner('tl')">↖ Top Left</button>
+        <button class="corner-btn" id="c-tr" onclick="setCorner('tr')">Top Right ↗</button>
+        <button class="corner-btn" id="c-bl" onclick="setCorner('bl')">↙ Bot Left</button>
+        <button class="corner-btn" id="c-br" onclick="setCorner('br')">Bot Right ↘</button>
+      </div>
+    </div>
+    <div>
+      <div class="dl" style="margin-bottom:8px;">Pattern Style</div>
+      <div class="slider-wrap">
+        <div class="slider-labels">
+          <span>⚡ Efficient</span>
+          <span>🎲 Varied</span>
+        </div>
+        <input type="range" id="randSlider" min="0" max="100" value="40" oninput="updateSliderVal()">
+        <div class="slider-val" id="sliderVal">Balanced (40)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="action-row">
+  <button class="btn btn-primary" onclick="generate()">Generate Floor Plan</button>
+  <button class="btn" onclick="generate()">↺ Re-randomize</button>
+  <span style="font-size:0.72rem;color:var(--ink4);font-weight:500;">First/last rip rows auto-calculated</span>
+</div>
+
+<!-- ── RESULTS ── -->
+<div id="results">
+
+  <div class="results-banner">
+    <h2>Floor Plan</h2>
+    <button class="regen-btn" onclick="generate()">↺ Regenerate</button>
+  </div>
+
+  <!-- rip row callout -->
+  <div class="rip-callout" id="ripCallout">
+    <div class="rip-item">
+      <div class="rip-label">First Row Rip Width</div>
+      <input class="rip-input" id="ripFirstInput" type="number" min="0.1" step="0.125"
+             oninput="onRipFirstChange()" placeholder="—">
+      <div class="rip-note" id="ripFirstNote"></div>
+    </div>
+    <div class="rip-item">
+      <div class="rip-label" id="ripLastLabel">Last Row Rip Width</div>
+      <input class="rip-input" id="ripLastInput" type="number" min="0.1" step="0.125"
+             oninput="onRipLastChange()" placeholder="—">
+      <div class="rip-note" id="ripLastNote"></div>
+    </div>
+    <div class="rip-item">
+      <div class="rip-label">Full-Width Rows</div>
+      <div class="rip-val" id="ripFullRows">—</div>
+      <div class="rip-note" id="ripFullNote"></div>
+    </div>
+    <div class="rip-item" style="flex:2">
+      <div class="rip-label">How to adjust</div>
+      <div style="font-size:0.68rem;color:var(--ink3);line-height:1.6;" id="ripGuide"></div>
+      <button class="btn" style="margin-top:10px;font-size:0.72rem;" onclick="generate(true)">↺ Regenerate with these widths</button>
+    </div>
+  </div>
+
+  <!-- stats -->
+  <div class="stats-row" id="statsRow"></div>
+
+  <!-- floor canvas -->
+  <div class="floor-section">
+    <div class="floor-section-title">Visual Floor Layout</div>
+    <div class="legend" id="legend"></div>
+    <div class="canvas-wrap">
+      <canvas id="floorCanvas"></canvas>
+    </div>
+    <div style="font-size:0.68rem;color:var(--ink4);margin-top:8px;font-weight:500;">
+      Blue-gray = field board &nbsp;·&nbsp; Indigo = cut starter &nbsp;·&nbsp; Teal = scrap starter &nbsp;·&nbsp; Amber = end piece &nbsp;·&nbsp; Red = short end piece
+    </div>
+  </div>
+
+  <!-- row detail -->
+  <div class="dl" style="margin-bottom:10px;">Row-by-Row Detail</div>
+  <div class="row-accordion" id="rowAccordion"></div>
+
+</div><!-- #results -->
+
+</div><!-- .wrap -->
+
+<script>
+// ── Constants ──
+const MIN_RIP               = 1.5;   // minimum rip cut width, inches
+const MIN_RIP_FRACTION      = 0.30;  // rip must be at least 30% of board width
+const SEAM_HISTORY_ROWS     = 3;     // check against 3 previous rows = 4-row no-repeat zone
+const STARTER_HISTORY_ROWS  = 6;     // how many recent starter lengths to avoid repeating
+const SIMULATE_SAFETY_LIMIT = 400;   // max iterations in simulateRow while-loop
+const SCRAP_TRY_PROB_BASE   = 0.5;   // base probability of trying scrap pool first
+const RIP_EPSILON           = 0.02;  // float noise threshold — remainders below this are treated as 0
+
+// ── State ──
+let boardLengths = [];
+let startCorner  = 'tl';
+let lshapeOn     = false;
+let doorOn       = false;
+let boardDir     = 'h';
+
+// ── Canvas color constants ──
+const FIELD_COLOR    = '#b0bec5';
+const STARTER_COLOR  = '#7986cb';
+const SCRAP_COLOR    = '#4db6ac';
+const END_OK_COLOR   = '#ffb300';
+const END_BAD_COLOR  = '#ef5350';
+const WALL_COLOR     = '#e0e0e0';
+const SEAM_COLOR     = 'rgba(255,255,255,0.55)';
+const ROW_SEAM_COLOR = 'rgba(0,0,0,0.08)';
+
+function r2(n) { return Math.round(n * 100) / 100; }
+
+function shuffleInPlace(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
+// ── Board lengths ──
+function renderChips() {
+  document.getElementById('lenChips').innerHTML = boardLengths.map((l, i) =>
+    `<div class="len-chip">${l}" <button onclick="removeLen(${i})">×</button></div>`
+  ).join('') || `<span style="font-size:0.72rem;color:var(--ink4);">No lengths added</span>`;
+}
+function addLen() {
+  const inp = document.getElementById('newLen');
+  const v = parseFloat(inp.value);
+  if (!v || v <= 0) return;
+  if (!boardLengths.includes(v)) { boardLengths.push(v); boardLengths.sort((a, b) => a - b); }
+  inp.value = '';
+  renderChips();
+}
+function removeLen(i) { boardLengths.splice(i, 1); renderChips(); }
+document.getElementById('newLen').addEventListener('keydown', e => { if (e.key === 'Enter') addLen(); });
+
+// Unified toggle: handles both extension and door panels
+function toggleSection(toggleId, fieldsId, onChangeFn) {
+  const isOn = document.getElementById(toggleId).classList.toggle('on');
+  document.getElementById(fieldsId).style.display = isOn ? 'block' : 'none';
+  if (onChangeFn) onChangeFn(isOn);
+}
+
+function setDir(d) {
+  boardDir = d;
+  document.getElementById('dir-h').classList.toggle('active', d === 'h');
+  document.getElementById('dir-v').classList.toggle('active', d === 'v');
+  document.getElementById('dir-note-h').style.display = d === 'h' ? 'block' : 'none';
+  document.getElementById('dir-note-v').style.display = d === 'v' ? 'block' : 'none';
+}
+
+function setCorner(c) {
+  startCorner = c;
+  ['tl','tr','bl','br'].forEach(x => document.getElementById('c-'+x).classList.toggle('active', x === c));
+}
+
+function updateSliderVal() {
+  const v = parseInt(document.getElementById('randSlider').value);
+  const label = v < 20 ? 'Efficient' : v < 40 ? 'Mostly Efficient' : v < 60 ? 'Balanced' : v < 80 ? 'Mostly Varied' : 'Max Varied';
+  document.getElementById('sliderVal').textContent = `${label} (${v})`;
+}
+
+// ── Rip row calculation ──
+// Model: totalWidth = firstRip + fullRows*boardWidth + lastRip
+// Constraints: minRip <= firstRip <= boardWidth
+//              lastRip = 0 (perfect fill) OR minRip <= lastRip <= boardWidth
+//
+// Given a desired firstRip: compute inner = totalWidth - firstRip, then
+// fullRows = floor(inner/boardWidth), lastRip = inner mod boardWidth.
+// If lastRip < minRip: shrink firstRip by the deficit — lastRip gains that amount.
+//
+// Precision: boardWidth may have 3dp (e.g. 5.125). Never apply r2() to boardWidth
+// directly — r2(5.125) = 5.13 due to JS .5-rounding, corrupting the value.
+
+function calcRipFromFirst(firstRip, totalWidth, boardWidth) {
+  const minRip = Math.max(MIN_RIP, boardWidth * MIN_RIP_FRACTION); // keep full precision
+  // Clamp firstRip into [minRip, boardWidth].
+  // IMPORTANT: if firstRip >= boardWidth, snap to EXACT boardWidth (don't r2 it —
+  // r2(5.125) = 5.13 due to JS rounding of .5, corrupting the value).
+  if (firstRip >= boardWidth) {
+    firstRip = boardWidth;
+  } else {
+    firstRip = r2(Math.max(minRip, firstRip));
+  }
+
+  const inner    = r2(totalWidth - firstRip);
+  const fullRows = Math.floor(inner / boardWidth);
+  const rawLast  = r2(inner - fullRows * boardWidth);
+  const lastRip  = rawLast <= RIP_EPSILON ? 0 : rawLast;
+
+  // Accept if lastRip is 0 or within minRip tolerance
+  if (lastRip === 0 || lastRip >= minRip - RIP_EPSILON) {
+    return { firstRip, fullRows, lastRip };
+  }
+
+  // lastRip too small — shrink firstRip by the deficit so lastRip gains that width
+  const deficit  = minRip - lastRip;
+  const newFirst = r2(Math.max(minRip, firstRip - deficit));
+  const newInner    = r2(totalWidth - newFirst);
+  const newFullRows = Math.floor(newInner / boardWidth);
+  const newRawLast  = r2(newInner - newFullRows * boardWidth);
+  const newLastRip  = newRawLast <= RIP_EPSILON ? 0 : newRawLast;
+  return { firstRip: newFirst, fullRows: newFullRows, lastRip: newLastRip };
+}
+
+function calcRipRow(totalWidth, boardWidth) {
+  return calcRipFromFirst(boardWidth, totalWidth, boardWidth);
+}
+
+// ── Simulate one row ──
+function simulateRow(rowLen, starterLen, prevSeams, randLevel, minStagger, minPiece) {
+  const sorted  = [...boardLengths].sort((a, b) => b - a);
+  let remaining = r2(rowLen);
+  let boards    = [];
+  let seams     = [];
+  let pos       = 0;
+
+  if (starterLen > 0) {
+    boards.push({ len: r2(starterLen), type: 'starter' });
+    pos       = r2(starterLen);
+    remaining = r2(remaining - starterLen);
+    if (pos < rowLen) seams.push(pos);
+  }
+
+  let safety = 0;
+  while (remaining > 0.01 && safety++ < SIMULATE_SAFETY_LIMIT) {
+    const fits = sorted.filter(bl => bl <= remaining);
+    if (!fits.length) break;
+
+    const seamPos = bl => r2(pos + bl);
+
+    const seamOk = bl => {
+      const sp = seamPos(bl);
+      if (sp >= rowLen) return true; // end of row — no seam recorded
+      if (!prevSeams.length) return true;
+      return prevSeams.every(ps => Math.abs(ps - sp) >= minStagger);
+    };
+
+    const valid = fits.filter(bl => {
+      if (!seamOk(bl)) return false;
+      // Reject if this board leaves a non-zero remainder that is too short
+      const leftover    = r2(remaining - bl);
+      const anotherFits = boardLengths.some(next => next <= leftover);
+      if (leftover > 0 && leftover < minPiece && !anotherFits) return false;
+      return true;
+    });
+
+    // Graceful fallback: if nothing fully valid, loosen piece-size constraint, then loosen stagger
+    const pool = valid.length > 0 ? valid
+      : fits.filter(bl => seamOk(bl)).length > 0 ? fits.filter(bl => seamOk(bl))
+      : fits;
+
+    // Score by stagger distance; shuffle for randomness before stable-sort
+    const scored = pool.map(bl => {
+      const sp   = seamPos(bl);
+      const minD = prevSeams.length ? Math.min(...prevSeams.map(ps => Math.abs(ps - sp))) : 999;
+      return { bl, minD };
+    });
+
+    shuffleInPlace(scored);
+    const staggerWeight = 1 - (randLevel / 100);
+    scored.sort((a, b) => (b.minD - a.minD) * staggerWeight);
+
+    const pick = scored[0].bl;
+    boards.push({ len: r2(pick), type: 'full' });
+    pos       = r2(pos + pick);
+    remaining = r2(remaining - pick);
+    if (pos < rowLen) seams.push(pos);
+  }
+
+  return { boards, endPiece: r2(remaining), seams };
+}
+
+// ── Pick starter ──
+// prevStarters: array of recently used starter lengths (last STARTER_HISTORY_ROWS rows).
+// We score candidates by their minimum distance from ALL recent starters, not just seams,
+// so the algorithm actively avoids repeating or incrementally stepping starter positions.
+function pickStarter(scrapPool, rowLen, prevSeams, randLevel, minStagger, minPiece, prevStarters) {
+  const randFactor = randLevel / 100;
+  const maxS       = Math.max(...boardLengths);
+
+  // A starter seam (at position=len) must clear minStagger from all prevSeams
+  const starterSeamOk = len => {
+    if (!prevSeams.length || len <= 0 || len >= rowLen) return true;
+    return prevSeams.every(ps => Math.abs(ps - len) >= minStagger);
+  };
+
+  // How "different" is this starter from recent ones?
+  // Returns minimum distance to any recently used starter (higher = more diverse)
+  const starterDiversity = len =>
+    prevStarters.length ? Math.min(...prevStarters.map(ps => Math.abs(ps - len))) : 999;
+
+  const rowOk = len => {
+    const sim = simulateRow(rowLen, len, prevSeams, randLevel, minStagger, minPiece);
+    return sim.endPiece === 0 || sim.endPiece >= minPiece;
+  };
+
+  // Score and rank a candidate pool by a blend of diversity + randomness.
+  // At high randLevel the diversity weight dominates over pure randomness
+  // (counterintuitive but necessary — pure random picks cluster; diversity spreads).
+  const scoreAndPick = candidates => {
+    if (!candidates.length) return null;
+    const scored = candidates.map(len => ({
+      len,
+      div: starterDiversity(len),
+    }));
+    // Shuffle first to break ties randomly
+    shuffleInPlace(scored);
+    // Sort by diversity descending, weighted by randLevel
+    // At randLevel=0 (efficient): sort by ascending value (tight stagger-first)
+    // At randLevel=50+: sort by diversity (spread starters across the range)
+    const divWeight = Math.max(0, (randLevel - 20) / 80); // 0 below 20, ramps to 1 at 100
+    scored.sort((a, b) => (b.div - a.div) * divWeight);
+    return scored[0].len;
+  };
+
+  // Try scrap first (less likely at high randomness)
+  const tryScrap = Math.random() > (randFactor * SCRAP_TRY_PROB_BASE);
+  if (tryScrap && scrapPool.length > 0) {
+    const candidates = scrapPool
+      .map((s, i) => ({ ...s, origIdx: i }))
+      .filter(sc => sc.len >= minPiece && starterSeamOk(sc.len) && rowOk(sc.len));
+    if (candidates.length) {
+      // Score scrap candidates by diversity too
+      const scored = candidates.map(sc => ({ sc, div: starterDiversity(sc.len) }));
+      shuffleInPlace(scored);
+      const divWeight = Math.max(0, (randLevel - 20) / 80);
+      scored.sort((a, b) => (b.div - a.div) * divWeight);
+      const best = scored[0].sc;
+      return { starterLen: best.len, fromScrap: true, scrapOrigIdx: best.origIdx };
+    }
+  }
+
+  // Build fresh candidate pool.
+  // Step size: finer at high randomness so we have more diverse options to pick from.
+  // This is intentional — more candidates means more spread, not less.
+  const step = randFactor > 0.5 ? 0.25 : 0.5;
+  const opts = [];
+  for (let s = minPiece; s <= maxS; s = r2(s + step)) {
+    if (starterSeamOk(s) && rowOk(s)) opts.push(s);
+  }
+
+  if (opts.length) {
+    const pick = scoreAndPick(opts);
+    if (pick !== null) return { starterLen: pick, fromScrap: false, scrapOrigIdx: -1 };
+  }
+
+  // Fallback: relax stagger, still enforce minPiece
+  const fallback = [];
+  for (let s = minPiece; s <= maxS; s = r2(s + 0.5)) {
+    const sim = simulateRow(rowLen, s, prevSeams, randLevel, minStagger, minPiece);
+    if (sim.endPiece === 0 || sim.endPiece >= minPiece) fallback.push(s);
+  }
+  if (fallback.length) {
+    const pick = scoreAndPick(fallback);
+    if (pick !== null) return { starterLen: pick, fromScrap: false, scrapOrigIdx: -1 };
+  }
+
+  return { starterLen: 0, fromScrap: false, scrapOrigIdx: -1 };
+}
+
+// ── Scrap generated from a row ──
+function getScrapGenerated(starterLen, fromScrap, endPiece, rowNum, minPiece) {
+  const out = [];
+  if (!fromScrap && starterLen > 0) {
+    const src = [...boardLengths].sort((a, b) => a - b).find(l => l >= starterLen);
+    if (src) {
+      const leftover = r2(src - starterLen);
+      if (leftover >= minPiece) out.push({ len: leftover, fromRow: rowNum, note: `cut from ${src}" board` });
+    }
+  }
+  if (endPiece >= minPiece) {
+    out.push({ len: endPiece, fromRow: rowNum, note: 'end piece' });
+  }
+  return out;
+}
+
+// ── Effective dimensions based on board direction ──
+// Horizontal: boards run along roomLen, rows stack along roomWidth
+// Vertical:   boards run along roomWidth, rows stack along roomLen
+function getEffectiveDims() {
+  const rawLen   = parseFloat(document.getElementById('roomLen').value);
+  const rawWidth = parseFloat(document.getElementById('roomWidth').value);
+  return boardDir === 'h'
+    ? { runLen: rawLen, stackWidth: rawWidth }
+    : { runLen: rawWidth, stackWidth: rawLen };
+}
+
+// ── Row effective length ──
+// Left/right doors extend row length by doorBump within the door band.
+// Bottom-wall door does NOT extend length — it extends the last row outward
+// in the stack axis, handled in canvas drawing only.
+function getRowLen(rowYStart, rowYEnd, mainLen, extBump, extSpanStart, extSpanEnd, extWall,
+                   doorBump, doorSpanStart, doorSpanEnd, doorWall) {
+  let len = mainLen;
+  if (lshapeOn && (extWall === 'left' || extWall === 'right')) {
+    if (rowYStart < extSpanEnd && rowYEnd > extSpanStart) len = r2(len + extBump);
+  }
+  if (doorOn && (doorWall === 'left' || doorWall === 'right')) {
+    if (rowYStart < doorSpanEnd && rowYEnd > doorSpanStart) len = r2(len + doorBump);
+  }
+  return len;
+}
+
+// ── Door wall change handler ──
+function onDoorWallChange() {
+  const wall = document.getElementById('doorWall').value;
+  const offsetField = document.getElementById('doorOffsetField');
+  const offsetNote  = document.getElementById('doorOffsetNote');
+  if (wall === 'bottom') {
+    // For bottom wall: offset = distance from left wall to start of door opening
+    offsetField.querySelector('label').textContent = 'Distance from Left Wall (in)';
+    offsetNote.textContent = 'Where the door opening starts along the bottom wall';
+  } else {
+    offsetField.querySelector('label').textContent = 'Distance from Top Wall (in)';
+    offsetNote.textContent = 'Where the door opening begins (rows down from top)';
+  }
+}
+
+// ── Rip input state ──
+// Set after each generate() so live input handlers can recompute without re-running everything.
+let _ripTotalWidth = 0;
+let _ripBoardWidth = 0;
+
+// Returns the display note for a rip value: what gets cut off, or "full board"
+function ripNote(ripW, boardWidth) {
+  if (ripW >= boardWidth) return 'Full board — no rip cut needed';
+  return `Rip ${r2(boardWidth - ripW)}" off a ${boardWidth}" board`;
+}
+
+function updateRipCallout(rip, boardWidth, doorIsBottom, doorBump, doorSpan) {
+  const lastW       = rip.lastRip > 0 ? rip.lastRip : boardWidth;
+  const hasLastRip  = rip.lastRip > 0;
+  const totalRows   = 1 + rip.fullRows + (hasLastRip ? 1 : 0);
+
+  document.getElementById('ripFirstInput').value      = rip.firstRip;
+  document.getElementById('ripLastInput').value       = lastW;
+  document.getElementById('ripFullRows').textContent  = rip.fullRows;
+  document.getElementById('ripFirstNote').textContent = ripNote(rip.firstRip, boardWidth);
+  document.getElementById('ripLastNote').textContent  = ripNote(lastW, boardWidth);
+  document.getElementById('ripFullNote').textContent  = `Total: ${totalRows} rows`;
+
+  // Last-row label: distinguish when it's also the door row
+  let lastRowLabel = 'Last Row Rip Width';
+  let doorNote     = '';
+  if (doorOn && doorBump > 0 && doorSpan > 0) {
+    if (doorIsBottom) {
+      lastRowLabel = 'Last Row — Wall & Door';
+      doorNote     = ` This row runs along the bottom wall AND through the door opening. Same rip width (${lastW}") throughout — boards in the door opening (${doorSpan}" span) are ${doorBump}" longer than field boards.`;
+    } else {
+      doorNote = ` Side door: rows in the door zone are ${doorBump}" longer than field boards.`;
+    }
+  }
+  document.getElementById('ripLastLabel').textContent = lastRowLabel;
+  document.getElementById('ripGuide').textContent     =
+    `Edit either value — the other recalculates automatically. Min rip: ${MIN_RIP}".${doorNote} Click Regenerate to apply.`;
+}
+
+function onRipFirstChange() {
+  if (!_ripTotalWidth || !_ripBoardWidth) return;
+  const val = parseFloat(document.getElementById('ripFirstInput').value);
+  if (!val || val <= 0) return;
+  const bw  = _ripBoardWidth;
+  const rip = calcRipFromFirst(val, _ripTotalWidth, bw);
+  const lastW = rip.lastRip > 0 ? rip.lastRip : bw;
+  document.getElementById('ripLastInput').value       = lastW;
+  document.getElementById('ripFullRows').textContent  = rip.fullRows;
+  document.getElementById('ripFullNote').textContent  = `Total: ${1 + rip.fullRows + (rip.lastRip > 0 ? 1 : 0)} rows`;
+  document.getElementById('ripFirstNote').textContent = ripNote(rip.firstRip, bw);
+  document.getElementById('ripLastNote').textContent  = ripNote(lastW, bw);
+}
+
+// Inverse: given a desired lastRip, find firstRip = totalWidth - targetLast - k*boardWidth
+// for the integer k that puts firstRip in [minRip, boardWidth].
+function onRipLastChange() {
+  if (!_ripTotalWidth || !_ripBoardWidth) return;
+  const targetLast = parseFloat(document.getElementById('ripLastInput').value);
+  if (!targetLast || targetLast <= 0) return;
+  const bw     = _ripBoardWidth;
+  const total  = _ripTotalWidth;
+  const minRip = Math.max(MIN_RIP, bw * MIN_RIP_FRACTION);
+  const inner  = r2(total - targetLast);
+  // k = floor(inner/bw) is the starting point; check k and k+1 (two neighbours sufficient)
+  const kStart = Math.max(0, Math.floor(inner / bw) - 1);
+  let bestFirst = null;
+  for (let k = kStart; k <= kStart + 3; k++) {
+    const candidate = r2(inner - k * bw);
+    if (candidate >= minRip - RIP_EPSILON && candidate <= bw + RIP_EPSILON) {
+      bestFirst = r2(Math.min(bw, Math.max(minRip, candidate)));
+      break;
+    }
+  }
+  if (bestFirst === null) bestFirst = minRip;
+
+  const rip = calcRipFromFirst(bestFirst, total, bw);
+  const lastW = rip.lastRip > 0 ? rip.lastRip : bw;
+  document.getElementById('ripFirstInput').value      = rip.firstRip;
+  document.getElementById('ripFullRows').textContent  = rip.fullRows;
+  document.getElementById('ripFullNote').textContent  = `Total: ${1 + rip.fullRows + (rip.lastRip > 0 ? 1 : 0)} rows`;
+  document.getElementById('ripFirstNote').textContent = ripNote(rip.firstRip, bw);
+  document.getElementById('ripLastNote').textContent  = ripNote(lastW, bw);
+}
+
+// Read the current rip inputs for generate(true)
+function getRipFromInputs(totalWidth, boardWidth) {
+  const firstVal = parseFloat(document.getElementById('ripFirstInput').value);
+  if (!firstVal || firstVal <= 0) return calcRipRow(totalWidth, boardWidth);
+  return calcRipFromFirst(firstVal, totalWidth, boardWidth);
+}
+
+// ── Main generate ──
+// useManualRip=true: read first/last row widths from the input boxes (user adjusted)
+// useManualRip=false (default): auto-calculate rip widths from room geometry
+function generate(useManualRip) {
+  const { runLen, stackWidth } = getEffectiveDims();
+  const boardWidth  = parseFloat(document.getElementById('boardWidth').value);
+  const minPiece    = parseFloat(document.getElementById('minPiece').value);
+  const minStagger  = parseFloat(document.getElementById('minStagger').value) || 6;
+  const randLevel   = parseInt(document.getElementById('randSlider').value);
+
+  // L-shape params
+  const extBump    = lshapeOn ? parseFloat(document.getElementById('extLen').value)   : 0;
+  const extSpan    = lshapeOn ? parseFloat(document.getElementById('extWidth').value) : 0;
+  const extWall    = lshapeOn ? document.getElementById('extWall').value              : 'left';
+  const extOffset  = lshapeOn ? (parseFloat(document.getElementById('extOffset').value) || 0) : 0;
+
+  // Door params
+  const doorBump      = doorOn ? parseFloat(document.getElementById('doorDepth').value) : 0;
+  const doorSpan      = doorOn ? parseFloat(document.getElementById('doorWidth').value) : 0;
+  const doorWall      = doorOn ? document.getElementById('doorWall').value              : 'right';
+  const doorOffset    = doorOn ? (parseFloat(document.getElementById('doorOffset').value) || 0) : 0;
+  const doorIsBottom  = doorOn && doorWall === 'bottom';
+
+  if (!runLen || !stackWidth || !boardWidth || boardLengths.length === 0) {
+    alert('Please fill in all dimensions and add at least one board length.'); return;
+  }
+
+  const extSpanStart  = extOffset;
+  const extSpanEnd    = r2(extOffset + extSpan);
+  const doorSpanStart = doorOffset;
+  const doorSpanEnd   = r2(doorOffset + doorSpan);
+
+  const rip = useManualRip ? getRipFromInputs(stackWidth, boardWidth)
+                           : calcRipRow(stackWidth, boardWidth);
+  _ripTotalWidth = stackWidth;
+  _ripBoardWidth = boardWidth;
+
+  const hasLastRip = rip.lastRip > 0;
+  const actualRows = 1 + rip.fullRows + (hasLastRip ? 1 : 0);
+
+  const scrapPool      = [];
+  const allRows        = [];
+  const seamHistory    = [];
+  const starterHistory = []; // recent starter lengths for diversity scoring
+  let cumY = 0;
+
+  for (let r = 0; r < actualRows; r++) {
+    const isFirstRow   = r === 0;
+    const isLastRow    = r === actualRows - 1;
+    const thisRowWidth = isFirstRow ? rip.firstRip
+                       : (isLastRow && hasLastRip) ? rip.lastRip
+                       : boardWidth;
+    const rowYStart = cumY;
+    const rowYEnd   = r2(cumY + thisRowWidth);
+
+    const rowLen    = getRowLen(rowYStart, rowYEnd, runLen,
+                                extBump, extSpanStart, extSpanEnd, extWall,
+                                doorBump, doorSpanStart, doorSpanEnd, doorWall);
+
+    const prevSeams    = [...new Set(seamHistory.flat())];
+    const prevStarters = [...starterHistory]; // snapshot before this row
+    const pick         = pickStarter(scrapPool, rowLen, prevSeams, randLevel,
+                                     minStagger, minPiece, prevStarters);
+
+    const scrapIdx = pick.fromScrap && pick.scrapOrigIdx >= 0 ? pick.scrapOrigIdx : -1;
+    if (scrapIdx >= 0) scrapPool.splice(scrapIdx, 1);
+
+    const sim    = simulateRow(rowLen, pick.starterLen, prevSeams, randLevel, minStagger, minPiece);
+    const scraps = getScrapGenerated(pick.starterLen, pick.fromScrap, sim.endPiece, r + 1, minPiece);
+    scrapPool.push(...scraps);
+
+    const normalizedSeams = sim.seams.filter(s => s <= runLen);
+    seamHistory.push(normalizedSeams);
+    if (seamHistory.length > SEAM_HISTORY_ROWS) seamHistory.shift();
+
+    // Track starter history for diversity — store the actual first-seam position
+    // (starter length = position of first seam, or 0 if full-board start)
+    starterHistory.push(pick.starterLen);
+    if (starterHistory.length > STARTER_HISTORY_ROWS) starterHistory.shift();
+
+    const inExt      = lshapeOn && rowLen > runLen;
+    const inDoorSide = doorOn && !doorIsBottom && doorSpan > 0
+                       && rowYStart < doorSpanEnd && rowYEnd > doorSpanStart;
+    const inDoorBot  = doorIsBottom && isLastRow;
+
+    allRows.push({
+      rowNum:    r + 1,
+      rowWidth:  thisRowWidth,
+      rowYStart,
+      rowLen,
+      mainLen:   runLen,
+      inExt,
+      inDoor:    inDoorSide || inDoorBot,
+      doorWall:  doorOn ? doorWall  : null,
+      doorBump:  doorOn ? doorBump  : 0,
+      doorSpan:  doorOn ? doorSpan  : 0,
+      doorOffset:doorOn ? doorOffset: 0,
+      doorIsBottom,
+      isRip:     (isFirstRow && rip.firstRip < boardWidth)
+              || (isLastRow && hasLastRip && rip.lastRip < boardWidth),
+      starterLen: pick.starterLen,
+      fromScrap:  pick.fromScrap,
+      boards:     sim.boards,
+      endPiece:   sim.endPiece,
+      seams:      sim.seams,
+      scrapGenerated: scraps,
+    });
+    cumY = rowYEnd;
+  }
+
+  // Bottom-start corners: renumber rows descending without disturbing rowYStart
+  if (startCorner === 'bl' || startCorner === 'br') {
+    const total = allRows.length;
+    allRows.forEach((row, i) => { row.rowNum = total - i; });
+  }
+
+  renderResults(allRows, runLen, stackWidth, boardWidth, rip, scrapPool, minPiece,
+                extBump, extSpan, extWall, extOffset,
+                doorBump, doorSpan, doorOffset, doorWall, doorIsBottom);
+}
+
+function renderResults(rows, runLen, stackWidth, boardWidth, rip, finalScrap, minPiece,
+                       extBump, extSpan, extWall, extOffset,
+                       doorBump, doorSpan, doorOffset, doorWall, doorIsBottom) {
+  const goodRows    = rows.filter(r => r.endPiece === 0 || r.endPiece >= minPiece).length;
+  const scrapReused = rows.filter(r => r.fromScrap).length;
+
+  updateRipCallout(rip, boardWidth, doorIsBottom, doorBump, doorSpan);
+
+  // Stats
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat"><div class="sl">Total Rows</div><div class="sv">${rows.length}</div></div>
+    <div class="stat"><div class="sl">Valid Rows</div><div class="sv" style="color:var(--green)">${goodRows}</div></div>
+    <div class="stat"><div class="sl">Scrap Reused</div><div class="sv" style="color:var(--green)">${scrapReused}</div></div>
+    <div class="stat"><div class="sl">Remaining Scrap</div><div class="sv">${finalScrap.length} pcs</div></div>
+    <div class="stat"><div class="sl">Board Lengths</div><div class="sv" style="font-size:0.85rem">${boardLengths.join('", ')}"</div></div>
+  `;
+
+  // Legend
+  document.getElementById('legend').innerHTML = `
+    <div class="legend-item"><div class="legend-swatch" style="background:#b0bec5"></div>Field board</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#7986cb"></div>Cut starter</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#4db6ac"></div>Scrap starter</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#ffb300"></div>End piece</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#ef5350"></div>Short end piece</div>
+    ${lshapeOn ? '<div class="legend-item"><div class="legend-swatch" style="background:#e0e0e0"></div>Wall zone</div>' : ''}
+  `;
+
+  drawCanvas(rows, runLen, stackWidth, boardWidth, minPiece,
+             extBump, extSpan, extWall, extOffset,
+             doorBump, doorSpan, doorOffset, doorWall);
+
+  // Row accordion
+  document.getElementById('rowAccordion').innerHTML = rows.map((row, ri) => {
+    const endOk      = row.endPiece === 0 || row.endPiece >= minPiece;
+    const starterNote = row.starterLen === 0 ? 'Starts with full board'
+      : `Starter: ${row.starterLen}"${row.fromScrap ? ' ♻ reused scrap' : ''}`;
+    const endNote = row.endPiece === 0 ? 'Perfect fit — no end piece'
+      : `End piece: ${row.endPiece}" ${endOk ? '✓' : '✗ TOO SHORT'}`;
+    const allPieces = [...row.boards, ...(row.endPiece > 0 ? [{ len: row.endPiece, type: 'end' }] : [])];
+
+    const chips = allPieces.map(b => {
+      const isScrap = b.type === 'starter' && row.fromScrap;
+      const isEnd   = b.type === 'end';
+      const endCls  = isEnd ? (endOk ? 'end-ok' : 'end-bad') : '';
+
+      const lenStr  = b.len != null ? b.len : '?';
+      return `<div class="chip${isScrap ? ' sc' : ''}${isEnd ? ' ' + endCls : ''}">${lenStr}" <span style="opacity:0.5;font-size:0.65em">${b.type}</span></div>`;
+    }).join('');
+
+    const scrapOut = row.scrapGenerated.length
+      ? `<div class="scrap-out">♻ Scrap from this row:<br>${row.scrapGenerated.map(s => `→ ${s.len}" (${s.note})`).join('<br>')}</div>`
+      : '';
+
+    const ripBadge   = row.isRip     ? `<span class="badge badge-rip">RIP ${row.rowWidth}"</span>`  : '';
+    const scrapBadge = row.fromScrap ? `<span class="badge badge-scrap">♻ Scrap</span>`             : '';
+    const badBadge   = !endOk && row.endPiece > 0 ? `<span class="badge badge-bad">Short end</span>` : '';
+
+    return `<div class="racc" id="ra${ri}">
+      <div class="racc-head" onclick="togAcc(${ri})">
+        <div class="racc-rn">Row ${row.rowNum}</div>
+        <div class="racc-info">
+          <div class="ri">${starterNote}</div>
+          <div class="re">${endNote} &nbsp;·&nbsp; ${row.rowLen}" row${row.inExt ? ' (extension)' : ''}${row.inDoor && row.doorIsBottom ? ` + ${row.doorBump}" threshold` : ''}</div>
+        </div>
+        ${ripBadge}${scrapBadge}${badBadge}
+        <span class="tarr">▶</span>
+      </div>
+      <div class="racc-body">
+        <div class="dl">Board sequence</div>
+        <div class="seq">${chips}</div>
+        ${scrapOut}
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── Canvas drawing ──
+function drawCanvas(rows, runLen, stackWidth, boardWidth, minPiece,
+                    extBump, extSpan, extWall, extOffset,
+                    doorBump, doorSpan, doorOffset, doorWall) {
+  const canvas = document.getElementById('floorCanvas');
+
+  const extOnLeft    = lshapeOn && extWall === 'left';
+  const extOnRight   = lshapeOn && extWall === 'right';
+  const doorOnLeft   = doorOn && doorWall === 'left';
+  const doorOnRight  = doorOn && doorWall === 'right';
+  const doorOnBottom = doorOn && doorWall === 'bottom';
+
+  const leftPad   = (extOnLeft  ? extBump : 0) + (doorOnLeft  ? doorBump : 0);
+  const rightPad  = (extOnRight ? extBump : 0) + (doorOnRight ? doorBump : 0);
+  // Bottom door adds extra height below the room for the threshold bump-out
+  const bottomPad = doorOnBottom ? doorBump : 0;
+  const canvasLen = runLen + leftPad + rightPad;
+
+  const SCALE    = Math.min(2.8, (window.innerWidth - 80) / (canvasLen + 10));
+  canvas.width   = Math.round(canvasLen * SCALE) + 2;
+  canvas.height  = Math.round((stackWidth + bottomPad) * SCALE) + 2;
+
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const getRowXOffset = row => {
+    let ext = 0;
+    if (extOnLeft  && row.inExt)  ext += extBump;
+    if (doorOnLeft && row.inDoor) ext += doorBump;
+    return (leftPad - ext) * SCALE + 1;
+  };
+
+  // Background
+  ctx.fillStyle = '#f2f2f7';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Wall zones (areas beside each row's boards)
+  rows.forEach(row => {
+    const y      = row.rowYStart * SCALE + 1;
+    const h      = row.rowWidth * SCALE;
+    const xStart = getRowXOffset(row);
+    const rowW   = row.rowLen * SCALE;
+    ctx.fillStyle = WALL_COLOR;
+    if (xStart > 1)                       ctx.fillRect(1,            y, xStart - 1,                    h);
+    if (xStart + rowW < canvas.width - 1) ctx.fillRect(xStart + rowW, y, canvas.width - 1 - xStart - rowW, h);
+  });
+
+  // Bottom-door threshold bump-out: draw boards of last row extending downward
+  if (doorOnBottom && doorBump > 0 && doorSpan > 0) {
+    const lastRow    = rows[rows.length - 1];
+    const mainRightX = (leftPad + runLen) * SCALE + 1;
+    const rowBottom  = (lastRow.rowYStart + lastRow.rowWidth) * SCALE + 1;
+    const bumpH      = doorBump * SCALE;
+    const dXStart    = leftPad * SCALE + 1 + doorOffset * SCALE;
+    const dXEnd      = dXStart + doorSpan * SCALE;
+
+    // Grey out area outside door opening below bottom wall
+    ctx.fillStyle = WALL_COLOR;
+    if (doorOffset > 0)
+      ctx.fillRect(leftPad * SCALE + 1, rowBottom, doorOffset * SCALE, bumpH);
+    if (dXEnd < mainRightX)
+      ctx.fillRect(dXEnd, rowBottom, mainRightX - dXEnd, bumpH);
+
+    // Draw the threshold bump boards — same color as the last row's boards
+    ctx.fillStyle = FIELD_COLOR;
+    ctx.fillRect(dXStart, rowBottom, dXEnd - dXStart, bumpH);
+    // Highlight edge
+    ctx.fillStyle = 'rgba(255,255,255,0.18)';
+    ctx.fillRect(dXStart, rowBottom, dXEnd - dXStart, Math.min(2, bumpH * 0.15));
+    // Label
+    if (bumpH > 12 && (dXEnd - dXStart) > 30) {
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.font = `600 ${Math.min(9, bumpH * 0.5)}px -apple-system, Inter, sans-serif`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(`thresh ${doorBump}"`, (dXStart + dXEnd) / 2, rowBottom + bumpH / 2);
+    }
+  }
+
+  // Boards
+  rows.forEach(row => {
+    const y          = row.rowYStart * SCALE + 1;
+    const h          = row.rowWidth * SCALE;
+    const rowXOffset = getRowXOffset(row);
+    const flipX      = startCorner === 'tr' || startCorner === 'br';
+    const allPieces  = [...row.boards, ...(row.endPiece > 0 ? [{ len: row.endPiece, type: 'end' }] : [])];
+    let x = 0;
+
+    allPieces.forEach(b => {
+      const bw        = (b.len ?? 0) * SCALE;
+      const bx        = flipX ? (canvas.width - rowXOffset - x - bw) : (rowXOffset + x);
+      const isScrap   = b.type === 'starter' && row.fromScrap;
+      const isStarter = b.type === 'starter' && !row.fromScrap;
+      const isEnd     = b.type === 'end';
+      const endBad    = isEnd && row.endPiece < minPiece;
+
+      let color = FIELD_COLOR;
+      if (isScrap)        color = SCRAP_COLOR;
+      else if (isStarter) color = STARTER_COLOR;
+      else if (isEnd)     color = endBad ? END_BAD_COLOR : END_OK_COLOR;
+
+      ctx.fillStyle = color;
+      ctx.fillRect(bx, y, bw, h);
+      ctx.fillStyle = 'rgba(255,255,255,0.18)';
+      ctx.fillRect(bx, y, bw, Math.min(2, h * 0.15));
+      ctx.fillStyle = SEAM_COLOR;
+      ctx.fillRect(bx + bw - 1, y, 1, h);
+
+      if (bw > 20) {
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        ctx.font = `600 ${Math.min(10, h * 0.52)}px -apple-system, Inter, sans-serif`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(`${b.len ?? '?'}"`, bx + bw / 2, y + h / 2);
+      }
+      x += bw;
+    });
+
+    // Row number label
+    if (h > 10) {
+      ctx.fillStyle = 'rgba(0,0,0,0.25)';
+      ctx.font = `500 ${Math.min(8, h * 0.45)}px -apple-system, Inter, sans-serif`;
+      ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+      ctx.fillText(`${row.rowNum}`, rowXOffset + 3, y + h / 2);
+    }
+  });
+
+  // Row seam lines
+  rows.forEach((row, ri) => {
+    if (ri >= rows.length - 1) return;
+    const y  = (row.rowYStart + row.rowWidth) * SCALE + 1;
+    const x0 = Math.min(getRowXOffset(row), getRowXOffset(rows[ri + 1]));
+    ctx.strokeStyle = ROW_SEAM_COLOR; ctx.lineWidth = 1; ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(canvas.width - 1, y); ctx.stroke();
+  });
+
+  // Wall boundary lines
+  ctx.strokeStyle = '#9e9e9e'; ctx.lineWidth = 1.5; ctx.setLineDash([]);
+  const mainLeftX  = leftPad * SCALE + 1;
+  const mainRightX = (leftPad + runLen) * SCALE + 1;
+  // Left wall (full height, minus bottom-door gap)
+  if (doorOnBottom && doorOffset === 0) {
+    // Door starts at left wall — only draw above the room
+    ctx.beginPath(); ctx.moveTo(mainLeftX, 1); ctx.lineTo(mainLeftX, stackWidth * SCALE + 1); ctx.stroke();
+  } else {
+    ctx.beginPath(); ctx.moveTo(mainLeftX, 1); ctx.lineTo(mainLeftX, canvas.height - 1); ctx.stroke();
+  }
+
+  // Extension opening on left wall
+  if (extOnLeft && extBump > 0) {
+    const extX    = (leftPad - extBump) * SCALE + 1;
+    const bandTop = extOffset * SCALE + 1;
+    const bandBot = (extOffset + extSpan) * SCALE + 1;
+    if (extOffset > 0) {
+      ctx.beginPath(); ctx.moveTo(extX, 1);      ctx.lineTo(extX, bandTop);            ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(extX, bandTop); ctx.lineTo(mainLeftX, bandTop);       ctx.stroke();
+    }
+    if (extOffset + extSpan < stackWidth) {
+      ctx.beginPath(); ctx.moveTo(extX, bandBot); ctx.lineTo(extX, canvas.height - 1); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(extX, bandBot); ctx.lineTo(mainLeftX, bandBot);       ctx.stroke();
+    }
+  }
+
+  // Left/right door bump-out bracket (dashed)
+  if (doorOn && doorBump > 0 && doorSpan > 0 && !doorOnBottom) {
+    const dYStart = doorOffset * SCALE + 1;
+    const dYEnd   = (doorOffset + doorSpan) * SCALE + 1;
+    ctx.strokeStyle = '#78909c'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 3]);
+    if (doorOnLeft) {
+      const doorX = (leftPad - doorBump) * SCALE + 1;
+      ctx.beginPath(); ctx.moveTo(doorX, dYStart); ctx.lineTo(doorX, dYEnd);         ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(doorX, dYStart); ctx.lineTo(mainLeftX, dYStart);   ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(doorX, dYEnd);   ctx.lineTo(mainLeftX, dYEnd);     ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#78909c'; ctx.font = '500 8px -apple-system, Inter, sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      if (dYEnd - dYStart > 16) ctx.fillText('door', (doorX + mainLeftX) / 2, (dYStart + dYEnd) / 2);
+    }
+    if (doorOnRight) {
+      const doorX = mainRightX + doorBump * SCALE;
+      ctx.beginPath(); ctx.moveTo(doorX, dYStart);  ctx.lineTo(doorX, dYEnd);        ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(mainRightX, dYStart); ctx.lineTo(doorX, dYStart);  ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(mainRightX, dYEnd);   ctx.lineTo(doorX, dYEnd);    ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#78909c'; ctx.font = '500 8px -apple-system, Inter, sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      if (dYEnd - dYStart > 16) ctx.fillText('door', (mainRightX + doorX) / 2, (dYStart + dYEnd) / 2);
+    }
+  }
+
+  // Bottom-wall door: dashed bracket below the bottom wall
+  if (doorOnBottom && doorBump > 0 && doorSpan > 0) {
+    const bottomWallY = stackWidth * SCALE + 1;
+    const bumpY       = (stackWidth + doorBump) * SCALE + 1;
+    const dXStart     = leftPad * SCALE + 1 + doorOffset * SCALE;
+    const dXEnd       = dXStart + doorSpan * SCALE;
+    ctx.strokeStyle = '#78909c'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 3]);
+    // Vertical sides of bracket
+    ctx.beginPath(); ctx.moveTo(dXStart, bottomWallY); ctx.lineTo(dXStart, bumpY); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(dXEnd,   bottomWallY); ctx.lineTo(dXEnd,   bumpY); ctx.stroke();
+    // Bottom of bracket
+    ctx.beginPath(); ctx.moveTo(dXStart, bumpY); ctx.lineTo(dXEnd, bumpY); ctx.stroke();
+    // Gap in bottom wall line over the opening
+    ctx.setLineDash([]);
+    // Draw bottom wall with gap for door opening
+    ctx.strokeStyle = '#9e9e9e'; ctx.lineWidth = 1.5;
+    if (doorOffset > 0) {
+      ctx.beginPath(); ctx.moveTo(mainLeftX, bottomWallY); ctx.lineTo(dXStart, bottomWallY); ctx.stroke();
+    }
+    if (doorOffset + doorSpan < runLen) {
+      ctx.beginPath(); ctx.moveTo(dXEnd, bottomWallY); ctx.lineTo(mainRightX, bottomWallY); ctx.stroke();
+    }
+    // Label
+    ctx.fillStyle = '#78909c'; ctx.font = '500 8px -apple-system, Inter, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    if ((dXEnd - dXStart) > 20) ctx.fillText('door', (dXStart + dXEnd) / 2, (bottomWallY + bumpY) / 2);
+  }
+
+  // Room border (draw last, solid, clips to main room area excluding door bump)
+  ctx.setLineDash([]);
+  ctx.strokeStyle = '#d1d1d6'; ctx.lineWidth = 1.5;
+  // Draw top, left, right of room border; bottom handled above with door gap
+  if (!doorOnBottom) {
+    ctx.strokeRect(1, 1, canvas.width - 2, stackWidth * SCALE);
+  } else {
+    // Top
+    ctx.beginPath(); ctx.moveTo(1, 1); ctx.lineTo(canvas.width - 1, 1); ctx.stroke();
+    // Right
+    ctx.beginPath(); ctx.moveTo(canvas.width - 1, 1); ctx.lineTo(canvas.width - 1, stackWidth * SCALE + 1); ctx.stroke();
+    // Left
+    ctx.beginPath(); ctx.moveTo(1, 1); ctx.lineTo(1, stackWidth * SCALE + 1); ctx.stroke();
+  }
+}
+
+function togAcc(i) { document.getElementById('ra' + i).classList.toggle('open'); }
+
+// Init
+updateSliderVal();
+renderChips();
+</script>
+</body>
+</html>
