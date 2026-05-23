@@ -13,7 +13,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;600;700&family=DM+Mono:wght@600&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js" crossorigin></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js" crossorigin></script>
-    <style>
+  <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body, #root { height: 100%; }
     body { background: #080F1A; -webkit-tap-highlight-color: transparent; }
@@ -149,12 +149,11 @@ const {
   useCallback
 } = React;
 
-// ── Config ────────────────────────────────────────────────────────────────
-// Hash of "H!r3d2026". To change, run in console:
-// crypto.subtle.digest('SHA-256',new TextEncoder().encode('newpw')).then(b=>console.log([...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')))
+// ── Config ─────────────────────────────────────────────────────────────────
 const PASSWORD_HASH = "b66b6c0716af6c6b01425ccc5d87f5c53a96bec67f0de5bc4ff7c3f41c99d95d";
 const AUTH_KEY = "networkpro_auth_v1";
-const DATA_KEY = "networkpro_contacts_v1";
+const DATA_KEY = "networkpro_contacts_v2"; // bumped so old single-name data doesn't conflict
+
 async function hashPw(pw) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(pw));
   return [...new Uint8Array(buf)].map(x => x.toString(16).padStart(2, "0")).join("");
@@ -163,6 +162,18 @@ function loadContacts() {
   try {
     const r = localStorage.getItem(DATA_KEY);
     if (r) return JSON.parse(r);
+    // migrate v1 data if present
+    const old = localStorage.getItem("networkpro_contacts_v1");
+    if (old) {
+      const contacts = JSON.parse(old).map(c => ({
+        ...c,
+        firstName: c.firstName || (c.name || "").split(" ")[0] || "",
+        lastName: c.lastName || (c.name || "").split(" ").slice(1).join(" ") || "",
+        contactNotes: c.contactNotes || ""
+      }));
+      saveContacts(contacts);
+      return contacts;
+    }
   } catch (e) {}
   return [];
 }
@@ -184,7 +195,15 @@ function setAuth(v) {
   } catch (e) {}
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────
+// ── Helpers ─────────────────────────────────────────────────────────────────
+function fullName(c) {
+  return [c.firstName, c.lastName].filter(Boolean).join(" ") || "(No name)";
+}
+function initials(c) {
+  const f = (c.firstName || "")[0] || "";
+  const l = (c.lastName || "")[0] || "";
+  return (f + l).toUpperCase() || "?";
+}
 function fmtDate(d) {
   if (!d) return "";
   const [y, m, day] = d.split("-");
@@ -218,8 +237,28 @@ function toISO(dt) {
 }
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const DAYS_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const NAV = [{
+  id: "contacts",
+  label: "Network",
+  icon: "◈"
+}, {
+  id: "calendar",
+  label: "Calendar",
+  icon: "◷"
+}, {
+  id: "stats",
+  label: "Overview",
+  icon: "◉"
+}];
+const PAGE_TITLES = {
+  contacts: "Network",
+  detail: "Contact",
+  calendar: "Calendar",
+  stats: "Overview"
+};
+const COLORS = ["#2A6B8A", "#5B4A8A", "#2A7A52", "#8A4A2A", "#6B2A8A", "#2A4A8A", "#7A2A5B", "#2A5B7A"];
 
-// ── Style tokens ──────────────────────────────────────────────────────────
+// ── Style tokens ─────────────────────────────────────────────────────────────
 const T = {
   card: {
     background: "#0D1B2E",
@@ -251,6 +290,15 @@ const T = {
     fontFamily: "'DM Sans',sans-serif",
     minHeight: 80
   },
+  label: {
+    fontSize: 11,
+    fontWeight: 700,
+    color: "#475569",
+    textTransform: "uppercase",
+    letterSpacing: "0.07em",
+    display: "block",
+    marginBottom: 5
+  },
   btn(v = "primary") {
     const s = {
       primary: {
@@ -270,8 +318,8 @@ const T = {
       },
       danger: {
         bg: "transparent",
-        fg: "#94A3B8",
-        b: "1px solid #1E3A5F"
+        fg: "#F87171",
+        b: "1px solid #7F1D1D44"
       }
     }[v] || {};
     return {
@@ -290,11 +338,12 @@ const T = {
   }
 };
 
-// ── Micro-components ──────────────────────────────────────────────────────
+// ── Shared components ─────────────────────────────────────────────────────────
 function Avatar({
   contact,
   size = 40
 }) {
+  const ini = initials(contact);
   return /*#__PURE__*/React.createElement("div", {
     style: {
       width: size,
@@ -312,14 +361,14 @@ function Avatar({
     }
   }, contact.photo ? /*#__PURE__*/React.createElement("img", {
     src: contact.photo,
-    alt: contact.name,
+    alt: fullName(contact),
     style: {
       width: "100%",
       height: "100%",
       borderRadius: "50%",
       objectFit: "cover"
     }
-  }) : contact.initials);
+  }) : ini);
 }
 function Tag({
   children,
@@ -375,7 +424,119 @@ function Pill({
   }, children);
 }
 
-// ── Login ─────────────────────────────────────────────────────────────────
+// Field row helper for forms
+function Field({
+  label,
+  children
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: 12
+    }
+  }, /*#__PURE__*/React.createElement("label", {
+    style: T.label
+  }, label), children);
+}
+
+// ── Contact Form (shared by Add and Edit) ─────────────────────────────────────
+function ContactForm({
+  initial,
+  onSave,
+  onCancel,
+  title
+}) {
+  const [form, setForm] = useState(initial);
+  const set = (k, v) => setForm(p => ({
+    ...p,
+    [k]: v
+  }));
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...T.card,
+      marginBottom: 16,
+      borderColor: "#2563EB"
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      margin: "0 0 16px",
+      fontSize: 15,
+      color: "#93C5FD"
+    }
+  }, title), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: 10,
+      marginBottom: 4
+    }
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: "First Name"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: T.input,
+    placeholder: "First",
+    value: form.firstName,
+    onChange: e => set("firstName", e.target.value)
+  })), /*#__PURE__*/React.createElement(Field, {
+    label: "Last Name"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: T.input,
+    placeholder: "Last",
+    value: form.lastName,
+    onChange: e => set("lastName", e.target.value)
+  }))), /*#__PURE__*/React.createElement(Field, {
+    label: "Company"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: T.input,
+    placeholder: "Company",
+    value: form.company,
+    onChange: e => set("company", e.target.value)
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: 10,
+      marginBottom: 4
+    }
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: "Email"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: T.input,
+    placeholder: "email@example.com",
+    value: form.email,
+    onChange: e => set("email", e.target.value)
+  })), /*#__PURE__*/React.createElement(Field, {
+    label: "Phone"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: T.input,
+    placeholder: "Phone",
+    value: form.phone,
+    onChange: e => set("phone", e.target.value)
+  }))), /*#__PURE__*/React.createElement(Field, {
+    label: "Notes about this contact"
+  }, /*#__PURE__*/React.createElement("textarea", {
+    style: T.textarea,
+    placeholder: "Background, context, how you met\u2026",
+    value: form.contactNotes,
+    onChange: e => set("contactNotes", e.target.value)
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8,
+      marginTop: 4
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    style: T.btn("primary"),
+    onClick: () => {
+      if (!form.firstName.trim() && !form.lastName.trim()) return;
+      onSave(form);
+    }
+  }, "Save"), /*#__PURE__*/React.createElement("button", {
+    style: T.btn("ghost"),
+    onClick: onCancel
+  }, "Cancel")));
+}
+
+// ── Login ─────────────────────────────────────────────────────────────────────
 function LoginScreen({
   onLogin
 }) {
@@ -441,15 +602,7 @@ function LoginScreen({
       textAlign: "left"
     }
   }, /*#__PURE__*/React.createElement("label", {
-    style: {
-      fontSize: 11,
-      color: "#475569",
-      fontWeight: 700,
-      letterSpacing: "0.07em",
-      textTransform: "uppercase",
-      display: "block",
-      marginBottom: 6
-    }
+    style: T.label
   }, "Password"), /*#__PURE__*/React.createElement("input", {
     type: "password",
     value: pw,
@@ -497,7 +650,7 @@ function LoginScreen({
   }, loading ? "Verifying…" : "Unlock")));
 }
 
-// ── Task Modal ────────────────────────────────────────────────────────────
+// ── Task Modal ────────────────────────────────────────────────────────────────
 function TaskModal({
   tasks,
   onClose,
@@ -595,11 +748,7 @@ function TaskModal({
       color: t.contact.color,
       fontWeight: 600
     }
-  }, t.contact.name), /*#__PURE__*/React.createElement("span", null, "\xB7"), /*#__PURE__*/React.createElement("span", null, fmtDate(t.meeting.date)), t.dueDate && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", null, "\xB7"), /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: "#F59E0B"
-    }
-  }, "Due ", fmtDate(t.dueDate)))))))), done.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  }, fullName(t.contact)), /*#__PURE__*/React.createElement("span", null, "\xB7"), /*#__PURE__*/React.createElement("span", null, fmtDate(t.meeting.date))))))), done.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 11,
       fontWeight: 700,
@@ -657,7 +806,7 @@ function TaskModal({
       gap: 8,
       flexWrap: "wrap"
     }
-  }, /*#__PURE__*/React.createElement("span", null, t.contact.name), /*#__PURE__*/React.createElement("span", null, "\xB7"), /*#__PURE__*/React.createElement("span", null, fmtDate(t.meeting.date))))))), tasks.length === 0 && /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", null, fullName(t.contact)), /*#__PURE__*/React.createElement("span", null, "\xB7"), /*#__PURE__*/React.createElement("span", null, fmtDate(t.meeting.date))))))), tasks.length === 0 && /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: "center",
       color: "#475569",
@@ -666,7 +815,1249 @@ function TaskModal({
   }, "No tasks yet.")));
 }
 
-// ── Main App ──────────────────────────────────────────────────────────────
+// ── Sidebar ───────────────────────────────────────────────────────────────────
+function SidebarInner({
+  view,
+  contacts,
+  savedFlash,
+  openTasks,
+  onNavigate,
+  onLogout
+}) {
+  const pendingThanks = contacts.reduce((s, c) => s + c.meetings.filter(m => !m.thankYouSent).length, 0);
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "22px 22px 18px",
+      borderBottom: "1px solid #1E3A5F"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: "'DM Serif Display',serif",
+      fontSize: 16,
+      color: "#60A5FA"
+    }
+  }, "NetworkPro"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "#334155",
+      marginTop: 2
+    }
+  }, "kristindohn.com")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 12,
+      flex: 1
+    }
+  }, NAV.map(n => /*#__PURE__*/React.createElement("div", {
+    key: n.id,
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      padding: "11px 22px",
+      cursor: "pointer",
+      fontSize: 13.5,
+      fontWeight: view === n.id || n.id === "contacts" && view === "detail" ? 600 : 400,
+      color: view === n.id || n.id === "contacts" && view === "detail" ? "#60A5FA" : "#94A3B8",
+      background: view === n.id || n.id === "contacts" && view === "detail" ? "#1E3A5F33" : "transparent",
+      borderLeft: view === n.id || n.id === "contacts" && view === "detail" ? "3px solid #60A5FA" : "3px solid transparent",
+      transition: "all 0.15s"
+    },
+    onClick: () => onNavigate(n.id)
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 15
+    }
+  }, n.icon), n.label))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "14px 22px",
+      borderTop: "1px solid #1E3A5F",
+      marginTop: "auto"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "#334155",
+      marginBottom: 7,
+      textTransform: "uppercase",
+      letterSpacing: "0.07em"
+    }
+  }, "Quick Stats"), [{
+    label: "Contacts",
+    val: contacts.length
+  }, {
+    label: "Open Tasks",
+    val: openTasks
+  }, {
+    label: "Pending Thanks",
+    val: pendingThanks
+  }].map(x => /*#__PURE__*/React.createElement("div", {
+    key: x.label,
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      marginBottom: 5
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 12,
+      color: "#475569"
+    }
+  }, x.label), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 12,
+      fontWeight: 700,
+      color: x.val > 0 && x.label !== "Contacts" ? "#F59E0B" : "#60A5FA"
+    }
+  }, x.val))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      borderTop: "1px solid #1E2A3F",
+      marginTop: 10,
+      paddingTop: 10,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between"
+    }
+  }, savedFlash ? /*#__PURE__*/React.createElement("span", {
+    className: "saved-toast",
+    style: {
+      fontSize: 11,
+      color: "#4ADE80"
+    }
+  }, "\u2713 Saved") : /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 11,
+      color: "#1E3A5F"
+    }
+  }, "auto-save on"), /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...T.btn("danger"),
+      padding: "4px 10px",
+      fontSize: 11
+    },
+    onClick: onLogout
+  }, "Lock"))));
+}
+
+// ── Contacts List ─────────────────────────────────────────────────────────────
+function ContactsList({
+  contacts,
+  filteredContacts,
+  searchQ,
+  setSearchQ,
+  sortBy,
+  setSortBy,
+  showAddContact,
+  setShowAddContact,
+  onSaveNew,
+  onSelect
+}) {
+  const BLANK = {
+    firstName: "",
+    lastName: "",
+    company: "",
+    email: "",
+    phone: "",
+    contactNotes: ""
+  };
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: 14,
+      gap: 8,
+      flexWrap: "wrap"
+    }
+  }, /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 12,
+      color: "#64748B",
+      margin: 0
+    }
+  }, contacts.length, " contact", contacts.length !== 1 ? "s" : ""), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8,
+      alignItems: "center"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      background: "#0D1B2E",
+      border: "1px solid #1E3A5F",
+      borderRadius: 8,
+      overflow: "hidden"
+    }
+  }, [["lastName", "Last"], ["firstName", "First"], ["company", "Co."]].map(([k, l]) => /*#__PURE__*/React.createElement("button", {
+    key: k,
+    style: {
+      background: sortBy === k ? "#1E3A5F" : "transparent",
+      color: sortBy === k ? "#60A5FA" : "#64748B",
+      border: "none",
+      padding: "6px 11px",
+      fontSize: 12,
+      fontWeight: 600,
+      cursor: "pointer",
+      fontFamily: "'DM Sans',sans-serif",
+      transition: "all 0.15s"
+    },
+    onClick: () => setSortBy(k)
+  }, l))), /*#__PURE__*/React.createElement("button", {
+    style: T.btn("primary"),
+    onClick: () => setShowAddContact(true)
+  }, "+ Add"))), /*#__PURE__*/React.createElement("input", {
+    style: {
+      ...T.input,
+      marginBottom: 14
+    },
+    placeholder: "Search name, company, email\u2026",
+    value: searchQ,
+    onChange: e => setSearchQ(e.target.value)
+  }), showAddContact && /*#__PURE__*/React.createElement(ContactForm, {
+    title: "New Contact",
+    initial: BLANK,
+    onSave: form => {
+      onSaveNew(form);
+      setShowAddContact(false);
+    },
+    onCancel: () => setShowAddContact(false)
+  }), contacts.length === 0 && !showAddContact && /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...T.card,
+      textAlign: "center",
+      padding: "48px 20px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 26,
+      marginBottom: 10
+    }
+  }, "\u25C8"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 14,
+      color: "#64748B"
+    }
+  }, "No contacts yet \u2014 tap + Add to get started")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))",
+      gap: 12
+    }
+  }, filteredContacts.map(c => {
+    const pending = c.meetings.flatMap(m => m.tasks).filter(t => !t.done).length;
+    const last = c.meetings.slice().sort((a, b) => b.date.localeCompare(a.date))[0];
+    const thanked = c.meetings.length > 0 && c.meetings.every(m => m.thankYouSent);
+    const ref = c.referredBy ? contacts.find(x => x.id === c.referredBy) : null;
+    return /*#__PURE__*/React.createElement("div", {
+      key: c.id,
+      style: {
+        ...T.card,
+        cursor: "pointer",
+        transition: "border-color 0.15s"
+      },
+      onClick: () => onSelect(c.id),
+      onMouseEnter: e => e.currentTarget.style.borderColor = "#2563EB",
+      onMouseLeave: e => e.currentTarget.style.borderColor = "#1E3A5F"
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        marginBottom: 10
+      }
+    }, /*#__PURE__*/React.createElement(Avatar, {
+      contact: c,
+      size: 42
+    }), /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: 1,
+        minWidth: 0
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontWeight: 700,
+        fontSize: 15,
+        color: "#F1F5F9",
+        whiteSpace: "nowrap",
+        overflow: "hidden",
+        textOverflow: "ellipsis"
+      }
+    }, fullName(c)), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 12,
+        color: "#64748B"
+      }
+    }, c.company))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 12,
+        color: "#94A3B8",
+        marginBottom: 9,
+        display: "flex",
+        flexDirection: "column",
+        gap: 2
+      }
+    }, /*#__PURE__*/React.createElement("span", null, "\u2709 ", c.email), c.phone && /*#__PURE__*/React.createElement("span", null, "\uD83D\uDCDE ", c.phone)), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        flexWrap: "wrap",
+        gap: 5,
+        marginBottom: 6
+      }
+    }, /*#__PURE__*/React.createElement(Tag, {
+      color: "#3B82F6"
+    }, c.meetings.length, " mtg", c.meetings.length !== 1 ? "s" : ""), pending > 0 && /*#__PURE__*/React.createElement(Tag, {
+      color: "#F59E0B"
+    }, pending, " task", pending !== 1 ? "s" : ""), thanked && /*#__PURE__*/React.createElement(Tag, {
+      color: "#22C55E"
+    }, "all thanked")), ref && /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 11,
+        color: "#64748B",
+        borderTop: "1px solid #1E3A5F",
+        paddingTop: 7
+      }
+    }, "Via ", /*#__PURE__*/React.createElement("span", {
+      style: {
+        color: "#93C5FD"
+      }
+    }, fullName(ref))), last && /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 11,
+        color: "#475569",
+        marginTop: ref ? 3 : 7
+      }
+    }, "Last met ", fmtDate(last.date)), c.contactNotes && /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 11,
+        color: "#475569",
+        marginTop: 4,
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap"
+      }
+    }, "\uD83D\uDCDD ", c.contactNotes));
+  })));
+}
+
+// ── Contact Detail ────────────────────────────────────────────────────────────
+function ContactDetail({
+  selected,
+  contacts,
+  addingMeeting,
+  setAddingMeeting,
+  newMeeting,
+  setNewMeeting,
+  addMeeting,
+  toggleTask,
+  markThankYou,
+  deleteContact,
+  updateContact,
+  setSelectedId,
+  onBack
+}) {
+  const [editing, setEditing] = useState(false);
+  if (!selected) return null;
+  const ref = selected.referredBy ? contacts.find(x => x.id === selected.referredBy) : null;
+  const refs = selected.referredContacts.map(id => contacts.find(c => c.id === id)).filter(Boolean);
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...T.btn("ghost"),
+      marginBottom: 14,
+      fontSize: 12
+    },
+    onClick: onBack
+  }, "\u2190 Back"), editing ? /*#__PURE__*/React.createElement(ContactForm, {
+    title: "Edit Contact",
+    initial: {
+      firstName: selected.firstName || "",
+      lastName: selected.lastName || "",
+      company: selected.company || "",
+      email: selected.email || "",
+      phone: selected.phone || "",
+      contactNotes: selected.contactNotes || ""
+    },
+    onSave: form => {
+      updateContact(selected.id, form);
+      setEditing(false);
+    },
+    onCancel: () => setEditing(false)
+  }) : /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...T.card,
+      marginBottom: 14
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "flex-start",
+      gap: 14,
+      flexWrap: "wrap"
+    }
+  }, /*#__PURE__*/React.createElement(Avatar, {
+    contact: selected,
+    size: 54
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      minWidth: 0
+    }
+  }, /*#__PURE__*/React.createElement("h2", {
+    style: {
+      margin: "0 0 2px",
+      fontSize: 20,
+      fontFamily: "'DM Serif Display',serif",
+      color: "#F1F5F9"
+    }
+  }, fullName(selected)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      color: "#64748B",
+      marginBottom: 7
+    }
+  }, selected.company), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 3,
+      fontSize: 13,
+      color: "#94A3B8"
+    }
+  }, /*#__PURE__*/React.createElement("span", null, "\u2709 ", selected.email), selected.phone && /*#__PURE__*/React.createElement("span", null, "\uD83D\uDCDE ", selected.phone))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8,
+      flexShrink: 0
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...T.btn("ghost"),
+      fontSize: 12,
+      padding: "6px 12px"
+    },
+    onClick: () => setEditing(true)
+  }, "\u270E Edit"), /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...T.btn("danger"),
+      fontSize: 12,
+      padding: "6px 12px"
+    },
+    onClick: () => deleteContact(selected.id)
+  }, "Remove"))), selected.contactNotes && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 14,
+      paddingTop: 14,
+      borderTop: "1px solid #1E3A5F"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      fontWeight: 700,
+      color: "#475569",
+      textTransform: "uppercase",
+      letterSpacing: "0.07em",
+      marginBottom: 6
+    }
+  }, "Notes"), /*#__PURE__*/React.createElement("p", {
+    style: {
+      margin: 0,
+      fontSize: 13.5,
+      color: "#CBD5E1",
+      lineHeight: 1.6,
+      whiteSpace: "pre-wrap"
+    }
+  }, selected.contactNotes))), (ref || refs.length > 0) && /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...T.card,
+      marginBottom: 14
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      margin: "0 0 9px",
+      fontSize: 12,
+      fontWeight: 700,
+      color: "#64748B",
+      textTransform: "uppercase",
+      letterSpacing: "0.08em"
+    }
+  }, "Connections"), ref && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      marginBottom: 5
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: "#64748B"
+    }
+  }, "Referred by "), /*#__PURE__*/React.createElement("span", {
+    style: {
+      cursor: "pointer",
+      color: "#93C5FD",
+      fontWeight: 600
+    },
+    onClick: () => setSelectedId(ref.id)
+  }, fullName(ref)), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: "#475569",
+      fontSize: 11
+    }
+  }, " (", ref.company, ")")), refs.length > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      display: "flex",
+      flexWrap: "wrap",
+      gap: 6
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: "#64748B"
+    }
+  }, "Introduced to:"), refs.map(r => /*#__PURE__*/React.createElement("span", {
+    key: r.id,
+    style: {
+      cursor: "pointer",
+      color: "#93C5FD",
+      fontWeight: 600
+    },
+    onClick: () => setSelectedId(r.id)
+  }, fullName(r))))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: 12
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      margin: 0,
+      fontSize: 12,
+      fontWeight: 700,
+      color: "#64748B",
+      textTransform: "uppercase",
+      letterSpacing: "0.08em"
+    }
+  }, "Meetings"), /*#__PURE__*/React.createElement("button", {
+    style: T.btn("primary"),
+    onClick: () => setAddingMeeting(true)
+  }, "+ Log Meeting")), addingMeeting && /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...T.card,
+      marginBottom: 12,
+      borderColor: "#2563EB"
+    }
+  }, /*#__PURE__*/React.createElement("h4", {
+    style: {
+      margin: "0 0 10px",
+      color: "#93C5FD",
+      fontSize: 14
+    }
+  }, "Log a Meeting"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: "Date"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "date",
+    style: T.input,
+    value: newMeeting.date,
+    onChange: e => setNewMeeting(p => ({
+      ...p,
+      date: e.target.value
+    }))
+  })), /*#__PURE__*/React.createElement(Field, {
+    label: "Notes"
+  }, /*#__PURE__*/React.createElement("textarea", {
+    style: T.textarea,
+    placeholder: "What did you discuss?",
+    value: newMeeting.notes,
+    onChange: e => setNewMeeting(p => ({
+      ...p,
+      notes: e.target.value
+    }))
+  })), /*#__PURE__*/React.createElement(Field, {
+    label: "Tasks (one per line)"
+  }, /*#__PURE__*/React.createElement("textarea", {
+    style: {
+      ...T.textarea,
+      minHeight: 54
+    },
+    placeholder: "Follow up on\u2026",
+    value: newMeeting.tasks,
+    onChange: e => setNewMeeting(p => ({
+      ...p,
+      tasks: e.target.value
+    }))
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    style: T.btn("primary"),
+    onClick: () => addMeeting(selected.id)
+  }, "Save"), /*#__PURE__*/React.createElement("button", {
+    style: T.btn("ghost"),
+    onClick: () => setAddingMeeting(false)
+  }, "Cancel")))), selected.meetings.slice().sort((a, b) => b.date.localeCompare(a.date)).map(m => /*#__PURE__*/React.createElement("div", {
+    key: m.id,
+    style: {
+      ...T.card,
+      marginBottom: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: 8,
+      flexWrap: "wrap",
+      gap: 6
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 700,
+      fontSize: 14,
+      color: "#93C5FD"
+    }
+  }, fmtDate(m.date)), m.thankYouSent ? /*#__PURE__*/React.createElement(Pill, {
+    variant: "green"
+  }, "\u2713 Thanked ", fmtDate(m.thankYouDate)) : /*#__PURE__*/React.createElement("button", {
+    style: T.btn("success"),
+    onClick: () => markThankYou(selected.id, m.id)
+  }, "Mark Thanked")), m.notes && /*#__PURE__*/React.createElement("p", {
+    style: {
+      margin: "0 0 10px",
+      fontSize: 13.5,
+      color: "#CBD5E1",
+      lineHeight: 1.6
+    }
+  }, m.notes), m.tasks.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      fontWeight: 700,
+      color: "#475569",
+      textTransform: "uppercase",
+      letterSpacing: "0.07em",
+      marginBottom: 5
+    }
+  }, "Tasks"), m.tasks.map(t => /*#__PURE__*/React.createElement("div", {
+    key: t.id,
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      marginBottom: 7,
+      cursor: "pointer",
+      padding: "2px 0"
+    },
+    onClick: () => toggleTask(selected.id, m.id, t.id)
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 18,
+      height: 18,
+      borderRadius: 4,
+      border: t.done ? "none" : "2px solid #334155",
+      background: t.done ? "#2563EB" : "transparent",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0
+    }
+  }, t.done && /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: "#fff",
+      fontSize: 11
+    }
+  }, "\u2713")), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 13.5,
+      color: t.done ? "#475569" : "#CBD5E1",
+      textDecoration: t.done ? "line-through" : "none"
+    }
+  }, t.text)))))), selected.meetings.length === 0 && !addingMeeting && /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...T.card,
+      textAlign: "center",
+      color: "#475569",
+      padding: "36px 20px"
+    }
+  }, "No meetings logged yet."));
+}
+
+// ── Calendar View ─────────────────────────────────────────────────────────────
+function CalendarView({
+  allMeetings,
+  allTasks,
+  contacts,
+  calYear,
+  calMonth,
+  setCalMonth,
+  setCalYear,
+  calWeekStart,
+  setCalWeekStart,
+  calMode,
+  setCalMode,
+  setSelectedId,
+  setView,
+  setTaskModal
+}) {
+  const pendingAll = allTasks.filter(t => !t.done);
+  const dim = daysInMonth(calYear, calMonth);
+  const fd = firstDayOf(calYear, calMonth);
+  const cells = [];
+  for (let i = 0; i < fd; i++) cells.push(null);
+  for (let d = 1; d <= dim; d++) cells.push(d);
+  const weekDays = Array.from({
+    length: 7
+  }, (_, i) => addDays(calWeekStart, i));
+  const sortedMeetings = allMeetings.slice().sort((a, b) => b.date.localeCompare(a.date));
+  function dayISO(day) {
+    return `${calYear}-${String(calMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  }
+  function mtgsOnDay(iso) {
+    return allMeetings.filter(m => m.date === iso);
+  }
+  function prevMonth() {
+    if (calMonth === 0) {
+      setCalMonth(11);
+      setCalYear(y => y - 1);
+    } else setCalMonth(m => m - 1);
+  }
+  function nextMonth() {
+    if (calMonth === 11) {
+      setCalMonth(0);
+      setCalYear(y => y + 1);
+    } else setCalMonth(m => m + 1);
+  }
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 12,
+      color: "#64748B",
+      marginBottom: 14
+    }
+  }, "Meetings & open tasks"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: 14,
+      gap: 8,
+      flexWrap: "wrap"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "cal-tabs"
+  }, [["month", "Month"], ["week", "Week"], ["list", "List"]].map(([id, label]) => /*#__PURE__*/React.createElement("button", {
+    key: id,
+    className: `cal-tab${calMode === id ? " active" : ""}`,
+    onClick: () => setCalMode(id)
+  }, label))), calMode === "month" && /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...T.btn("ghost"),
+      padding: "5px 12px"
+    },
+    onClick: prevMonth
+  }, "\u2190"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: "'DM Serif Display',serif",
+      fontSize: 15,
+      color: "#F1F5F9",
+      whiteSpace: "nowrap"
+    }
+  }, MONTHS[calMonth], " ", calYear), /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...T.btn("ghost"),
+      padding: "5px 12px"
+    },
+    onClick: nextMonth
+  }, "\u2192")), calMode === "week" && /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...T.btn("ghost"),
+      padding: "5px 12px"
+    },
+    onClick: () => setCalWeekStart(d => addDays(d, -7))
+  }, "\u2190"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: "'DM Serif Display',serif",
+      fontSize: 14,
+      color: "#F1F5F9",
+      whiteSpace: "nowrap"
+    }
+  }, fmtDate(toISO(calWeekStart)), " \u2013 ", fmtDate(toISO(addDays(calWeekStart, 6)))), /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...T.btn("ghost"),
+      padding: "5px 12px"
+    },
+    onClick: () => setCalWeekStart(d => addDays(d, 7))
+  }, "\u2192"))), calMode === "month" && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: 20
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(7,1fr)",
+      gap: 2
+    }
+  }, ["S", "M", "T", "W", "T", "F", "S"].map((d, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    className: "cal-hdr",
+    style: {
+      textAlign: "center",
+      fontSize: 11,
+      fontWeight: 700,
+      color: "#475569",
+      paddingBottom: 4
+    }
+  }, d)), cells.map((day, i) => {
+    if (!day) return /*#__PURE__*/React.createElement("div", {
+      key: `e${i}`
+    });
+    const iso = dayISO(day);
+    const dm = mtgsOnDay(iso);
+    const isToday = iso === isoToday();
+    return /*#__PURE__*/React.createElement("div", {
+      key: day,
+      className: "cal-cell",
+      style: {
+        minHeight: 60,
+        background: isToday ? "#1E3A5F" : "#0D1B2E",
+        border: `1px solid ${isToday ? "#2563EB" : "#1E3A5F"}`,
+        borderRadius: 6,
+        padding: "4px 5px"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "cal-day-num",
+      style: {
+        fontSize: 11,
+        fontWeight: isToday ? 700 : 400,
+        color: isToday ? "#60A5FA" : "#94A3B8",
+        marginBottom: 2
+      }
+    }, day), dm.map(m => /*#__PURE__*/React.createElement("div", {
+      key: m.id,
+      className: "cal-chip",
+      style: {
+        fontSize: 9,
+        background: m.contact.color + "33",
+        color: m.contact.color,
+        borderRadius: 3,
+        padding: "1px 3px",
+        marginBottom: 1,
+        cursor: "pointer",
+        fontWeight: 700,
+        whiteSpace: "nowrap",
+        overflow: "hidden",
+        textOverflow: "ellipsis"
+      },
+      onClick: () => {
+        setSelectedId(m.contact.id);
+        setView("detail");
+      }
+    }, initials(m.contact))));
+  })), (() => {
+    const prefix = `${calYear}-${String(calMonth + 1).padStart(2, "0")}`;
+    const mc = contacts.filter(c => c.meetings.some(m => m.date.startsWith(prefix)));
+    return mc.length > 0 ? /*#__PURE__*/React.createElement("div", {
+      style: {
+        marginTop: 10,
+        display: "flex",
+        flexWrap: "wrap",
+        gap: 8
+      }
+    }, mc.map(c => /*#__PURE__*/React.createElement("div", {
+      key: c.id,
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 5,
+        cursor: "pointer"
+      },
+      onClick: () => {
+        setSelectedId(c.id);
+        setView("detail");
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: 9,
+        height: 9,
+        borderRadius: 2,
+        background: c.color,
+        flexShrink: 0
+      }
+    }), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 11,
+        color: "#94A3B8"
+      }
+    }, fullName(c))))) : null;
+  })()), calMode === "week" && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: 20
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(7,1fr)",
+      gap: 3
+    }
+  }, weekDays.map((dt, i) => {
+    const iso = toISO(dt);
+    const dm = mtgsOnDay(iso);
+    const isToday = iso === isoToday();
+    return /*#__PURE__*/React.createElement("div", {
+      key: i,
+      style: {
+        background: isToday ? "#1E3A5F" : "#0D1B2E",
+        border: `1px solid ${isToday ? "#2563EB" : "#1E3A5F"}`,
+        borderRadius: 8,
+        padding: "8px 6px",
+        minHeight: 90
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        textAlign: "center",
+        marginBottom: 6
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 10,
+        color: isToday ? "#60A5FA" : "#475569",
+        fontWeight: 700,
+        textTransform: "uppercase"
+      }
+    }, DAYS_SHORT[dt.getDay()]), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 16,
+        fontWeight: isToday ? 700 : 400,
+        color: isToday ? "#60A5FA" : "#E2E8F0",
+        fontFamily: "'DM Serif Display',serif"
+      }
+    }, dt.getDate())), dm.map(m => /*#__PURE__*/React.createElement("div", {
+      key: m.id,
+      style: {
+        fontSize: 10,
+        background: m.contact.color + "33",
+        color: m.contact.color,
+        borderRadius: 4,
+        padding: "3px 5px",
+        marginBottom: 3,
+        cursor: "pointer",
+        fontWeight: 600,
+        textAlign: "center",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap"
+      },
+      onClick: () => {
+        setSelectedId(m.contact.id);
+        setView("detail");
+      }
+    }, initials(m.contact))), dm.length === 0 && /*#__PURE__*/React.createElement("div", {
+      style: {
+        textAlign: "center",
+        fontSize: 18,
+        color: "#1E3A5F",
+        marginTop: 4
+      }
+    }, "\xB7"));
+  })), weekDays.some(dt => mtgsOnDay(toISO(dt)).length > 0) && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 14
+    }
+  }, weekDays.filter(dt => mtgsOnDay(toISO(dt)).length > 0).map(dt => mtgsOnDay(toISO(dt)).map(m => /*#__PURE__*/React.createElement("div", {
+    key: m.id,
+    style: {
+      ...T.card,
+      marginBottom: 8,
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+      padding: "12px 14px",
+      cursor: "pointer"
+    },
+    onClick: () => {
+      setSelectedId(m.contact.id);
+      setView("detail");
+    }
+  }, /*#__PURE__*/React.createElement(Avatar, {
+    contact: m.contact,
+    size: 32
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      minWidth: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      fontWeight: 600,
+      color: "#F1F5F9"
+    }
+  }, fullName(m.contact)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "#64748B"
+    }
+  }, fmtDate(toISO(dt)), " \xB7 ", m.contact.company)), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 12,
+      color: "#60A5FA"
+    }
+  }, "\u2192")))))), calMode === "list" && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: 20
+    }
+  }, sortedMeetings.length === 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...T.card,
+      textAlign: "center",
+      color: "#475569",
+      padding: "36px 20px"
+    }
+  }, "No meetings logged yet."), sortedMeetings.map(m => /*#__PURE__*/React.createElement("div", {
+    key: m.id,
+    style: {
+      ...T.card,
+      marginBottom: 8,
+      cursor: "pointer",
+      transition: "border-color 0.15s"
+    },
+    onClick: () => {
+      setSelectedId(m.contact.id);
+      setView("detail");
+    },
+    onMouseEnter: e => e.currentTarget.style.borderColor = "#2563EB",
+    onMouseLeave: e => e.currentTarget.style.borderColor = "#1E3A5F"
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+      marginBottom: m.notes ? 8 : 0
+    }
+  }, /*#__PURE__*/React.createElement(Avatar, {
+    contact: m.contact,
+    size: 34
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      minWidth: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 14,
+      fontWeight: 600,
+      color: "#F1F5F9"
+    }
+  }, fullName(m.contact)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "#64748B"
+    }
+  }, fmtDate(m.date), " \xB7 ", m.contact.company)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "flex-end",
+      gap: 4
+    }
+  }, m.thankYouSent ? /*#__PURE__*/React.createElement(Pill, {
+    variant: "green"
+  }, "\u2713 Thanked") : /*#__PURE__*/React.createElement(Pill, {
+    variant: "yellow"
+  }, "No thank-you"), m.tasks.length > 0 && /*#__PURE__*/React.createElement(Tag, {
+    color: m.tasks.some(t => !t.done) ? "#F59E0B" : "#22C55E"
+  }, m.tasks.filter(t => !t.done).length, "/", m.tasks.length, " tasks"))), m.notes && /*#__PURE__*/React.createElement("p", {
+    style: {
+      margin: 0,
+      fontSize: 12.5,
+      color: "#94A3B8",
+      lineHeight: 1.5,
+      overflow: "hidden",
+      display: "-webkit-box",
+      WebkitLineClamp: 2,
+      WebkitBoxOrient: "vertical"
+    }
+  }, m.notes)))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...T.card,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      padding: "14px 16px"
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      fontWeight: 600,
+      color: "#F1F5F9"
+    }
+  }, "Open Tasks"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: pendingAll.length > 0 ? "#F59E0B" : "#4ADE80",
+      marginTop: 2
+    }
+  }, pendingAll.length > 0 ? `${pendingAll.length} task${pendingAll.length !== 1 ? "s" : ""} remaining` : "All tasks complete ✓")), /*#__PURE__*/React.createElement("button", {
+    style: T.btn("ghost"),
+    onClick: () => setTaskModal(true)
+  }, "View All Tasks")));
+}
+
+// ── Stats View ────────────────────────────────────────────────────────────────
+function StatsView({
+  contacts,
+  allTasks,
+  openTasks,
+  setTaskModal,
+  markThankYou,
+  setSelectedId,
+  setView
+}) {
+  const total = contacts.reduce((s, c) => s + c.meetings.length, 0);
+  const tTasks = contacts.reduce((s, c) => s + c.meetings.flatMap(m => m.tasks).length, 0);
+  const done = contacts.reduce((s, c) => s + c.meetings.flatMap(m => m.tasks).filter(t => t.done).length, 0);
+  const unthx = contacts.reduce((s, c) => s + c.meetings.filter(m => !m.thankYouSent).length, 0);
+  const ref = contacts.filter(c => c.referredBy).length;
+  const stat = (label, val, sub, color = "#60A5FA") => /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...T.card,
+      textAlign: "center",
+      padding: "16px 10px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 28,
+      fontFamily: "'DM Serif Display',serif",
+      color,
+      marginBottom: 3
+    }
+  }, val), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      fontWeight: 600,
+      color: "#94A3B8"
+    }
+  }, label), sub && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "#475569",
+      marginTop: 3
+    }
+  }, sub));
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 12,
+      color: "#64748B",
+      marginBottom: 16
+    }
+  }, "Your networking at a glance"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fill,minmax(130px,1fr))",
+      gap: 9,
+      marginBottom: 20
+    }
+  }, stat("Contacts", contacts.length, null, "#60A5FA"), stat("Meetings", total, null, "#60A5FA"), stat("Tasks Done", `${done}/${tTasks}`, `${tTasks - done} left`, "#4ADE80"), stat("Pending Thanks", unthx, null, unthx > 0 ? "#F59E0B" : "#4ADE80"), stat("Warm Intros", ref, "referred", "#60A5FA")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...T.card,
+      marginBottom: 14,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      padding: "14px 16px"
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      fontWeight: 600,
+      color: "#F1F5F9"
+    }
+  }, "Task List"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "#64748B",
+      marginTop: 2
+    }
+  }, openTasks, " open \xB7 ", allTasks.filter(t => t.done).length, " completed")), /*#__PURE__*/React.createElement("button", {
+    style: T.btn("ghost"),
+    onClick: () => setTaskModal(true)
+  }, "View All")), unthx > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      margin: "0 0 9px",
+      fontSize: 12,
+      fontWeight: 700,
+      color: "#64748B",
+      textTransform: "uppercase",
+      letterSpacing: "0.08em"
+    }
+  }, "Needs Thank-You"), contacts.flatMap(c => c.meetings.filter(m => !m.thankYouSent).map(m => /*#__PURE__*/React.createElement("div", {
+    key: m.id,
+    style: {
+      ...T.card,
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+      padding: "12px 14px",
+      marginBottom: 8,
+      flexWrap: "wrap"
+    }
+  }, /*#__PURE__*/React.createElement(Avatar, {
+    contact: c,
+    size: 32
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      minWidth: 100
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 14,
+      fontWeight: 600,
+      color: "#F1F5F9"
+    }
+  }, fullName(c)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "#64748B"
+    }
+  }, "Met ", fmtDate(m.date))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    style: T.btn("success"),
+    onClick: () => markThankYou(c.id, m.id)
+  }, "\u2713 Thanked"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      cursor: "pointer",
+      fontSize: 12,
+      color: "#60A5FA",
+      alignSelf: "center"
+    },
+    onClick: () => {
+      setSelectedId(c.id);
+      setView("detail");
+    }
+  }, "\u2192")))))));
+}
+
+// ── App ───────────────────────────────────────────────────────────────────────
 function App() {
   const [authed, setAuthedState] = useState(isAuthed);
   const [contacts, setContactsRaw] = useState(loadContacts);
@@ -675,8 +2066,9 @@ function App() {
   const [calYear, setCalYear] = useState(() => new Date().getFullYear());
   const [calMonth, setCalMonth] = useState(() => new Date().getMonth());
   const [calWeekStart, setCalWeekStart] = useState(() => startOfWeek(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()));
-  const [calMode, setCalMode] = useState("month"); // month | week | list
+  const [calMode, setCalMode] = useState("month");
   const [searchQ, setSearchQ] = useState("");
+  const [sortBy, setSortBy] = useState("lastName");
   const [addingMeeting, setAddingMeeting] = useState(false);
   const [newMeeting, setNewMeeting] = useState({
     date: isoToday(),
@@ -684,12 +2076,6 @@ function App() {
     tasks: ""
   });
   const [showAddContact, setShowAddContact] = useState(false);
-  const [newContact, setNewContact] = useState({
-    name: "",
-    email: "",
-    company: "",
-    phone: ""
-  });
   const [savedFlash, setSavedFlash] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -706,19 +2092,24 @@ function App() {
   const selected = contacts.find(c => c.id === selectedId);
   const filteredContacts = useMemo(() => {
     const q = searchQ.toLowerCase();
-    return contacts.filter(c => c.name.toLowerCase().includes(q) || c.company.toLowerCase().includes(q) || c.email.toLowerCase().includes(q));
-  }, [contacts, searchQ]);
+    const filtered = contacts.filter(c => fullName(c).toLowerCase().includes(q) || (c.company || "").toLowerCase().includes(q) || (c.email || "").toLowerCase().includes(q));
+    return filtered.slice().sort((a, b) => {
+      if (sortBy === "lastName") return (a.lastName || "").localeCompare(b.lastName || "") || (a.firstName || "").localeCompare(b.firstName || "");
+      if (sortBy === "firstName") return (a.firstName || "").localeCompare(b.firstName || "") || (a.lastName || "").localeCompare(b.lastName || "");
+      if (sortBy === "company") return (a.company || "").localeCompare(b.company || "") || (a.lastName || "").localeCompare(b.lastName || "");
+      return 0;
+    });
+  }, [contacts, searchQ, sortBy]);
   const allMeetings = useMemo(() => contacts.flatMap(c => c.meetings.map(m => ({
     ...m,
     contact: c
   }))), [contacts]);
-
-  // All tasks enriched with contact+meeting context
   const allTasks = useMemo(() => contacts.flatMap(c => c.meetings.flatMap(m => m.tasks.map(t => ({
     ...t,
     contact: c,
     meeting: m
   })))), [contacts]);
+  const openTasks = allTasks.filter(t => !t.done).length;
   function toggleTask(cId, mId, tId) {
     setContacts(prev => prev.map(c => c.id !== cId ? c : {
       ...c,
@@ -730,9 +2121,6 @@ function App() {
         })
       })
     }));
-  }
-  function toggleTaskFromEnriched(t) {
-    toggleTask(t.contact.id, t.meeting.id, t.id);
   }
   function markThankYou(cId, mId) {
     setContacts(prev => prev.map(c => c.id !== cId ? c : {
@@ -768,27 +2156,23 @@ function App() {
     });
     setAddingMeeting(false);
   }
-  function addContact() {
-    if (!newContact.name.trim()) return;
-    const initials = newContact.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
-    const colors = ["#2A6B8A", "#5B4A8A", "#2A7A52", "#8A4A2A", "#6B2A8A", "#2A4A8A", "#7A2A5B", "#2A5B7A"];
+  function addContact(form) {
+    const color = COLORS[contacts.length % COLORS.length];
     setContacts(prev => [...prev, {
       id: Date.now(),
-      ...newContact,
+      ...form,
       photo: null,
-      initials,
-      color: colors[prev.length % colors.length],
+      color,
       referredBy: null,
       referredContacts: [],
       meetings: []
     }]);
-    setNewContact({
-      name: "",
-      email: "",
-      company: "",
-      phone: ""
-    });
-    setShowAddContact(false);
+  }
+  function updateContact(cId, form) {
+    setContacts(prev => prev.map(c => c.id !== cId ? c : {
+      ...c,
+      ...form
+    }));
   }
   function deleteContact(cId) {
     if (!window.confirm("Remove this contact?")) return;
@@ -808,1175 +2192,28 @@ function App() {
   if (!authed) return /*#__PURE__*/React.createElement(LoginScreen, {
     onLogin: () => setAuthedState(true)
   });
-
-  // ── NAV ───────────────────────────────────────────────────────────────
-  const NAV = [{
-    id: "contacts",
-    label: "Network",
-    icon: "◈"
-  }, {
-    id: "calendar",
-    label: "Calendar",
-    icon: "◷"
-  }, {
-    id: "stats",
-    label: "Overview",
-    icon: "◉"
-  }];
-  const openTasks = allTasks.filter(t => !t.done).length;
-
-  // ── Sidebar inner content ─────────────────────────────────────────────
-  function SidebarInner() {
-    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-      style: {
-        padding: "22px 22px 18px",
-        borderBottom: "1px solid #1E3A5F"
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontFamily: "'DM Serif Display',serif",
-        fontSize: 16,
-        color: "#60A5FA"
-      }
-    }, "NetworkPro"), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 11,
-        color: "#334155",
-        marginTop: 2
-      }
-    }, "kristindohn.com")), /*#__PURE__*/React.createElement("div", {
-      style: {
-        marginTop: 12,
-        flex: 1
-      }
-    }, NAV.map(n => /*#__PURE__*/React.createElement("div", {
-      key: n.id,
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 10,
-        padding: "11px 22px",
-        cursor: "pointer",
-        fontSize: 13.5,
-        fontWeight: view === n.id || n.id === "contacts" && view === "detail" ? 600 : 400,
-        color: view === n.id || n.id === "contacts" && view === "detail" ? "#60A5FA" : "#94A3B8",
-        background: view === n.id || n.id === "contacts" && view === "detail" ? "#1E3A5F33" : "transparent",
-        borderLeft: view === n.id || n.id === "contacts" && view === "detail" ? "3px solid #60A5FA" : "3px solid transparent",
-        transition: "all 0.15s"
-      },
-      onClick: () => navigate(n.id)
-    }, /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 15
-      }
-    }, n.icon), n.label))), /*#__PURE__*/React.createElement("div", {
-      style: {
-        padding: "14px 22px",
-        borderTop: "1px solid #1E3A5F",
-        marginTop: "auto"
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 11,
-        color: "#334155",
-        marginBottom: 7,
-        textTransform: "uppercase",
-        letterSpacing: "0.07em"
-      }
-    }, "Quick Stats"), [{
-      label: "Contacts",
-      val: contacts.length
-    }, {
-      label: "Open Tasks",
-      val: openTasks
-    }, {
-      label: "Pending Thanks",
-      val: contacts.reduce((s, c) => s + c.meetings.filter(m => !m.thankYouSent).length, 0)
-    }].map(x => /*#__PURE__*/React.createElement("div", {
-      key: x.label,
-      style: {
-        display: "flex",
-        justifyContent: "space-between",
-        marginBottom: 5
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 12,
-        color: "#475569"
-      }
-    }, x.label), /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 12,
-        fontWeight: 700,
-        color: x.val > 0 && x.label !== "Contacts" ? "#F59E0B" : "#60A5FA"
-      }
-    }, x.val))), /*#__PURE__*/React.createElement("div", {
-      style: {
-        borderTop: "1px solid #1E2A3F",
-        marginTop: 10,
-        paddingTop: 10,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between"
-      }
-    }, savedFlash ? /*#__PURE__*/React.createElement("span", {
-      className: "saved-toast",
-      style: {
-        fontSize: 11,
-        color: "#4ADE80"
-      }
-    }, "\u2713 Saved") : /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 11,
-        color: "#1E3A5F"
-      }
-    }, "auto-save on"), /*#__PURE__*/React.createElement("button", {
-      style: {
-        ...T.btn("danger"),
-        padding: "4px 10px",
-        fontSize: 11
-      },
-      onClick: logout
-    }, "Lock"))));
-  }
-
-  // ── Page title map ────────────────────────────────────────────────────
-  const PAGE_TITLES = {
-    contacts: "Network",
-    detail: "Contact",
-    calendar: "Calendar",
-    stats: "Overview"
+  const sidebarProps = {
+    view,
+    contacts,
+    savedFlash,
+    openTasks,
+    onNavigate: navigate,
+    onLogout: logout
   };
-
-  // ── Views ─────────────────────────────────────────────────────────────
-
-  function ContactsList() {
-    return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        marginBottom: 16
-      }
-    }, /*#__PURE__*/React.createElement("p", {
-      style: {
-        fontSize: 12,
-        color: "#64748B"
-      }
-    }, contacts.length, " contact", contacts.length !== 1 ? "s" : "", " tracked"), /*#__PURE__*/React.createElement("button", {
-      style: T.btn("primary"),
-      onClick: () => setShowAddContact(true)
-    }, "+ Add")), /*#__PURE__*/React.createElement("input", {
-      style: {
-        ...T.input,
-        marginBottom: 14
-      },
-      placeholder: "Search name, company, email\u2026",
-      value: searchQ,
-      onChange: e => setSearchQ(e.target.value)
-    }), showAddContact && /*#__PURE__*/React.createElement("div", {
-      style: {
-        ...T.card,
-        marginBottom: 14
-      }
-    }, /*#__PURE__*/React.createElement("h3", {
-      style: {
-        margin: "0 0 12px",
-        fontSize: 14,
-        color: "#93C5FD"
-      }
-    }, "New Contact"), /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        flexDirection: "column",
-        gap: 8,
-        marginBottom: 10
-      }
-    }, ["name", "email", "company", "phone"].map(f => /*#__PURE__*/React.createElement("input", {
-      key: f,
-      style: T.input,
-      placeholder: f.charAt(0).toUpperCase() + f.slice(1),
-      value: newContact[f],
-      onChange: e => setNewContact(p => ({
-        ...p,
-        [f]: e.target.value
-      }))
-    }))), /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        gap: 8
-      }
-    }, /*#__PURE__*/React.createElement("button", {
-      style: T.btn("primary"),
-      onClick: addContact
-    }, "Add"), /*#__PURE__*/React.createElement("button", {
-      style: T.btn("ghost"),
-      onClick: () => setShowAddContact(false)
-    }, "Cancel"))), contacts.length === 0 && !showAddContact && /*#__PURE__*/React.createElement("div", {
-      style: {
-        ...T.card,
-        textAlign: "center",
-        padding: "48px 20px"
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 26,
-        marginBottom: 10
-      }
-    }, "\u25C8"), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 14,
-        color: "#64748B"
-      }
-    }, "No contacts yet \u2014 tap + Add to get started")), /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))",
-        gap: 12
-      }
-    }, filteredContacts.map(c => {
-      const pending = c.meetings.flatMap(m => m.tasks).filter(t => !t.done).length;
-      const last = c.meetings.slice().sort((a, b) => b.date.localeCompare(a.date))[0];
-      const thanked = c.meetings.length > 0 && c.meetings.every(m => m.thankYouSent);
-      const ref = c.referredBy ? contacts.find(x => x.id === c.referredBy) : null;
-      return /*#__PURE__*/React.createElement("div", {
-        key: c.id,
-        style: {
-          ...T.card,
-          cursor: "pointer",
-          transition: "border-color 0.15s"
-        },
-        onClick: () => {
-          setSelectedId(c.id);
-          setView("detail");
-        },
-        onMouseEnter: e => e.currentTarget.style.borderColor = "#2563EB",
-        onMouseLeave: e => e.currentTarget.style.borderColor = "#1E3A5F"
-      }, /*#__PURE__*/React.createElement("div", {
-        style: {
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          marginBottom: 10
-        }
-      }, /*#__PURE__*/React.createElement(Avatar, {
-        contact: c,
-        size: 42
-      }), /*#__PURE__*/React.createElement("div", {
-        style: {
-          flex: 1,
-          minWidth: 0
-        }
-      }, /*#__PURE__*/React.createElement("div", {
-        style: {
-          fontWeight: 700,
-          fontSize: 15,
-          color: "#F1F5F9",
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis"
-        }
-      }, c.name), /*#__PURE__*/React.createElement("div", {
-        style: {
-          fontSize: 12,
-          color: "#64748B"
-        }
-      }, c.company))), /*#__PURE__*/React.createElement("div", {
-        style: {
-          fontSize: 12,
-          color: "#94A3B8",
-          marginBottom: 9,
-          display: "flex",
-          flexDirection: "column",
-          gap: 2
-        }
-      }, /*#__PURE__*/React.createElement("span", null, "\u2709 ", c.email), c.phone && /*#__PURE__*/React.createElement("span", null, "\uD83D\uDCDE ", c.phone)), /*#__PURE__*/React.createElement("div", {
-        style: {
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 5,
-          marginBottom: 6
-        }
-      }, /*#__PURE__*/React.createElement(Tag, {
-        color: "#3B82F6"
-      }, c.meetings.length, " mtg", c.meetings.length !== 1 ? "s" : ""), pending > 0 && /*#__PURE__*/React.createElement(Tag, {
-        color: "#F59E0B"
-      }, pending, " task", pending !== 1 ? "s" : ""), thanked && /*#__PURE__*/React.createElement(Tag, {
-        color: "#22C55E"
-      }, "all thanked")), ref && /*#__PURE__*/React.createElement("div", {
-        style: {
-          fontSize: 11,
-          color: "#64748B",
-          borderTop: "1px solid #1E3A5F",
-          paddingTop: 7
-        }
-      }, "Via ", /*#__PURE__*/React.createElement("span", {
-        style: {
-          color: "#93C5FD"
-        }
-      }, ref.name)), last && /*#__PURE__*/React.createElement("div", {
-        style: {
-          fontSize: 11,
-          color: "#475569",
-          marginTop: ref ? 3 : 7
-        }
-      }, "Last met ", fmtDate(last.date)));
-    })));
-  }
-  function ContactDetail() {
-    if (!selected) return null;
-    const ref = selected.referredBy ? contacts.find(x => x.id === selected.referredBy) : null;
-    const refs = selected.referredContacts.map(id => contacts.find(c => c.id === id)).filter(Boolean);
-    return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("button", {
-      style: {
-        ...T.btn("ghost"),
-        marginBottom: 14,
-        fontSize: 12
-      },
-      onClick: () => setView("contacts")
-    }, "\u2190 Back"), /*#__PURE__*/React.createElement("div", {
-      style: {
-        ...T.card,
-        marginBottom: 14,
-        display: "flex",
-        alignItems: "flex-start",
-        gap: 14,
-        flexWrap: "wrap"
-      }
-    }, /*#__PURE__*/React.createElement(Avatar, {
-      contact: selected,
-      size: 54
-    }), /*#__PURE__*/React.createElement("div", {
-      style: {
-        flex: 1,
-        minWidth: 0
-      }
-    }, /*#__PURE__*/React.createElement("h2", {
-      style: {
-        margin: "0 0 2px",
-        fontSize: 20,
-        fontFamily: "'DM Serif Display',serif",
-        color: "#F1F5F9"
-      }
-    }, selected.name), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 13,
-        color: "#64748B",
-        marginBottom: 7
-      }
-    }, selected.company), /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        flexDirection: "column",
-        gap: 3,
-        fontSize: 13,
-        color: "#94A3B8"
-      }
-    }, /*#__PURE__*/React.createElement("span", null, "\u2709 ", selected.email), selected.phone && /*#__PURE__*/React.createElement("span", null, "\uD83D\uDCDE ", selected.phone))), /*#__PURE__*/React.createElement("button", {
-      style: {
-        ...T.btn("danger"),
-        fontSize: 12,
-        padding: "6px 12px"
-      },
-      onClick: () => deleteContact(selected.id)
-    }, "Remove")), (ref || refs.length > 0) && /*#__PURE__*/React.createElement("div", {
-      style: {
-        ...T.card,
-        marginBottom: 14
-      }
-    }, /*#__PURE__*/React.createElement("h3", {
-      style: {
-        margin: "0 0 9px",
-        fontSize: 12,
-        fontWeight: 700,
-        color: "#64748B",
-        textTransform: "uppercase",
-        letterSpacing: "0.08em"
-      }
-    }, "Connections"), ref && /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 13,
-        marginBottom: 5
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      style: {
-        color: "#64748B"
-      }
-    }, "Referred by "), /*#__PURE__*/React.createElement("span", {
-      style: {
-        cursor: "pointer",
-        color: "#93C5FD",
-        fontWeight: 600
-      },
-      onClick: () => setSelectedId(ref.id)
-    }, ref.name), /*#__PURE__*/React.createElement("span", {
-      style: {
-        color: "#475569",
-        fontSize: 11
-      }
-    }, " (", ref.company, ")")), refs.length > 0 && /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 13,
-        display: "flex",
-        flexWrap: "wrap",
-        gap: 6
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      style: {
-        color: "#64748B"
-      }
-    }, "Introduced to:"), refs.map(r => /*#__PURE__*/React.createElement("span", {
-      key: r.id,
-      style: {
-        cursor: "pointer",
-        color: "#93C5FD",
-        fontWeight: 600
-      },
-      onClick: () => setSelectedId(r.id)
-    }, r.name)))), /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        marginBottom: 12
-      }
-    }, /*#__PURE__*/React.createElement("h3", {
-      style: {
-        margin: 0,
-        fontSize: 12,
-        fontWeight: 700,
-        color: "#64748B",
-        textTransform: "uppercase",
-        letterSpacing: "0.08em"
-      }
-    }, "Meetings"), /*#__PURE__*/React.createElement("button", {
-      style: T.btn("primary"),
-      onClick: () => setAddingMeeting(true)
-    }, "+ Log Meeting")), addingMeeting && /*#__PURE__*/React.createElement("div", {
-      style: {
-        ...T.card,
-        marginBottom: 12,
-        borderColor: "#2563EB"
-      }
-    }, /*#__PURE__*/React.createElement("h4", {
-      style: {
-        margin: "0 0 10px",
-        color: "#93C5FD",
-        fontSize: 14
-      }
-    }, "Log a Meeting"), /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        flexDirection: "column",
-        gap: 8
-      }
-    }, /*#__PURE__*/React.createElement("input", {
-      type: "date",
-      style: T.input,
-      value: newMeeting.date,
-      onChange: e => setNewMeeting(p => ({
-        ...p,
-        date: e.target.value
-      }))
-    }), /*#__PURE__*/React.createElement("textarea", {
-      style: T.textarea,
-      placeholder: "Notes\u2026",
-      value: newMeeting.notes,
-      onChange: e => setNewMeeting(p => ({
-        ...p,
-        notes: e.target.value
-      }))
-    }), /*#__PURE__*/React.createElement("textarea", {
-      style: {
-        ...T.textarea,
-        minHeight: 54
-      },
-      placeholder: "Tasks (one per line)\u2026",
-      value: newMeeting.tasks,
-      onChange: e => setNewMeeting(p => ({
-        ...p,
-        tasks: e.target.value
-      }))
-    }), /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        gap: 8
-      }
-    }, /*#__PURE__*/React.createElement("button", {
-      style: T.btn("primary"),
-      onClick: () => addMeeting(selected.id)
-    }, "Save"), /*#__PURE__*/React.createElement("button", {
-      style: T.btn("ghost"),
-      onClick: () => setAddingMeeting(false)
-    }, "Cancel")))), selected.meetings.slice().sort((a, b) => b.date.localeCompare(a.date)).map(m => /*#__PURE__*/React.createElement("div", {
-      key: m.id,
-      style: {
-        ...T.card,
-        marginBottom: 12
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        marginBottom: 8,
-        flexWrap: "wrap",
-        gap: 6
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontWeight: 700,
-        fontSize: 14,
-        color: "#93C5FD"
-      }
-    }, fmtDate(m.date)), m.thankYouSent ? /*#__PURE__*/React.createElement(Pill, {
-      variant: "green"
-    }, "\u2713 Thanked ", fmtDate(m.thankYouDate)) : /*#__PURE__*/React.createElement("button", {
-      style: T.btn("success"),
-      onClick: () => markThankYou(selected.id, m.id)
-    }, "Mark Thanked")), m.notes && /*#__PURE__*/React.createElement("p", {
-      style: {
-        margin: "0 0 10px",
-        fontSize: 13.5,
-        color: "#CBD5E1",
-        lineHeight: 1.6
-      }
-    }, m.notes), m.tasks.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 11,
-        fontWeight: 700,
-        color: "#475569",
-        textTransform: "uppercase",
-        letterSpacing: "0.07em",
-        marginBottom: 5
-      }
-    }, "Tasks"), m.tasks.map(t => /*#__PURE__*/React.createElement("div", {
-      key: t.id,
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 10,
-        marginBottom: 7,
-        cursor: "pointer",
-        padding: "2px 0"
-      },
-      onClick: () => toggleTask(selected.id, m.id, t.id)
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        width: 18,
-        height: 18,
-        borderRadius: 4,
-        border: t.done ? "none" : "2px solid #334155",
-        background: t.done ? "#2563EB" : "transparent",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexShrink: 0
-      }
-    }, t.done && /*#__PURE__*/React.createElement("span", {
-      style: {
-        color: "#fff",
-        fontSize: 11
-      }
-    }, "\u2713")), /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 13.5,
-        color: t.done ? "#475569" : "#CBD5E1",
-        textDecoration: t.done ? "line-through" : "none"
-      }
-    }, t.text)))))), selected.meetings.length === 0 && !addingMeeting && /*#__PURE__*/React.createElement("div", {
-      style: {
-        ...T.card,
-        textAlign: "center",
-        color: "#475569",
-        padding: "36px 20px"
-      }
-    }, "No meetings logged yet."));
-  }
-
-  // ── Calendar ──────────────────────────────────────────────────────────
-  function CalendarView() {
-    const pendingAll = allTasks.filter(t => !t.done);
-
-    // Month helpers
-    const dim = daysInMonth(calYear, calMonth);
-    const fd = firstDayOf(calYear, calMonth);
-    const cells = [];
-    for (let i = 0; i < fd; i++) cells.push(null);
-    for (let d = 1; d <= dim; d++) cells.push(d);
-    function mtgsOnDay(iso) {
-      return allMeetings.filter(m => m.date === iso);
-    }
-    function dayISO(day) {
-      return `${calYear}-${String(calMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-    }
-
-    // Week helpers
-    const weekDays = Array.from({
-      length: 7
-    }, (_, i) => addDays(calWeekStart, i));
-    function prevWeek() {
-      setCalWeekStart(d => addDays(d, -7));
-    }
-    function nextWeek() {
-      setCalWeekStart(d => addDays(d, 7));
-    }
-
-    // List: all meetings sorted
-    const sortedMeetings = allMeetings.slice().sort((a, b) => b.date.localeCompare(a.date));
-
-    // Month nav
-    function prevMonth() {
-      if (calMonth === 0) {
-        setCalMonth(11);
-        setCalYear(y => y - 1);
-      } else setCalMonth(m => m - 1);
-    }
-    function nextMonth() {
-      if (calMonth === 11) {
-        setCalMonth(0);
-        setCalYear(y => y + 1);
-      } else setCalMonth(m => m + 1);
-    }
-    return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
-      style: {
-        fontSize: 12,
-        color: "#64748B",
-        marginBottom: 14
-      }
-    }, "Meetings & open tasks"), /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        marginBottom: 14,
-        gap: 8,
-        flexWrap: "wrap"
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "cal-tabs",
-      style: {
-        flex: "0 0 auto"
-      }
-    }, [["month", "Month"], ["week", "Week"], ["list", "List"]].map(([id, label]) => /*#__PURE__*/React.createElement("button", {
-      key: id,
-      className: `cal-tab${calMode === id ? " active" : ""}`,
-      onClick: () => setCalMode(id)
-    }, label))), calMode === "month" && /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 8
-      }
-    }, /*#__PURE__*/React.createElement("button", {
-      style: {
-        ...T.btn("ghost"),
-        padding: "5px 12px"
-      },
-      onClick: prevMonth
-    }, "\u2190"), /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontFamily: "'DM Serif Display',serif",
-        fontSize: 15,
-        color: "#F1F5F9",
-        whiteSpace: "nowrap"
-      }
-    }, MONTHS[calMonth], " ", calYear), /*#__PURE__*/React.createElement("button", {
-      style: {
-        ...T.btn("ghost"),
-        padding: "5px 12px"
-      },
-      onClick: nextMonth
-    }, "\u2192")), calMode === "week" && /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 8
-      }
-    }, /*#__PURE__*/React.createElement("button", {
-      style: {
-        ...T.btn("ghost"),
-        padding: "5px 12px"
-      },
-      onClick: prevWeek
-    }, "\u2190"), /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontFamily: "'DM Serif Display',serif",
-        fontSize: 14,
-        color: "#F1F5F9",
-        whiteSpace: "nowrap"
-      }
-    }, fmtDate(toISO(calWeekStart)), " \u2013 ", fmtDate(toISO(addDays(calWeekStart, 6)))), /*#__PURE__*/React.createElement("button", {
-      style: {
-        ...T.btn("ghost"),
-        padding: "5px 12px"
-      },
-      onClick: nextWeek
-    }, "\u2192"))), calMode === "month" && /*#__PURE__*/React.createElement("div", {
-      style: {
-        marginBottom: 20
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "grid",
-        gridTemplateColumns: "repeat(7,1fr)",
-        gap: 2
-      }
-    }, ["S", "M", "T", "W", "T", "F", "S"].map((d, i) => /*#__PURE__*/React.createElement("div", {
-      key: i,
-      className: "cal-hdr",
-      style: {
-        textAlign: "center",
-        fontSize: 11,
-        fontWeight: 700,
-        color: "#475569",
-        paddingBottom: 4
-      }
-    }, d)), cells.map((day, i) => {
-      if (!day) return /*#__PURE__*/React.createElement("div", {
-        key: `e${i}`
-      });
-      const iso = dayISO(day);
-      const dm = mtgsOnDay(iso);
-      const isToday = iso === isoToday();
-      return /*#__PURE__*/React.createElement("div", {
-        key: day,
-        className: "cal-cell",
-        style: {
-          minHeight: 60,
-          background: isToday ? "#1E3A5F" : "#0D1B2E",
-          border: `1px solid ${isToday ? "#2563EB" : "#1E3A5F"}`,
-          borderRadius: 6,
-          padding: "4px 5px"
-        }
-      }, /*#__PURE__*/React.createElement("div", {
-        className: "cal-day-num",
-        style: {
-          fontSize: 11,
-          fontWeight: isToday ? 700 : 400,
-          color: isToday ? "#60A5FA" : "#94A3B8",
-          marginBottom: 2
-        }
-      }, day), dm.map(m => /*#__PURE__*/React.createElement("div", {
-        key: m.id,
-        className: "cal-chip",
-        style: {
-          fontSize: 9,
-          background: m.contact.color + "33",
-          color: m.contact.color,
-          borderRadius: 3,
-          padding: "1px 3px",
-          marginBottom: 1,
-          cursor: "pointer",
-          fontWeight: 700,
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis"
-        },
-        onClick: () => {
-          setSelectedId(m.contact.id);
-          setView("detail");
-        }
-      }, m.contact.initials)));
-    })), (() => {
-      const prefix = `${calYear}-${String(calMonth + 1).padStart(2, "0")}`;
-      const thisMonthContacts = contacts.filter(c => c.meetings.some(m => m.date.startsWith(prefix)));
-      return thisMonthContacts.length > 0 ? /*#__PURE__*/React.createElement("div", {
-        style: {
-          marginTop: 12,
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 8
-        }
-      }, thisMonthContacts.map(c => /*#__PURE__*/React.createElement("div", {
-        key: c.id,
-        style: {
-          display: "flex",
-          alignItems: "center",
-          gap: 5,
-          cursor: "pointer"
-        },
-        onClick: () => {
-          setSelectedId(c.id);
-          setView("detail");
-        }
-      }, /*#__PURE__*/React.createElement("div", {
-        style: {
-          width: 9,
-          height: 9,
-          borderRadius: 2,
-          background: c.color,
-          flexShrink: 0
-        }
-      }), /*#__PURE__*/React.createElement("span", {
-        style: {
-          fontSize: 11,
-          color: "#94A3B8"
-        }
-      }, c.name)))) : null;
-    })()), calMode === "week" && /*#__PURE__*/React.createElement("div", {
-      style: {
-        marginBottom: 20
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "grid",
-        gridTemplateColumns: "repeat(7,1fr)",
-        gap: 3
-      }
-    }, weekDays.map((dt, i) => {
-      const iso = toISO(dt);
-      const dm = mtgsOnDay(iso);
-      const isToday = iso === isoToday();
-      return /*#__PURE__*/React.createElement("div", {
-        key: i,
-        style: {
-          background: isToday ? "#1E3A5F" : "#0D1B2E",
-          border: `1px solid ${isToday ? "#2563EB" : "#1E3A5F"}`,
-          borderRadius: 8,
-          padding: "8px 6px",
-          minHeight: 90
-        }
-      }, /*#__PURE__*/React.createElement("div", {
-        style: {
-          textAlign: "center",
-          marginBottom: 6
-        }
-      }, /*#__PURE__*/React.createElement("div", {
-        style: {
-          fontSize: 10,
-          color: isToday ? "#60A5FA" : "#475569",
-          fontWeight: 700,
-          textTransform: "uppercase"
-        }
-      }, DAYS_SHORT[dt.getDay()]), /*#__PURE__*/React.createElement("div", {
-        style: {
-          fontSize: 16,
-          fontWeight: isToday ? 700 : 400,
-          color: isToday ? "#60A5FA" : "#E2E8F0",
-          fontFamily: "'DM Serif Display',serif"
-        }
-      }, dt.getDate())), dm.map(m => /*#__PURE__*/React.createElement("div", {
-        key: m.id,
-        style: {
-          fontSize: 10,
-          background: m.contact.color + "33",
-          color: m.contact.color,
-          borderRadius: 4,
-          padding: "3px 5px",
-          marginBottom: 3,
-          cursor: "pointer",
-          fontWeight: 600,
-          textAlign: "center",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap"
-        },
-        onClick: () => {
-          setSelectedId(m.contact.id);
-          setView("detail");
-        }
-      }, m.contact.initials)), dm.length === 0 && /*#__PURE__*/React.createElement("div", {
-        style: {
-          textAlign: "center",
-          fontSize: 18,
-          color: "#1E3A5F",
-          marginTop: 4
-        }
-      }, "\xB7"));
-    })), weekDays.some(dt => mtgsOnDay(toISO(dt)).length > 0) && /*#__PURE__*/React.createElement("div", {
-      style: {
-        marginTop: 14
-      }
-    }, weekDays.filter(dt => mtgsOnDay(toISO(dt)).length > 0).map(dt => {
-      const iso = toISO(dt);
-      return mtgsOnDay(iso).map(m => /*#__PURE__*/React.createElement("div", {
-        key: m.id,
-        style: {
-          ...T.card,
-          marginBottom: 8,
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          padding: "12px 14px",
-          cursor: "pointer"
-        },
-        onClick: () => {
-          setSelectedId(m.contact.id);
-          setView("detail");
-        }
-      }, /*#__PURE__*/React.createElement(Avatar, {
-        contact: m.contact,
-        size: 32
-      }), /*#__PURE__*/React.createElement("div", {
-        style: {
-          flex: 1,
-          minWidth: 0
-        }
-      }, /*#__PURE__*/React.createElement("div", {
-        style: {
-          fontSize: 13,
-          fontWeight: 600,
-          color: "#F1F5F9"
-        }
-      }, m.contact.name), /*#__PURE__*/React.createElement("div", {
-        style: {
-          fontSize: 11,
-          color: "#64748B"
-        }
-      }, fmtDate(iso), " \xB7 ", m.contact.company)), /*#__PURE__*/React.createElement("span", {
-        style: {
-          fontSize: 12,
-          color: "#60A5FA"
-        }
-      }, "\u2192")));
-    }))), calMode === "list" && /*#__PURE__*/React.createElement("div", {
-      style: {
-        marginBottom: 20
-      }
-    }, sortedMeetings.length === 0 && /*#__PURE__*/React.createElement("div", {
-      style: {
-        ...T.card,
-        textAlign: "center",
-        color: "#475569",
-        padding: "36px 20px"
-      }
-    }, "No meetings logged yet."), sortedMeetings.map(m => /*#__PURE__*/React.createElement("div", {
-      key: m.id,
-      style: {
-        ...T.card,
-        marginBottom: 8,
-        cursor: "pointer",
-        transition: "border-color 0.15s"
-      },
-      onClick: () => {
-        setSelectedId(m.contact.id);
-        setView("detail");
-      },
-      onMouseEnter: e => e.currentTarget.style.borderColor = "#2563EB",
-      onMouseLeave: e => e.currentTarget.style.borderColor = "#1E3A5F"
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 12,
-        marginBottom: m.notes ? 8 : 0
-      }
-    }, /*#__PURE__*/React.createElement(Avatar, {
-      contact: m.contact,
-      size: 34
-    }), /*#__PURE__*/React.createElement("div", {
-      style: {
-        flex: 1,
-        minWidth: 0
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 14,
-        fontWeight: 600,
-        color: "#F1F5F9"
-      }
-    }, m.contact.name), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 11,
-        color: "#64748B"
-      }
-    }, fmtDate(m.date), " \xB7 ", m.contact.company)), /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "flex-end",
-        gap: 4
-      }
-    }, m.thankYouSent ? /*#__PURE__*/React.createElement(Pill, {
-      variant: "green"
-    }, "\u2713 Thanked") : /*#__PURE__*/React.createElement(Pill, {
-      variant: "yellow"
-    }, "No thank-you"), m.tasks.length > 0 && /*#__PURE__*/React.createElement(Tag, {
-      color: m.tasks.some(t => !t.done) ? "#F59E0B" : "#22C55E"
-    }, m.tasks.filter(t => !t.done).length, "/", m.tasks.length, " tasks"))), m.notes && /*#__PURE__*/React.createElement("p", {
-      style: {
-        margin: 0,
-        fontSize: 12.5,
-        color: "#94A3B8",
-        lineHeight: 1.5,
-        overflow: "hidden",
-        display: "-webkit-box",
-        WebkitLineClamp: 2,
-        WebkitBoxOrient: "vertical"
-      }
-    }, m.notes)))), /*#__PURE__*/React.createElement("div", {
-      style: {
-        ...T.card,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: "14px 16px"
-      }
-    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 13,
-        fontWeight: 600,
-        color: "#F1F5F9"
-      }
-    }, "Open Tasks"), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 11,
-        color: pendingAll.length > 0 ? "#F59E0B" : "#4ADE80",
-        marginTop: 2
-      }
-    }, pendingAll.length > 0 ? `${pendingAll.length} task${pendingAll.length !== 1 ? "s" : ""} remaining` : "All tasks complete ✓")), /*#__PURE__*/React.createElement("button", {
-      style: T.btn("ghost"),
-      onClick: () => setTaskModal(true)
-    }, "View All Tasks")));
-  }
-  function StatsView() {
-    const total = contacts.reduce((s, c) => s + c.meetings.length, 0);
-    const tTasks = contacts.reduce((s, c) => s + c.meetings.flatMap(m => m.tasks).length, 0);
-    const done = contacts.reduce((s, c) => s + c.meetings.flatMap(m => m.tasks).filter(t => t.done).length, 0);
-    const unthx = contacts.reduce((s, c) => s + c.meetings.filter(m => !m.thankYouSent).length, 0);
-    const ref = contacts.filter(c => c.referredBy).length;
-    const stat = (label, val, sub, color = "#60A5FA") => /*#__PURE__*/React.createElement("div", {
-      style: {
-        ...T.card,
-        textAlign: "center",
-        padding: "16px 10px"
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 28,
-        fontFamily: "'DM Serif Display',serif",
-        color,
-        marginBottom: 3
-      }
-    }, val), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 13,
-        fontWeight: 600,
-        color: "#94A3B8"
-      }
-    }, label), sub && /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 11,
-        color: "#475569",
-        marginTop: 3
-      }
-    }, sub));
-    return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
-      style: {
-        fontSize: 12,
-        color: "#64748B",
-        marginBottom: 16
-      }
-    }, "Your networking at a glance"), /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fill,minmax(130px,1fr))",
-        gap: 9,
-        marginBottom: 20
-      }
-    }, stat("Contacts", contacts.length, null, "#60A5FA"), stat("Meetings", total, null, "#60A5FA"), stat("Tasks Done", `${done}/${tTasks}`, `${tTasks - done} left`, "#4ADE80"), stat("Pending Thanks", unthx, null, unthx > 0 ? "#F59E0B" : "#4ADE80"), stat("Warm Intros", ref, "referred", "#60A5FA")), /*#__PURE__*/React.createElement("div", {
-      style: {
-        ...T.card,
-        marginBottom: 14,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: "14px 16px"
-      }
-    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 13,
-        fontWeight: 600,
-        color: "#F1F5F9"
-      }
-    }, "Task List"), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 11,
-        color: "#64748B",
-        marginTop: 2
-      }
-    }, openTasks, " open \xB7 ", allTasks.filter(t => t.done).length, " completed")), /*#__PURE__*/React.createElement("button", {
-      style: T.btn("ghost"),
-      onClick: () => setTaskModal(true)
-    }, "View All")), unthx > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
-      style: {
-        margin: "0 0 9px",
-        fontSize: 12,
-        fontWeight: 700,
-        color: "#64748B",
-        textTransform: "uppercase",
-        letterSpacing: "0.08em"
-      }
-    }, "Needs Thank-You"), contacts.flatMap(c => c.meetings.filter(m => !m.thankYouSent).map(m => /*#__PURE__*/React.createElement("div", {
-      key: m.id,
-      style: {
-        ...T.card,
-        display: "flex",
-        alignItems: "center",
-        gap: 12,
-        padding: "12px 14px",
-        marginBottom: 8,
-        flexWrap: "wrap"
-      }
-    }, /*#__PURE__*/React.createElement(Avatar, {
-      contact: c,
-      size: 32
-    }), /*#__PURE__*/React.createElement("div", {
-      style: {
-        flex: 1,
-        minWidth: 100
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 14,
-        fontWeight: 600,
-        color: "#F1F5F9"
-      }
-    }, c.name), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 12,
-        color: "#64748B"
-      }
-    }, "Met ", fmtDate(m.date))), /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        gap: 8
-      }
-    }, /*#__PURE__*/React.createElement("button", {
-      style: T.btn("success"),
-      onClick: () => markThankYou(c.id, m.id)
-    }, "\u2713 Thanked"), /*#__PURE__*/React.createElement("span", {
-      style: {
-        cursor: "pointer",
-        fontSize: 12,
-        color: "#60A5FA",
-        alignSelf: "center"
-      },
-      onClick: () => {
-        setSelectedId(c.id);
-        setView("detail");
-      }
-    }, "\u2192")))))));
-  }
-
-  // ── Render ────────────────────────────────────────────────────────────
   return /*#__PURE__*/React.createElement("div", {
     className: "app-shell"
   }, taskModal && /*#__PURE__*/React.createElement(TaskModal, {
     tasks: allTasks,
     onClose: () => setTaskModal(false),
-    onToggle: t => {
-      toggleTaskFromEnriched(t);
-    }
+    onToggle: t => toggleTask(t.contact.id, t.meeting.id, t.id)
   }), /*#__PURE__*/React.createElement("div", {
     className: `mobile-overlay${mobileDrawerOpen ? " open" : ""}`,
     onClick: () => setMobileDrawerOpen(false)
   }), /*#__PURE__*/React.createElement("div", {
     className: `mobile-drawer${mobileDrawerOpen ? " open" : ""}`
-  }, /*#__PURE__*/React.createElement(SidebarInner, null)), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement(SidebarInner, sidebarProps)), /*#__PURE__*/React.createElement("div", {
     className: `sidebar${sidebarCollapsed ? " collapsed" : ""}`
-  }, /*#__PURE__*/React.createElement(SidebarInner, null)), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement(SidebarInner, sidebarProps)), /*#__PURE__*/React.createElement("div", {
     className: "main-area"
   }, /*#__PURE__*/React.createElement("div", {
     className: "page-header"
@@ -1994,7 +2231,58 @@ function App() {
       maxWidth: 840,
       margin: "0 auto"
     }
-  }, view === "contacts" && /*#__PURE__*/React.createElement(ContactsList, null), view === "detail" && /*#__PURE__*/React.createElement(ContactDetail, null), view === "calendar" && /*#__PURE__*/React.createElement(CalendarView, null), view === "stats" && /*#__PURE__*/React.createElement(StatsView, null)))), /*#__PURE__*/React.createElement("nav", {
+  }, view === "contacts" && /*#__PURE__*/React.createElement(ContactsList, {
+    contacts: contacts,
+    filteredContacts: filteredContacts,
+    searchQ: searchQ,
+    setSearchQ: setSearchQ,
+    sortBy: sortBy,
+    setSortBy: setSortBy,
+    showAddContact: showAddContact,
+    setShowAddContact: setShowAddContact,
+    onSaveNew: addContact,
+    onSelect: id => {
+      setSelectedId(id);
+      setView("detail");
+    }
+  }), view === "detail" && /*#__PURE__*/React.createElement(ContactDetail, {
+    selected: selected,
+    contacts: contacts,
+    addingMeeting: addingMeeting,
+    setAddingMeeting: setAddingMeeting,
+    newMeeting: newMeeting,
+    setNewMeeting: setNewMeeting,
+    addMeeting: addMeeting,
+    toggleTask: toggleTask,
+    markThankYou: markThankYou,
+    deleteContact: deleteContact,
+    updateContact: updateContact,
+    setSelectedId: setSelectedId,
+    onBack: () => setView("contacts")
+  }), view === "calendar" && /*#__PURE__*/React.createElement(CalendarView, {
+    allMeetings: allMeetings,
+    allTasks: allTasks,
+    contacts: contacts,
+    calYear: calYear,
+    calMonth: calMonth,
+    setCalMonth: setCalMonth,
+    setCalYear: setCalYear,
+    calWeekStart: calWeekStart,
+    setCalWeekStart: setCalWeekStart,
+    calMode: calMode,
+    setCalMode: setCalMode,
+    setSelectedId: setSelectedId,
+    setView: setView,
+    setTaskModal: setTaskModal
+  }), view === "stats" && /*#__PURE__*/React.createElement(StatsView, {
+    contacts: contacts,
+    allTasks: allTasks,
+    openTasks: openTasks,
+    setTaskModal: setTaskModal,
+    markThankYou: markThankYou,
+    setSelectedId: setSelectedId,
+    setView: setView
+  })))), /*#__PURE__*/React.createElement("nav", {
     className: "bottom-nav"
   }, NAV.map(n => /*#__PURE__*/React.createElement("div", {
     key: n.id,
@@ -2010,7 +2298,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(/*#__PURE__*/React.c
 
 </script>
 <script>
-  if("serviceWorker" in navigator) {
+  if("serviceWorker" in navigator){
     navigator.serviceWorker.register("/NetworkPro/sw.js").catch(e=>console.log("SW:",e));
   }
 </script>
