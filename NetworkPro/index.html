@@ -246,6 +246,10 @@ const NAV = [{
   label: "Calendar",
   icon: "◷"
 }, {
+  id: "suggested",
+  label: "Suggested",
+  icon: "◎"
+}, {
   id: "stats",
   label: "Overview",
   icon: "◉"
@@ -254,6 +258,7 @@ const PAGE_TITLES = {
   contacts: "Network",
   detail: "Contact",
   calendar: "Calendar",
+  suggested: "Suggested",
   stats: "Overview"
 };
 const COLORS = ["#2A6B8A", "#5B4A8A", "#2A7A52", "#8A4A2A", "#6B2A8A", "#2A4A8A", "#7A2A5B", "#2A5B7A"];
@@ -888,6 +893,9 @@ function SidebarInner({
     label: "Open Tasks",
     val: openTasks
   }, {
+    label: "To Reach Out",
+    val: contacts.filter(c => c.referredBy && !c.reachedOut).length
+  }, {
     label: "Pending Thanks",
     val: pendingThanks
   }].map(x => /*#__PURE__*/React.createElement("div", {
@@ -1135,7 +1143,61 @@ function ContactsList({
         textOverflow: "ellipsis",
         whiteSpace: "nowrap"
       }
-    }, "\uD83D\uDCDD ", c.contactNotes));
+    }, "\uD83D\uDCDD ", c.contactNotes), (() => {
+      const sugg = (c.referredContacts || []).map(id => contacts.find(x => x.id === id)).filter(Boolean);
+      if (!sugg.length) return null;
+      return /*#__PURE__*/React.createElement("div", {
+        style: {
+          marginTop: 6,
+          paddingTop: 6,
+          borderTop: "1px solid #1E3A5F22"
+        }
+      }, /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontSize: 10,
+          color: "#475569",
+          marginBottom: 4,
+          textTransform: "uppercase",
+          letterSpacing: "0.06em",
+          fontWeight: 700
+        }
+      }, "Suggested"), /*#__PURE__*/React.createElement("div", {
+        style: {
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 4
+        }
+      }, sugg.map(s => /*#__PURE__*/React.createElement("div", {
+        key: s.id,
+        style: {
+          display: "flex",
+          alignItems: "center",
+          gap: 4,
+          background: "#1E3A5F33",
+          borderRadius: 99,
+          padding: "2px 7px 2px 3px"
+        }
+      }, /*#__PURE__*/React.createElement("div", {
+        style: {
+          width: 14,
+          height: 14,
+          borderRadius: "50%",
+          background: s.color,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 7,
+          color: "#fff",
+          fontWeight: 700
+        }
+      }, initials(s)), /*#__PURE__*/React.createElement("span", {
+        style: {
+          fontSize: 10,
+          color: "#93C5FD",
+          fontWeight: 600
+        }
+      }, fullName(s))))));
+    })());
   })));
 }
 
@@ -2131,6 +2193,257 @@ function CalendarView({
   }, "View All Tasks")));
 }
 
+// ── Suggested View ────────────────────────────────────────────────────────────
+function SuggestedView({
+  contacts,
+  markReachedOut,
+  setSelectedId,
+  setView
+}) {
+  // Build flat list: every contact that has a referredBy (was suggested by someone)
+  const suggested = contacts.filter(c => c.referredBy).map(c => ({
+    contact: c,
+    suggestedBy: contacts.find(x => x.id === c.referredBy),
+    reachedOut: c.reachedOut || false,
+    reachedOutDate: c.reachedOutDate || null,
+    hasMeeting: c.meetings.length > 0
+  })).sort((a, b) => {
+    // Unreached first, then by name
+    if (a.reachedOut !== b.reachedOut) return a.reachedOut ? 1 : -1;
+    return (a.contact.lastName || "").localeCompare(b.contact.lastName || "");
+  });
+  const pending = suggested.filter(s => !s.reachedOut);
+  const done = suggested.filter(s => s.reachedOut);
+  if (suggested.length === 0) {
+    return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontSize: 12,
+        color: "#64748B",
+        marginBottom: 20
+      }
+    }, "Contacts suggested to you by your network"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        ...T.card,
+        textAlign: "center",
+        padding: "48px 20px"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 28,
+        marginBottom: 10
+      }
+    }, "\u25CE"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 14,
+        color: "#64748B"
+      }
+    }, "No suggested contacts yet."), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 12,
+        color: "#334155",
+        marginTop: 6
+      }
+    }, "When a contact suggests someone to talk to, they'll appear here.")));
+  }
+  function Row({
+    s
+  }) {
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        ...T.card,
+        marginBottom: 8,
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        padding: "12px 14px",
+        flexWrap: "wrap",
+        opacity: s.reachedOut ? 0.65 : 1,
+        transition: "opacity 0.2s"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        cursor: "pointer",
+        flexShrink: 0
+      },
+      onClick: () => {
+        setSelectedId(s.contact.id);
+        setView("detail");
+      }
+    }, /*#__PURE__*/React.createElement(Avatar, {
+      contact: s.contact,
+      size: 38
+    })), /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: 1,
+        minWidth: 120
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 7,
+        flexWrap: "wrap"
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 14,
+        fontWeight: 600,
+        color: "#F1F5F9",
+        cursor: "pointer"
+      },
+      onClick: () => {
+        setSelectedId(s.contact.id);
+        setView("detail");
+      }
+    }, fullName(s.contact)), s.hasMeeting && /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 10,
+        background: "#14532D22",
+        color: "#4ADE80",
+        borderRadius: 99,
+        padding: "1px 7px",
+        fontWeight: 600,
+        fontFamily: "'DM Mono',monospace"
+      }
+    }, "MET")), s.contact.company && /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 12,
+        color: "#64748B",
+        marginTop: 1
+      }
+    }, s.contact.company), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 11,
+        color: "#475569",
+        marginTop: 3,
+        display: "flex",
+        alignItems: "center",
+        gap: 5,
+        flexWrap: "wrap"
+      }
+    }, /*#__PURE__*/React.createElement("span", null, "Suggested by"), /*#__PURE__*/React.createElement("span", {
+      style: {
+        color: s.suggestedBy.color,
+        fontWeight: 600,
+        cursor: "pointer"
+      },
+      onClick: () => {
+        setSelectedId(s.suggestedBy.id);
+        setView("detail");
+      }
+    }, fullName(s.suggestedBy)), s.reachedOut && s.reachedOutDate && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", null, "\xB7"), /*#__PURE__*/React.createElement("span", {
+      style: {
+        color: "#22C55E"
+      }
+    }, "Reached out ", fmtDate(s.reachedOutDate))))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        gap: 8,
+        flexShrink: 0
+      }
+    }, s.reachedOut ? /*#__PURE__*/React.createElement("button", {
+      style: {
+        ...T.btn("ghost"),
+        fontSize: 12,
+        padding: "5px 11px"
+      },
+      onClick: () => markReachedOut(s.contact.id, false)
+    }, "Undo") : /*#__PURE__*/React.createElement("button", {
+      style: {
+        ...T.btn("success"),
+        fontSize: 12,
+        padding: "5px 11px"
+      },
+      onClick: () => markReachedOut(s.contact.id, true)
+    }, "\u2713 Reached Out"), /*#__PURE__*/React.createElement("span", {
+      style: {
+        cursor: "pointer",
+        fontSize: 12,
+        color: "#60A5FA",
+        alignSelf: "center"
+      },
+      onClick: () => {
+        setSelectedId(s.contact.id);
+        setView("detail");
+      }
+    }, "\u2192")));
+  }
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 12,
+      color: "#64748B",
+      marginBottom: 16
+    }
+  }, "Contacts suggested to you by your network"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr 1fr",
+      gap: 9,
+      marginBottom: 20
+    }
+  }, [{
+    label: "Suggested",
+    val: suggested.length,
+    color: "#60A5FA"
+  }, {
+    label: "To Reach",
+    val: pending.length,
+    color: pending.length > 0 ? "#F59E0B" : "#4ADE80"
+  }, {
+    label: "Reached Out",
+    val: done.length,
+    color: "#4ADE80"
+  }].map(x => /*#__PURE__*/React.createElement("div", {
+    key: x.label,
+    style: {
+      ...T.card,
+      textAlign: "center",
+      padding: "14px 8px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 26,
+      fontFamily: "'DM Serif Display',serif",
+      color: x.color,
+      marginBottom: 2
+    }
+  }, x.val), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      fontWeight: 600,
+      color: "#94A3B8"
+    }
+  }, x.label)))), pending.length > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: 20
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      margin: "0 0 10px",
+      fontSize: 12,
+      fontWeight: 700,
+      color: "#64748B",
+      textTransform: "uppercase",
+      letterSpacing: "0.08em"
+    }
+  }, "To Reach Out (", pending.length, ")"), pending.map(s => /*#__PURE__*/React.createElement(Row, {
+    key: s.contact.id,
+    s: s
+  }))), done.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      margin: "0 0 10px",
+      fontSize: 12,
+      fontWeight: 700,
+      color: "#64748B",
+      textTransform: "uppercase",
+      letterSpacing: "0.08em"
+    }
+  }, "Reached Out (", done.length, ")"), done.map(s => /*#__PURE__*/React.createElement(Row, {
+    key: s.contact.id,
+    s: s
+  }))));
+}
+
 // ── Stats View ────────────────────────────────────────────────────────────────
 function StatsView({
   contacts,
@@ -2426,6 +2739,13 @@ function App() {
       return updated;
     });
   }
+  function markReachedOut(cId, val) {
+    setContacts(prev => prev.map(c => c.id !== cId ? c : {
+      ...c,
+      reachedOut: val,
+      reachedOutDate: val ? isoToday() : null
+    }));
+  }
   function addContact(form) {
     const color = COLORS[contacts.length % COLORS.length];
     setContacts(prev => [...prev, {
@@ -2545,6 +2865,11 @@ function App() {
     setSelectedId: setSelectedId,
     setView: setView,
     setTaskModal: setTaskModal
+  }), view === "suggested" && /*#__PURE__*/React.createElement(SuggestedView, {
+    contacts: contacts,
+    markReachedOut: markReachedOut,
+    setSelectedId: setSelectedId,
+    setView: setView
   }), view === "stats" && /*#__PURE__*/React.createElement(StatsView, {
     contacts: contacts,
     allTasks: allTasks,
