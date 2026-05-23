@@ -213,6 +213,18 @@ function fmtDate(d) {
     year: "numeric"
   });
 }
+function fmtTime(t) {
+  if (!t) return "";
+  const [h, m] = t.split(":");
+  const hour = parseInt(h, 10);
+  const ampm = hour >= 12 ? "pm" : "am";
+  const h12 = hour % 12 || 12;
+  return `${h12}:${m} ${ampm}`;
+}
+function fmtDateTime(date, time) {
+  if (!time) return fmtDate(date);
+  return `${fmtDate(date)} at ${fmtTime(time)}`;
+}
 function isoToday() {
   return new Date().toISOString().split("T")[0];
 }
@@ -325,6 +337,11 @@ const T = {
         bg: "transparent",
         fg: "#F87171",
         b: "1px solid #7F1D1D44"
+      },
+      pink: {
+        bg: "#FF1493",
+        fg: "#fff",
+        b: "none"
       }
     }[v] || {};
     return {
@@ -936,7 +953,7 @@ function PendingThanksModal({
     }
   }, /*#__PURE__*/React.createElement("button", {
     style: {
-      ...T.btn("success"),
+      ...T.btn("pink"),
       padding: "6px 14px",
       fontSize: 12
     },
@@ -1300,7 +1317,7 @@ function ContactsList({
           fontWeight: 600,
           color: "#60A5FA"
         }
-      }, "Meeting ", fmtDate(upcomingMtg.date)));
+      }, "Meeting ", fmtDateTime(upcomingMtg.date, upcomingMtg.startTime)));
     })(), ref && /*#__PURE__*/React.createElement("div", {
       style: {
         fontSize: 11,
@@ -1383,6 +1400,217 @@ function ContactsList({
       }, fullName(s))))));
     })());
   })));
+}
+
+// ── MeetingList — editable meeting cards ─────────────────────────────────────
+function MeetingList({
+  meetings,
+  contactId,
+  toggleTask,
+  markThankYou,
+  updateMeeting
+}) {
+  const [editingId, setEditingId] = useState(null);
+  const [draft, setDraft] = useState({});
+  function startEdit(m) {
+    setEditingId(m.id);
+    setDraft({
+      date: m.date,
+      startTime: m.startTime || "",
+      notes: m.notes || ""
+    });
+  }
+  function saveEdit(mId) {
+    updateMeeting(contactId, mId, {
+      date: draft.date,
+      startTime: draft.startTime || null,
+      notes: draft.notes
+    });
+    setEditingId(null);
+  }
+  return /*#__PURE__*/React.createElement("div", null, meetings.slice().sort((a, b) => b.date.localeCompare(a.date)).map(m => /*#__PURE__*/React.createElement("div", {
+    key: m.id,
+    style: {
+      ...T.card,
+      marginBottom: 12
+    }
+  }, editingId === m.id ? /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      fontWeight: 700,
+      color: "#64748B",
+      marginBottom: 10,
+      textTransform: "uppercase",
+      letterSpacing: "0.07em"
+    }
+  }, "Edit Meeting"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: 8,
+      marginBottom: 8
+    }
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: "Date"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "date",
+    style: T.input,
+    value: draft.date,
+    onChange: e => setDraft(p => ({
+      ...p,
+      date: e.target.value
+    }))
+  })), /*#__PURE__*/React.createElement(Field, {
+    label: "Start Time"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "time",
+    style: T.input,
+    value: draft.startTime,
+    onChange: e => setDraft(p => ({
+      ...p,
+      startTime: e.target.value
+    }))
+  }))), /*#__PURE__*/React.createElement(Field, {
+    label: "Notes"
+  }, /*#__PURE__*/React.createElement("textarea", {
+    style: T.textarea,
+    value: draft.notes,
+    onChange: e => setDraft(p => ({
+      ...p,
+      notes: e.target.value
+    })),
+    placeholder: "Meeting notes\u2026"
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8,
+      marginTop: 8
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...T.btn("primary"),
+      padding: "6px 14px",
+      fontSize: 12
+    },
+    onClick: () => saveEdit(m.id)
+  }, "Save"), /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...T.btn("ghost"),
+      padding: "6px 12px",
+      fontSize: 12
+    },
+    onClick: () => setEditingId(null)
+  }, "Cancel"))) : /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: 8,
+      flexWrap: "wrap",
+      gap: 6
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 700,
+      fontSize: 14,
+      color: "#93C5FD"
+    }
+  }, fmtDate(m.date), m.startTime && /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontWeight: 400,
+      color: "#60A5FA",
+      fontSize: 12,
+      marginLeft: 6
+    }
+  }, fmtTime(m.startTime))), /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...T.btn("ghost"),
+      padding: "2px 8px",
+      fontSize: 11,
+      color: "#475569",
+      borderColor: "#1E3A5F"
+    },
+    onClick: () => startEdit(m)
+  }, "\u270E")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 6,
+      alignItems: "center"
+    }
+  }, m.thankYouSent ? /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...T.btn("ghost"),
+      fontSize: 11,
+      padding: "3px 10px",
+      color: "#22C55E",
+      borderColor: "#14532D44"
+    },
+    onClick: () => markThankYou(contactId, m.id, false),
+    title: "Click to undo"
+  }, "\u2713 Thanked ", fmtDate(m.thankYouDate), " \xD7") : /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...T.btn("pink"),
+      padding: "5px 13px",
+      fontSize: 12
+    },
+    onClick: () => markThankYou(contactId, m.id, true)
+  }, "Mark Thanked"))), m.notes && /*#__PURE__*/React.createElement("p", {
+    style: {
+      margin: "0 0 10px",
+      fontSize: 13.5,
+      color: "#CBD5E1",
+      lineHeight: 1.6
+    }
+  }, m.notes), m.tasks.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      fontWeight: 700,
+      color: "#475569",
+      textTransform: "uppercase",
+      letterSpacing: "0.07em",
+      marginBottom: 5
+    }
+  }, "Tasks"), m.tasks.map(t => /*#__PURE__*/React.createElement("div", {
+    key: t.id,
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      marginBottom: 7,
+      cursor: "pointer",
+      padding: "2px 0"
+    },
+    onClick: () => toggleTask(contactId, m.id, t.id)
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 18,
+      height: 18,
+      borderRadius: 4,
+      border: t.done ? "none" : "2px solid #334155",
+      background: t.done ? "#2563EB" : "transparent",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0
+    }
+  }, t.done && /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: "#fff",
+      fontSize: 11
+    }
+  }, "\u2713")), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 13.5,
+      color: t.done ? "#475569" : "#CBD5E1",
+      textDecoration: t.done ? "line-through" : "none"
+    }
+  }, t.text))))))));
 }
 
 // ── Quick Add Contact (used inside Connections editor) ────────────────────────
@@ -1530,6 +1758,7 @@ function ContactDetail({
   addMeeting,
   toggleTask,
   markThankYou,
+  updateMeeting,
   deleteContact,
   updateContact,
   updateConnections,
@@ -1905,6 +2134,12 @@ function ContactDetail({
       flexDirection: "column",
       gap: 8
     }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: 8
+    }
   }, /*#__PURE__*/React.createElement(Field, {
     label: "Date"
   }, /*#__PURE__*/React.createElement("input", {
@@ -1916,6 +2151,16 @@ function ContactDetail({
       date: e.target.value
     }))
   })), /*#__PURE__*/React.createElement(Field, {
+    label: "Start Time (optional)"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "time",
+    style: T.input,
+    value: newMeeting.startTime || "",
+    onChange: e => setNewMeeting(p => ({
+      ...p,
+      startTime: e.target.value
+    }))
+  }))), /*#__PURE__*/React.createElement(Field, {
     label: "Notes"
   }, /*#__PURE__*/React.createElement("textarea", {
     style: T.textarea,
@@ -1995,91 +2240,13 @@ function ContactDetail({
   }, "Save"), /*#__PURE__*/React.createElement("button", {
     style: T.btn("ghost"),
     onClick: () => setAddingMeeting(false)
-  }, "Cancel")))), selected.meetings.slice().sort((a, b) => b.date.localeCompare(a.date)).map(m => /*#__PURE__*/React.createElement("div", {
-    key: m.id,
-    style: {
-      ...T.card,
-      marginBottom: 12
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      marginBottom: 8,
-      flexWrap: "wrap",
-      gap: 6
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontWeight: 700,
-      fontSize: 14,
-      color: "#93C5FD"
-    }
-  }, fmtDate(m.date)), m.thankYouSent ? /*#__PURE__*/React.createElement("button", {
-    style: {
-      ...T.btn("ghost"),
-      fontSize: 11,
-      padding: "3px 10px",
-      color: "#22C55E",
-      borderColor: "#14532D44"
-    },
-    onClick: () => markThankYou(selected.id, m.id, false),
-    title: "Click to undo"
-  }, "\u2713 Thanked ", fmtDate(m.thankYouDate), " \xD7") : /*#__PURE__*/React.createElement("button", {
-    style: T.btn("success"),
-    onClick: () => markThankYou(selected.id, m.id, true)
-  }, "Mark Thanked")), m.notes && /*#__PURE__*/React.createElement("p", {
-    style: {
-      margin: "0 0 10px",
-      fontSize: 13.5,
-      color: "#CBD5E1",
-      lineHeight: 1.6
-    }
-  }, m.notes), m.tasks.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 11,
-      fontWeight: 700,
-      color: "#475569",
-      textTransform: "uppercase",
-      letterSpacing: "0.07em",
-      marginBottom: 5
-    }
-  }, "Tasks"), m.tasks.map(t => /*#__PURE__*/React.createElement("div", {
-    key: t.id,
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 10,
-      marginBottom: 7,
-      cursor: "pointer",
-      padding: "2px 0"
-    },
-    onClick: () => toggleTask(selected.id, m.id, t.id)
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      width: 18,
-      height: 18,
-      borderRadius: 4,
-      border: t.done ? "none" : "2px solid #334155",
-      background: t.done ? "#2563EB" : "transparent",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      flexShrink: 0
-    }
-  }, t.done && /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: "#fff",
-      fontSize: 11
-    }
-  }, "\u2713")), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 13.5,
-      color: t.done ? "#475569" : "#CBD5E1",
-      textDecoration: t.done ? "line-through" : "none"
-    }
-  }, t.text)))))), selected.meetings.length === 0 && !addingMeeting && /*#__PURE__*/React.createElement("div", {
+  }, "Cancel")))), /*#__PURE__*/React.createElement(MeetingList, {
+    meetings: selected.meetings,
+    contactId: selected.id,
+    toggleTask: toggleTask,
+    markThankYou: markThankYou,
+    updateMeeting: updateMeeting
+  }), selected.meetings.length === 0 && !addingMeeting && /*#__PURE__*/React.createElement("div", {
     style: {
       ...T.card,
       textAlign: "center",
@@ -2415,7 +2582,7 @@ function CalendarView({
       fontSize: 11,
       color: "#64748B"
     }
-  }, fmtDate(toISO(dt)), " \xB7 ", m.contact.company)), /*#__PURE__*/React.createElement("span", {
+  }, fmtDateTime(toISO(dt), m.startTime), " \xB7 ", m.contact.company)), /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: 12,
       color: "#60A5FA"
@@ -2471,7 +2638,7 @@ function CalendarView({
       fontSize: 11,
       color: "#64748B"
     }
-  }, fmtDate(m.date), " \xB7 ", m.contact.company)), /*#__PURE__*/React.createElement("div", {
+  }, fmtDateTime(m.date, m.startTime), " \xB7 ", m.contact.company)), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
@@ -2524,24 +2691,40 @@ function CalendarView({
 // ── Suggested View ────────────────────────────────────────────────────────────
 function SuggestedView({
   contacts,
-  markReachedOut,
+  addOutreach,
   setSelectedId,
   setView
 }) {
-  // Build flat list: every contact that has a referredBy (was suggested by someone)
-  const suggested = contacts.filter(c => c.referredBy).map(c => ({
-    contact: c,
-    suggestedBy: contacts.find(x => x.id === c.referredBy),
-    reachedOut: c.reachedOut || false,
-    reachedOutDate: c.reachedOutDate || null,
-    hasMeeting: c.meetings.length > 0
-  })).sort((a, b) => {
-    // Unreached first, then by name
-    if (a.reachedOut !== b.reachedOut) return a.reachedOut ? 1 : -1;
+  const today = isoToday();
+
+  // Build enriched list
+  const suggested = contacts.filter(c => c.referredBy).map(c => {
+    const hasMeeting = c.meetings.length > 0;
+    const hasUpcoming = c.meetings.some(m => m.date >= today);
+    const outreaches = c.outreaches || [];
+    const lastOutreach = outreaches.slice().sort((a, b) => b.date.localeCompare(a.date))[0] || null;
+    let status = "pending"; // no contact yet
+    if (hasUpcoming) status = "scheduled";else if (hasMeeting) status = "met";else if (outreaches.length > 0) status = "contacted";
+    return {
+      contact: c,
+      suggestedBy: contacts.find(x => x.id === c.referredBy),
+      outreaches,
+      lastOutreach,
+      status,
+      hasMeeting,
+      hasUpcoming
+    };
+  }).sort((a, b) => {
+    const order = {
+      pending: 0,
+      contacted: 1,
+      scheduled: 2,
+      met: 3
+    };
+    const od = order[a.status] - order[b.status];
+    if (od !== 0) return od;
     return (a.contact.lastName || "").localeCompare(b.contact.lastName || "");
   });
-  const pending = suggested.filter(s => !s.reachedOut);
-  const done = suggested.filter(s => s.reachedOut);
   if (suggested.length === 0) {
     return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
       style: {
@@ -2573,20 +2756,49 @@ function SuggestedView({
       }
     }, "When a contact suggests someone to talk to, they'll appear here.")));
   }
-  function Row({
+  const STATUS_STYLE = {
+    pending: {
+      bg: "#F59E0B22",
+      color: "#F59E0B",
+      label: "Not Contacted"
+    },
+    contacted: {
+      bg: "#3B82F622",
+      color: "#60A5FA",
+      label: "Contacted"
+    },
+    scheduled: {
+      bg: "#7C3AED22",
+      color: "#A78BFA",
+      label: "Meeting Scheduled"
+    },
+    met: {
+      bg: "#14532D22",
+      color: "#4ADE80",
+      label: "Met"
+    }
+  };
+  function OutreachRow({
     s
   }) {
+    const [showLog, setShowLog] = useState(false);
+    const [logForm, setLogForm] = useState({
+      date: today,
+      method: "Email",
+      notes: ""
+    });
+    const ss = STATUS_STYLE[s.status];
     return /*#__PURE__*/React.createElement("div", {
       style: {
         ...T.card,
-        marginBottom: 8,
+        marginBottom: 10
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
         display: "flex",
-        alignItems: "center",
+        alignItems: "flex-start",
         gap: 12,
-        padding: "12px 14px",
-        flexWrap: "wrap",
-        opacity: s.reachedOut ? 0.65 : 1,
-        transition: "opacity 0.2s"
+        flexWrap: "wrap"
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
@@ -2610,7 +2822,8 @@ function SuggestedView({
         display: "flex",
         alignItems: "center",
         gap: 7,
-        flexWrap: "wrap"
+        flexWrap: "wrap",
+        marginBottom: 2
       }
     }, /*#__PURE__*/React.createElement("span", {
       style: {
@@ -2623,29 +2836,27 @@ function SuggestedView({
         setSelectedId(s.contact.id);
         setView("detail");
       }
-    }, fullName(s.contact)), s.hasMeeting && /*#__PURE__*/React.createElement("span", {
+    }, fullName(s.contact)), /*#__PURE__*/React.createElement("span", {
       style: {
         fontSize: 10,
-        background: "#14532D22",
-        color: "#4ADE80",
+        background: ss.bg,
+        color: ss.color,
         borderRadius: 99,
-        padding: "1px 7px",
+        padding: "1px 8px",
         fontWeight: 600,
         fontFamily: "'DM Mono',monospace"
       }
-    }, "MET")), s.contact.company && /*#__PURE__*/React.createElement("div", {
+    }, ss.label)), s.contact.company && /*#__PURE__*/React.createElement("div", {
       style: {
         fontSize: 12,
-        color: "#64748B",
-        marginTop: 1
+        color: "#64748B"
       }
     }, s.contact.company), /*#__PURE__*/React.createElement("div", {
       style: {
         fontSize: 11,
         color: "#475569",
-        marginTop: 3,
+        marginTop: 2,
         display: "flex",
-        alignItems: "center",
         gap: 5,
         flexWrap: "wrap"
       }
@@ -2659,31 +2870,27 @@ function SuggestedView({
         setSelectedId(s.suggestedBy.id);
         setView("detail");
       }
-    }, fullName(s.suggestedBy)), s.reachedOut && s.reachedOutDate && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", null, "\xB7"), /*#__PURE__*/React.createElement("span", {
-      style: {
-        color: "#22C55E"
-      }
-    }, "Reached out ", fmtDate(s.reachedOutDate))))), /*#__PURE__*/React.createElement("div", {
+    }, fullName(s.suggestedBy)))), /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
-        gap: 8,
+        gap: 6,
         flexShrink: 0
       }
-    }, s.reachedOut ? /*#__PURE__*/React.createElement("button", {
+    }, s.status === "pending" && /*#__PURE__*/React.createElement("button", {
+      style: {
+        ...T.btn("primary"),
+        padding: "5px 12px",
+        fontSize: 12
+      },
+      onClick: () => setShowLog(v => !v)
+    }, "+ Log Outreach"), s.status === "contacted" && /*#__PURE__*/React.createElement("button", {
       style: {
         ...T.btn("ghost"),
-        fontSize: 12,
-        padding: "5px 11px"
+        padding: "5px 12px",
+        fontSize: 12
       },
-      onClick: () => markReachedOut(s.contact.id, false)
-    }, "Undo") : /*#__PURE__*/React.createElement("button", {
-      style: {
-        ...T.btn("success"),
-        fontSize: 12,
-        padding: "5px 11px"
-      },
-      onClick: () => markReachedOut(s.contact.id, true)
-    }, "\u2713 Reached Out"), /*#__PURE__*/React.createElement("span", {
+      onClick: () => setShowLog(v => !v)
+    }, "+ Another"), /*#__PURE__*/React.createElement("span", {
       style: {
         cursor: "pointer",
         fontSize: 12,
@@ -2694,8 +2901,156 @@ function SuggestedView({
         setSelectedId(s.contact.id);
         setView("detail");
       }
-    }, "\u2192")));
+    }, "\u2192"))), s.outreaches.length > 0 && /*#__PURE__*/React.createElement("div", {
+      style: {
+        marginTop: 10,
+        paddingTop: 10,
+        borderTop: "1px solid #1E3A5F"
+      }
+    }, s.outreaches.slice().sort((a, b) => b.date.localeCompare(a.date)).map((o, i) => /*#__PURE__*/React.createElement("div", {
+      key: i,
+      style: {
+        display: "flex",
+        alignItems: "flex-start",
+        gap: 8,
+        marginBottom: 6
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: 6,
+        height: 6,
+        borderRadius: "50%",
+        background: "#3B82F6",
+        marginTop: 5,
+        flexShrink: 0
+      }
+    }), /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: 1
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 12,
+        color: "#94A3B8"
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontWeight: 600,
+        color: "#60A5FA"
+      }
+    }, o.method), /*#__PURE__*/React.createElement("span", {
+      style: {
+        color: "#475569",
+        marginLeft: 6
+      }
+    }, fmtDate(o.date))), o.notes && /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 11,
+        color: "#64748B",
+        marginTop: 1
+      }
+    }, o.notes))))), showLog && /*#__PURE__*/React.createElement("div", {
+      style: {
+        marginTop: 10,
+        paddingTop: 10,
+        borderTop: "1px solid #1E3A5F"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 12,
+        fontWeight: 700,
+        color: "#64748B",
+        marginBottom: 8,
+        textTransform: "uppercase",
+        letterSpacing: "0.06em"
+      }
+    }, "Log Outreach"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
+        gap: 8,
+        marginBottom: 8
+      }
+    }, /*#__PURE__*/React.createElement(Field, {
+      label: "Date"
+    }, /*#__PURE__*/React.createElement("input", {
+      type: "date",
+      style: T.input,
+      value: logForm.date,
+      onChange: e => setLogForm(p => ({
+        ...p,
+        date: e.target.value
+      }))
+    })), /*#__PURE__*/React.createElement(Field, {
+      label: "Method"
+    }, /*#__PURE__*/React.createElement("select", {
+      style: {
+        ...T.input
+      },
+      value: logForm.method,
+      onChange: e => setLogForm(p => ({
+        ...p,
+        method: e.target.value
+      }))
+    }, ["Email", "Phone", "LinkedIn", "Text", "Other"].map(m => /*#__PURE__*/React.createElement("option", {
+      key: m
+    }, m))))), /*#__PURE__*/React.createElement(Field, {
+      label: "Notes (optional)"
+    }, /*#__PURE__*/React.createElement("input", {
+      style: T.input,
+      placeholder: "Left voicemail, sent intro\u2026",
+      value: logForm.notes,
+      onChange: e => setLogForm(p => ({
+        ...p,
+        notes: e.target.value
+      }))
+    })), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        gap: 8,
+        marginTop: 8
+      }
+    }, /*#__PURE__*/React.createElement("button", {
+      style: {
+        ...T.btn("primary"),
+        padding: "6px 14px",
+        fontSize: 12
+      },
+      onClick: () => {
+        addOutreach(s.contact.id, {
+          date: logForm.date,
+          method: logForm.method,
+          notes: logForm.notes
+        });
+        setShowLog(false);
+        setLogForm({
+          date: today,
+          method: "Email",
+          notes: ""
+        });
+      }
+    }, "Save"), /*#__PURE__*/React.createElement("button", {
+      style: {
+        ...T.btn("ghost"),
+        padding: "6px 12px",
+        fontSize: 12
+      },
+      onClick: () => setShowLog(false)
+    }, "Cancel"))));
   }
+  const byStatus = {
+    pending: suggested.filter(s => s.status === "pending"),
+    contacted: suggested.filter(s => s.status === "contacted"),
+    scheduled: suggested.filter(s => s.status === "scheduled"),
+    met: suggested.filter(s => s.status === "met")
+  };
+  const counts = {
+    total: suggested.length,
+    pending: byStatus.pending.length,
+    contacted: byStatus.contacted.length,
+    scheduled: byStatus.scheduled.length,
+    met: byStatus.met.length
+  };
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
     style: {
       fontSize: 12,
@@ -2705,43 +3060,60 @@ function SuggestedView({
   }, "Contacts suggested to you by your network"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "grid",
-      gridTemplateColumns: "1fr 1fr 1fr",
-      gap: 9,
+      gridTemplateColumns: "repeat(4,1fr)",
+      gap: 8,
       marginBottom: 20
     }
   }, [{
-    label: "Suggested",
-    val: suggested.length,
+    label: "To Contact",
+    val: counts.pending,
+    color: "#F59E0B"
+  }, {
+    label: "Contacted",
+    val: counts.contacted,
     color: "#60A5FA"
   }, {
-    label: "To Reach",
-    val: pending.length,
-    color: pending.length > 0 ? "#F59E0B" : "#4ADE80"
+    label: "Scheduled",
+    val: counts.scheduled,
+    color: "#A78BFA"
   }, {
-    label: "Reached Out",
-    val: done.length,
+    label: "Met",
+    val: counts.met,
     color: "#4ADE80"
   }].map(x => /*#__PURE__*/React.createElement("div", {
     key: x.label,
     style: {
       ...T.card,
       textAlign: "center",
-      padding: "14px 8px"
+      padding: "12px 6px"
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 26,
+      fontSize: 22,
       fontFamily: "'DM Serif Display',serif",
       color: x.color,
       marginBottom: 2
     }
   }, x.val), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 12,
+      fontSize: 11,
       fontWeight: 600,
       color: "#94A3B8"
     }
-  }, x.label)))), pending.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, x.label)))), [{
+    key: "pending",
+    title: "To Reach Out"
+  }, {
+    key: "contacted",
+    title: "Contacted — Awaiting Response"
+  }, {
+    key: "scheduled",
+    title: "Meeting Scheduled"
+  }, {
+    key: "met",
+    title: "Met"
+  }].filter(g => byStatus[g.key].length > 0).map(g => /*#__PURE__*/React.createElement("div", {
+    key: g.key,
     style: {
       marginBottom: 20
     }
@@ -2754,22 +3126,10 @@ function SuggestedView({
       textTransform: "uppercase",
       letterSpacing: "0.08em"
     }
-  }, "To Reach Out (", pending.length, ")"), pending.map(s => /*#__PURE__*/React.createElement(Row, {
+  }, g.title, " (", byStatus[g.key].length, ")"), byStatus[g.key].map(s => /*#__PURE__*/React.createElement(OutreachRow, {
     key: s.contact.id,
     s: s
-  }))), done.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
-    style: {
-      margin: "0 0 10px",
-      fontSize: 12,
-      fontWeight: 700,
-      color: "#64748B",
-      textTransform: "uppercase",
-      letterSpacing: "0.08em"
-    }
-  }, "Reached Out (", done.length, ")"), done.map(s => /*#__PURE__*/React.createElement(Row, {
-    key: s.contact.id,
-    s: s
-  }))));
+  })))));
 }
 
 // ── Stats View ────────────────────────────────────────────────────────────────
@@ -2851,7 +3211,7 @@ function StatsView({
   }, openTasks, " open \xB7 ", allTasks.filter(t => t.done).length, " completed")), /*#__PURE__*/React.createElement("button", {
     style: T.btn("ghost"),
     onClick: () => setTaskModal(true)
-  }, "View All")), unthx > 0 && /*#__PURE__*/React.createElement("div", {
+  }, "View All")), contacts.some(c => c.meetings.length > 0) && /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: 20
     }
@@ -2864,8 +3224,8 @@ function StatsView({
       textTransform: "uppercase",
       letterSpacing: "0.08em"
     }
-  }, "Needs Thank-You"), contacts.flatMap(c => c.meetings.filter(m => !m.thankYouSent).map(m => /*#__PURE__*/React.createElement("div", {
-    key: m.id,
+  }, "Thank-You Tracker"), contacts.flatMap(c => c.meetings.map(m => /*#__PURE__*/React.createElement("div", {
+    key: c.id + "-" + m.id,
     style: {
       ...T.card,
       display: "flex",
@@ -2873,7 +3233,8 @@ function StatsView({
       gap: 12,
       padding: "12px 14px",
       marginBottom: 8,
-      flexWrap: "wrap"
+      flexWrap: "wrap",
+      borderColor: m.thankYouSent ? "#14532D44" : "#1E3A5F"
     }
   }, /*#__PURE__*/React.createElement(Avatar, {
     contact: c,
@@ -2897,17 +3258,27 @@ function StatsView({
   }, "Met ", fmtDate(m.date))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
-      gap: 8
+      gap: 8,
+      alignItems: "center"
     }
-  }, /*#__PURE__*/React.createElement("button", {
-    style: T.btn("success"),
+  }, m.thankYouSent ? /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 12,
+      color: "#22C55E",
+      fontWeight: 600
+    }
+  }, "\u2713 Thanked ", fmtDate(m.thankYouDate)) : /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...T.btn("pink"),
+      padding: "6px 14px",
+      fontSize: 12
+    },
     onClick: () => markThankYou(c.id, m.id, true)
-  }, "\u2713 Thanked"), /*#__PURE__*/React.createElement("span", {
+  }, "Mark Thanked"), /*#__PURE__*/React.createElement("span", {
     style: {
       cursor: "pointer",
       fontSize: 12,
-      color: "#60A5FA",
-      alignSelf: "center"
+      color: "#60A5FA"
     },
     onClick: () => {
       setSelectedId(c.id);
@@ -2915,7 +3286,11 @@ function StatsView({
     }
   }, "\u2192")))))), (() => {
     const today = isoToday();
-    const upcoming = allMeetings.filter(m => m.date >= today).sort((a, b) => a.date.localeCompare(b.date));
+    const upcoming = allMeetings.filter(m => m.date >= today).sort((a, b) => {
+      const dc = a.date.localeCompare(b.date);
+      if (dc !== 0) return dc;
+      return (a.startTime || "99:99").localeCompare(b.startTime || "99:99");
+    });
     if (upcoming.length === 0) return null;
     return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
       style: {
@@ -2975,7 +3350,13 @@ function StatsView({
         fontWeight: 700,
         color: "#60A5FA"
       }
-    }, fmtDate(m.date)), (() => {
+    }, fmtDate(m.date)), m.startTime && /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 11,
+        color: "#60A5FA",
+        marginTop: 1
+      }
+    }, fmtTime(m.startTime)), (() => {
       const days = Math.round((new Date(m.date) - new Date(today)) / (1000 * 60 * 60 * 24));
       return /*#__PURE__*/React.createElement("div", {
         style: {
@@ -3003,6 +3384,7 @@ function App() {
   const [addingMeeting, setAddingMeeting] = useState(false);
   const [newMeeting, setNewMeeting] = useState({
     date: isoToday(),
+    startTime: "",
     notes: "",
     tasks: ""
   });
@@ -3027,7 +3409,10 @@ function App() {
     const filtered = contacts.filter(c => fullName(c).toLowerCase().includes(q) || (c.company || "").toLowerCase().includes(q) || (c.email || "").toLowerCase().includes(q));
     const today = isoToday();
     function nextMeeting(c) {
-      return c.meetings.filter(m => m.date >= today).sort((a, b) => a.date.localeCompare(b.date))[0] || null;
+      return c.meetings.filter(m => m.date >= today).sort((a, b) => {
+        const dc = a.date.localeCompare(b.date);
+        return dc !== 0 ? dc : (a.startTime || '99:99').localeCompare(b.startTime || '99:99');
+      })[0] || null;
     }
     return filtered.slice().sort((a, b) => {
       const na = nextMeeting(a),
@@ -3053,6 +3438,15 @@ function App() {
     meeting: m
   })))), [contacts]);
   const openTasks = allTasks.filter(t => !t.done).length;
+  function updateMeeting(cId, mId, changes) {
+    setContacts(prev => prev.map(c => c.id !== cId ? c : {
+      ...c,
+      meetings: c.meetings.map(m => m.id !== mId ? m : {
+        ...m,
+        ...changes
+      })
+    }));
+  }
   function toggleTask(cId, mId, tId) {
     setContacts(prev => prev.map(c => c.id !== cId ? c : {
       ...c,
@@ -3089,6 +3483,7 @@ function App() {
         meetings: [...c.meetings, {
           id: Date.now(),
           date: newMeeting.date,
+          startTime: newMeeting.startTime || null,
           notes: newMeeting.notes,
           tasks,
           thankYouSent: false,
@@ -3105,6 +3500,7 @@ function App() {
     });
     setNewMeeting({
       date: isoToday(),
+      startTime: "",
       notes: "",
       tasks: "",
       suggestedContacts: []
@@ -3155,6 +3551,12 @@ function App() {
       }
       return updated;
     });
+  }
+  function addOutreach(cId, outreach) {
+    setContacts(prev => prev.map(c => c.id !== cId ? c : {
+      ...c,
+      outreaches: [...(c.outreaches || []), outreach]
+    }));
   }
   function markReachedOut(cId, val) {
     setContacts(prev => prev.map(c => c.id !== cId ? c : {
@@ -3296,6 +3698,7 @@ function App() {
     addMeeting: addMeeting,
     toggleTask: toggleTask,
     markThankYou: markThankYou,
+    updateMeeting: updateMeeting,
     deleteContact: deleteContact,
     updateContact: updateContact,
     updateConnections: updateConnections,
@@ -3319,7 +3722,7 @@ function App() {
     setTaskModal: setTaskModal
   }), view === "suggested" && /*#__PURE__*/React.createElement(SuggestedView, {
     contacts: contacts,
-    markReachedOut: markReachedOut,
+    addOutreach: addOutreach,
     setSelectedId: setSelectedId,
     setView: setView
   }), view === "stats" && /*#__PURE__*/React.createElement(StatsView, {
