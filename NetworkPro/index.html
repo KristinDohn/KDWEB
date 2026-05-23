@@ -1152,13 +1152,18 @@ function ContactDetail({
   markThankYou,
   deleteContact,
   updateContact,
+  updateConnections,
   setSelectedId,
   onBack
 }) {
   const [editing, setEditing] = useState(false);
+  const [showConnEditor, setShowConnEditor] = useState(false);
   if (!selected) return null;
   const ref = selected.referredBy ? contacts.find(x => x.id === selected.referredBy) : null;
-  const refs = selected.referredContacts.map(id => contacts.find(c => c.id === id)).filter(Boolean);
+  const refs = (selected.referredContacts || []).map(id => contacts.find(c => c.id === id)).filter(Boolean);
+
+  // Candidates: all contacts except self
+  const others = contacts.filter(c => c.id !== selected.id);
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("button", {
     style: {
       ...T.btn("ghost"),
@@ -1265,61 +1270,223 @@ function ContactDetail({
       lineHeight: 1.6,
       whiteSpace: "pre-wrap"
     }
-  }, selected.contactNotes))), (ref || refs.length > 0) && /*#__PURE__*/React.createElement("div", {
+  }, selected.contactNotes))), /*#__PURE__*/React.createElement("div", {
     style: {
       ...T.card,
       marginBottom: 14
     }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: 12
+    }
   }, /*#__PURE__*/React.createElement("h3", {
     style: {
-      margin: "0 0 9px",
+      margin: 0,
       fontSize: 12,
       fontWeight: 700,
       color: "#64748B",
       textTransform: "uppercase",
       letterSpacing: "0.08em"
     }
-  }, "Connections"), ref && /*#__PURE__*/React.createElement("div", {
+  }, "Connections"), /*#__PURE__*/React.createElement("button", {
     style: {
-      fontSize: 13,
-      marginBottom: 5
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: "#64748B"
-    }
-  }, "Referred by "), /*#__PURE__*/React.createElement("span", {
-    style: {
-      cursor: "pointer",
-      color: "#93C5FD",
-      fontWeight: 600
+      ...T.btn("ghost"),
+      fontSize: 12,
+      padding: "5px 11px"
     },
-    onClick: () => setSelectedId(ref.id)
-  }, fullName(ref)), /*#__PURE__*/React.createElement("span", {
+    onClick: () => setShowConnEditor(e => !e)
+  }, showConnEditor ? "Done" : "✎ Edit")), showConnEditor ? /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      color: "#475569",
-      fontSize: 11
+      marginBottom: 14
     }
-  }, " (", ref.company, ")")), refs.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("label", {
+    style: T.label
+  }, "Who referred you to ", selected.firstName || "this person", "?"), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 13,
       display: "flex",
       flexWrap: "wrap",
       gap: 6
     }
-  }, /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("button", {
     style: {
-      color: "#64748B"
+      ...T.btn(selected.referredBy == null ? "primary" : "ghost"),
+      padding: "5px 12px",
+      fontSize: 12
+    },
+    onClick: () => updateConnections(selected.id, {
+      referredBy: null
+    })
+  }, "No one"), others.map(c => /*#__PURE__*/React.createElement("button", {
+    key: c.id,
+    style: {
+      ...T.btn(selected.referredBy === c.id ? "primary" : "ghost"),
+      padding: "5px 12px",
+      fontSize: 12,
+      display: "flex",
+      alignItems: "center",
+      gap: 6
+    },
+    onClick: () => updateConnections(selected.id, {
+      referredBy: selected.referredBy === c.id ? null : c.id
+    })
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 18,
+      height: 18,
+      borderRadius: "50%",
+      background: c.color,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontSize: 9,
+      color: "#fff",
+      flexShrink: 0
     }
-  }, "Introduced to:"), refs.map(r => /*#__PURE__*/React.createElement("span", {
+  }, initials(c)), fullName(c))))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    style: T.label
+  }, selected.firstName || "This person", " suggested I talk to\u2026"), others.length === 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "#475569"
+    }
+  }, "Add more contacts first."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexWrap: "wrap",
+      gap: 6
+    }
+  }, others.map(c => {
+    const linked = (selected.referredContacts || []).includes(c.id);
+    return /*#__PURE__*/React.createElement("button", {
+      key: c.id,
+      style: {
+        ...T.btn(linked ? "primary" : "ghost"),
+        padding: "5px 12px",
+        fontSize: 12,
+        display: "flex",
+        alignItems: "center",
+        gap: 6
+      },
+      onClick: () => {
+        const cur = selected.referredContacts || [];
+        const next = linked ? cur.filter(id => id !== c.id) : [...cur, c.id];
+        updateConnections(selected.id, {
+          referredContacts: next
+        });
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: 18,
+        height: 18,
+        borderRadius: "50%",
+        background: c.color,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: 9,
+        color: "#fff",
+        flexShrink: 0
+      }
+    }, initials(c)), fullName(c), linked && /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 10
+      }
+    }, "\u2713"));
+  })))) : /*#__PURE__*/React.createElement("div", null, !ref && refs.length === 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      color: "#334155",
+      fontStyle: "italic"
+    }
+  }, "No connections recorded \u2014 tap Edit to add."), ref && /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      marginBottom: 8,
+      padding: "8px 10px",
+      background: "#1E3A5F22",
+      borderRadius: 8
+    }
+  }, /*#__PURE__*/React.createElement(Avatar, {
+    contact: ref,
+    size: 28
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      minWidth: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "#64748B",
+      marginBottom: 1
+    }
+  }, "Referred by"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      fontWeight: 600,
+      color: "#93C5FD",
+      cursor: "pointer"
+    },
+    onClick: () => setSelectedId(ref.id)
+  }, fullName(ref)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "#475569"
+    }
+  }, ref.company))), refs.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "#64748B",
+      marginBottom: 7
+    }
+  }, "Suggested I talk to:"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 6
+    }
+  }, refs.map(r => /*#__PURE__*/React.createElement("div", {
     key: r.id,
     style: {
-      cursor: "pointer",
-      color: "#93C5FD",
-      fontWeight: 600
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      padding: "8px 10px",
+      background: "#1E3A5F22",
+      borderRadius: 8,
+      cursor: "pointer"
     },
     onClick: () => setSelectedId(r.id)
-  }, fullName(r))))), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement(Avatar, {
+    contact: r,
+    size: 28
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      minWidth: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      fontWeight: 600,
+      color: "#93C5FD"
+    }
+  }, fullName(r)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "#475569"
+    }
+  }, r.company)), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 11,
+      color: "#60A5FA"
+    }
+  }, "\u2192"))))))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       alignItems: "center",
@@ -1389,7 +1556,53 @@ function ContactDetail({
       ...p,
       tasks: e.target.value
     }))
-  })), /*#__PURE__*/React.createElement("div", {
+  })), /*#__PURE__*/React.createElement(Field, {
+    label: `Did ${selected.firstName || "they"} suggest anyone to talk to?`
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexWrap: "wrap",
+      gap: 6,
+      marginTop: 4
+    }
+  }, contacts.filter(c => c.id !== selected.id).map(c => {
+    const checked = (newMeeting.suggestedContacts || []).includes(c.id);
+    return /*#__PURE__*/React.createElement("button", {
+      key: c.id,
+      style: {
+        ...T.btn(checked ? "primary" : "ghost"),
+        padding: "4px 11px",
+        fontSize: 12,
+        display: "flex",
+        alignItems: "center",
+        gap: 5
+      },
+      onClick: () => {
+        const cur = newMeeting.suggestedContacts || [];
+        setNewMeeting(p => ({
+          ...p,
+          suggestedContacts: checked ? cur.filter(id => id !== c.id) : [...cur, c.id]
+        }));
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: 16,
+        height: 16,
+        borderRadius: "50%",
+        background: c.color,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: 8,
+        color: "#fff"
+      }
+    }, initials(c)), fullName(c), checked && " ✓");
+  }), contacts.filter(c => c.id !== selected.id).length === 0 && /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 12,
+      color: "#475569"
+    }
+  }, "No other contacts yet."))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 8
@@ -2138,23 +2351,80 @@ function App() {
       text: t.trim(),
       done: false
     }));
-    setContacts(prev => prev.map(c => c.id !== cId ? c : {
-      ...c,
-      meetings: [...c.meetings, {
-        id: Date.now(),
-        date: newMeeting.date,
-        notes: newMeeting.notes,
-        tasks,
-        thankYouSent: false,
-        thankYouDate: null
-      }]
-    }));
+    const suggested = newMeeting.suggestedContacts || [];
+    setContacts(prev => {
+      // Add the meeting to the contact
+      const updated = prev.map(c => c.id !== cId ? c : {
+        ...c,
+        meetings: [...c.meetings, {
+          id: Date.now(),
+          date: newMeeting.date,
+          notes: newMeeting.notes,
+          tasks,
+          thankYouSent: false,
+          thankYouDate: null
+        }],
+        // Merge any newly suggested contacts into referredContacts
+        referredContacts: [...new Set([...(c.referredContacts || []), ...suggested])]
+      });
+      // For each suggested contact, set their referredBy to cId if not already set
+      return updated.map(c => suggested.includes(c.id) && !c.referredBy ? {
+        ...c,
+        referredBy: cId
+      } : c);
+    });
     setNewMeeting({
       date: isoToday(),
       notes: "",
-      tasks: ""
+      tasks: "",
+      suggestedContacts: []
     });
     setAddingMeeting(false);
+  }
+  function updateConnections(cId, changes) {
+    setContacts(prev => {
+      const cur = prev.find(c => c.id === cId);
+      if (!cur) return prev;
+      let updated = prev.map(c => c.id !== cId ? c : {
+        ...c,
+        ...changes
+      });
+      // If referredBy changed, keep the referring contact's referredContacts in sync
+      if ("referredBy" in changes) {
+        const oldRef = cur.referredBy;
+        const newRef = changes.referredBy;
+        // Remove from old referrer's list
+        if (oldRef) updated = updated.map(c => c.id !== oldRef ? c : {
+          ...c,
+          referredContacts: (c.referredContacts || []).filter(id => id !== cId)
+        });
+        // Add to new referrer's list
+        if (newRef) updated = updated.map(c => c.id !== newRef ? c : {
+          ...c,
+          referredContacts: [...new Set([...(c.referredContacts || []), cId])]
+        });
+      }
+      // If referredContacts changed, sync referredBy on those contacts
+      if ("referredContacts" in changes) {
+        const prev_refs = cur.referredContacts || [];
+        const next_refs = changes.referredContacts || [];
+        // Newly added — set their referredBy
+        next_refs.filter(id => !prev_refs.includes(id)).forEach(id => {
+          updated = updated.map(c => c.id !== id ? c : {
+            ...c,
+            referredBy: cId
+          });
+        });
+        // Removed — clear their referredBy if it pointed here
+        prev_refs.filter(id => !next_refs.includes(id)).forEach(id => {
+          updated = updated.map(c => c.id !== id || c.referredBy !== cId ? c : {
+            ...c,
+            referredBy: null
+          });
+        });
+      }
+      return updated;
+    });
   }
   function addContact(form) {
     const color = COLORS[contacts.length % COLORS.length];
@@ -2257,6 +2527,7 @@ function App() {
     markThankYou: markThankYou,
     deleteContact: deleteContact,
     updateContact: updateContact,
+    updateConnections: updateConnections,
     setSelectedId: setSelectedId,
     onBack: () => setView("contacts")
   }), view === "calendar" && /*#__PURE__*/React.createElement(CalendarView, {
