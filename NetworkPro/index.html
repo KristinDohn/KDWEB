@@ -216,7 +216,8 @@ async function sendAccessRequestEmail(firstName, lastName, email) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "apikey": SB_KEY
+      "apikey": SB_KEY,
+      "Authorization": "Bearer " + SB_KEY
     },
     body: JSON.stringify({
       firstName,
