@@ -329,21 +329,28 @@ async function sbLoad(token, userId) {
   if (!userId) return null;
   try {
     const validToken = (await getValidToken()) || token;
-    if (!validToken) return null;
+    if (!validToken) {
+      console.warn("sbLoad: no valid token");
+      return null;
+    }
     try {
       localStorage.setItem("networkpro_token", validToken);
     } catch (e) {}
-    const res = await fetch(`${SB_TABLE}?user_id=eq.${userId}&select=data`, {
+    const res = await fetch(`${SB_TABLE}?user_id=eq.${userId}&select=data&order=updated_at.desc&limit=1`, {
       headers: {
         "apikey": SB_KEY,
         "Authorization": `Bearer ${validToken}`
       }
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.warn("sbLoad failed:", res.status);
+      return null;
+    }
     const rows = await res.json();
     if (rows && rows[0] && rows[0].data) return rows[0].data;
-    return null;
+    return [];
   } catch (e) {
+    console.warn("sbLoad error:", e);
     return null;
   }
 }
@@ -1770,7 +1777,8 @@ function SidebarInner({
   openTasks,
   onNavigate,
   onLogout,
-  onPendingThanksClick
+  onPendingThanksClick,
+  onRetrySync
 }) {
   const pendingThanks = contacts.reduce((s, c) => s + c.meetings.filter(m => !m.thankYouSent).length, 0);
   const today = isoToday();
@@ -1904,12 +1912,18 @@ function SidebarInner({
       fontSize: 11,
       color: "#4ADE80"
     }
-  }, "\u2713 Synced") : syncStatus === "error" ? /*#__PURE__*/React.createElement("span", {
+  }, "\u2713 Synced") : syncStatus === "error" ? /*#__PURE__*/React.createElement("button", {
+    onClick: onRetrySync,
     style: {
+      background: "none",
+      border: "none",
+      color: "#F87171",
       fontSize: 11,
-      color: "#F87171"
+      cursor: "pointer",
+      padding: 0,
+      fontFamily: "'DM Sans',sans-serif"
     }
-  }, "\u26A0 Offline") : /*#__PURE__*/React.createElement("span", {
+  }, "\u26A0 Tap to retry") : /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: 11,
       color: "#334155"
@@ -5138,6 +5152,28 @@ function App() {
       setAuthedState(true);
     }
   });
+  async function retrySync() {
+    setSyncStatus("syncing");
+    try {
+      const remote = await sbLoad(tokenRef.current, authUserId);
+      if (remote && Array.isArray(remote) && remote.length > 0) {
+        setContactsRaw(remote);
+        cacheSave(remote);
+        setSyncStatus("synced");
+      } else {
+        // Push local data up
+        const local = cacheLoad();
+        if (local && local.length > 0) {
+          await sbSave(local, tokenRef.current, authUserId);
+          setSyncStatus("synced");
+        } else {
+          setSyncStatus("idle");
+        }
+      }
+    } catch (e) {
+      setSyncStatus("error");
+    }
+  }
   const sidebarProps = {
     view,
     contacts,
@@ -5146,7 +5182,8 @@ function App() {
     openTasks,
     onNavigate: navigate,
     onLogout: logout,
-    onPendingThanksClick: () => setThanksModal(true)
+    onPendingThanksClick: () => setThanksModal(true),
+    onRetrySync: retrySync
   };
   return /*#__PURE__*/React.createElement("div", {
     className: "app-shell"
