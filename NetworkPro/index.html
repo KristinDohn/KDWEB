@@ -212,30 +212,16 @@ async function sbLoadUser(token) {
   return res.json();
 }
 async function sendAccessRequestEmail(firstName, lastName, email) {
-  await fetch("https://api.resend.com/emails", {
+  await fetch("https://fxxunfpgqkhsmrrlmcoo.supabase.co/functions/v1/send-access-request", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${RESEND_KEY}`
+      "apikey": SB_KEY
     },
     body: JSON.stringify({
-      from: "NetworkPro <onboarding@resend.dev>",
-      to: [ADMIN_EMAIL],
-      subject: `NetworkPro Access Request: ${firstName} ${lastName}`,
-      html: `
-        <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
-          <h2 style="color:#2563EB;margin-bottom:4px">NetworkPro</h2>
-          <p style="color:#64748B;font-size:13px;margin-bottom:24px">Access Request</p>
-          <table style="width:100%;border-collapse:collapse">
-            <tr><td style="padding:8px 0;color:#94A3B8;font-size:13px;width:100px">Name</td><td style="padding:8px 0;font-size:14px;font-weight:600">${firstName} ${lastName}</td></tr>
-            <tr><td style="padding:8px 0;color:#94A3B8;font-size:13px">Email</td><td style="padding:8px 0;font-size:14px"><a href="mailto:${email}">${email}</a></td></tr>
-            <tr><td style="padding:8px 0;color:#94A3B8;font-size:13px">Requested</td><td style="padding:8px 0;font-size:14px">${new Date().toLocaleString()}</td></tr>
-          </table>
-          <div style="margin-top:24px;padding:16px;background:#F1F5F9;border-radius:8px">
-            <p style="margin:0;font-size:13px;color:#475569">To approve, add this user in your <a href="https://supabase.com/dashboard/project/fxxunfpgqkhsmrrlmcoo/auth/users" style="color:#2563EB">Supabase dashboard</a>.</p>
-          </div>
-        </div>
-      `
+      firstName,
+      lastName,
+      email
     })
   });
 }
