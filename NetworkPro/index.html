@@ -4326,44 +4326,45 @@ function App() {
   const [taskModal, setTaskModal] = useState(false);
   const [thanksModal, setThanksModal] = useState(false);
 
-  // Load from Supabase on mount — merges with cache, Supabase wins if newer
-  const [needsMigration, setNeedsMigration] = useState(false);
-  const [migrating, setMigrating] = useState(false);
+  // Track if initial load from Supabase is complete
+  const [loadComplete, setLoadComplete] = useState(false);
+  const localSinceLoad = React.useRef(false); // did user make changes before load finished?
 
-  // Track when we last saved so we can detect if Supabase is stale
-  const lastSaveTime = React.useRef(0);
   useEffect(() => {
     setSyncStatus("syncing");
     sbLoad(authToken, authUserId).then(remote => {
-      if (remote && Array.isArray(remote) && remote.length > 0) {
-        // Only use Supabase data if we haven't saved anything locally since mount
-        // This prevents a slow Supabase response from overwriting a fast local change
-        if (lastSaveTime.current === 0) {
-          setContactsRaw(remote);
-          cacheSave(remote);
+      if (remote && Array.isArray(remote)) {
+        if (remote.length > 0) {
+          // Supabase has data — always authoritative on fresh load
+          // Only skip if user already made changes AND local has MORE contacts
+          const local = cacheLoad();
+          if (localSinceLoad.current && local.length > remote.length) {
+            // User added contacts before load finished — save local to Supabase
+            sbSave(local, authToken, authUserId).catch(() => {});
+            setSyncStatus("synced");
+          } else {
+            setContactsRaw(remote);
+            cacheSave(remote);
+            setSyncStatus("synced");
+          }
+        } else {
+          // Supabase empty — push local cache up if we have any
+          const local = cacheLoad();
+          if (local && local.length > 0) {
+            sbSave(local, authToken, authUserId).then(() => setSyncStatus("synced")).catch(() => setSyncStatus("error"));
+          } else {
+            setSyncStatus("idle");
+          }
         }
-        setSyncStatus("synced");
       } else {
-        // Supabase is empty — check if local cache has data to migrate
-        const local = cacheLoad();
-        if (local && local.length > 0) {
-          setNeedsMigration(true);
-        }
-        setSyncStatus("idle");
+        setSyncStatus("error");
       }
-    }).catch(() => setSyncStatus("error"));
+      setLoadComplete(true);
+    }).catch(() => {
+      setSyncStatus("error");
+      setLoadComplete(true);
+    });
   }, []);
-  async function migrateToSupabase() {
-    setMigrating(true);
-    const local = cacheLoad();
-    if (local && local.length > 0) {
-      await sbSave(local, authToken, authUserId);
-      setContactsRaw(local);
-      setSyncStatus("synced");
-    }
-    setNeedsMigration(false);
-    setMigrating(false);
-  }
 
   // Keep token/uid in refs so the save callback always has fresh values
   const tokenRef = React.useRef(authToken);
@@ -4372,32 +4373,37 @@ function App() {
   React.useEffect(() => {
     tokenRef.current = authToken;
   }, [authToken]);
-  // Sync refreshed token from localStorage back to ref (sbLoad/sbSave may refresh it)
+  // Sync refreshed token from localStorage back to ref every 5s
   React.useEffect(() => {
     const interval = setInterval(() => {
       const stored = localStorage.getItem("networkpro_token");
-      if (stored && stored !== tokenRef.current) tokenRef.current = stored;
-    }, 30000); // check every 30s
+      if (stored && stored !== tokenRef.current) {
+        tokenRef.current = stored;
+      }
+    }, 5000);
     return () => clearInterval(interval);
   }, []);
   React.useEffect(() => {
     uidRef.current = authUserId;
   }, [authUserId]);
 
-  // Flush pending save on page unload so refreshes don't lose data
+  // Flush pending save on page unload using sync XHR (can include auth headers)
   React.useEffect(() => {
     function flush() {
       if (pendingRef.current && tokenRef.current && uidRef.current) {
-        // sendBeacon is fire-and-forget, perfect for unload
-        const body = JSON.stringify({
-          user_id: uidRef.current,
-          data: pendingRef.current,
-          updated_at: new Date().toISOString()
-        });
-        const blob = new Blob([body], {
-          type: "application/json"
-        });
-        navigator.sendBeacon(SB_TABLE + "?on_conflict=user_id", blob);
+        try {
+          const xhr = new XMLHttpRequest();
+          xhr.open("POST", SB_TABLE, false); // false = synchronous
+          xhr.setRequestHeader("Content-Type", "application/json");
+          xhr.setRequestHeader("apikey", SB_KEY);
+          xhr.setRequestHeader("Authorization", "Bearer " + tokenRef.current);
+          xhr.setRequestHeader("Prefer", "resolution=merge-duplicates,return=minimal");
+          xhr.send(JSON.stringify({
+            user_id: uidRef.current,
+            data: pendingRef.current,
+            updated_at: new Date().toISOString()
+          }));
+        } catch (e) {}
       }
     }
     window.addEventListener("beforeunload", flush);
@@ -4410,7 +4416,7 @@ function App() {
       // Always write to local cache immediately
       cacheSave(next);
       pendingRef.current = next; // track for flush-on-unload
-      lastSaveTime.current = Date.now();
+      localSinceLoad.current = true;
       setSavedFlash(true);
       setTimeout(() => setSavedFlash(false), 1600);
       // Debounce Supabase write — 300ms is fast enough to beat most refreshes
@@ -4763,56 +4769,7 @@ function App() {
       maxWidth: 840,
       margin: "0 auto"
     }
-  }, needsMigration && /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: "#1E3A5F",
-      border: "1px solid #2563EB",
-      borderRadius: 12,
-      padding: "16px 20px",
-      marginBottom: 20,
-      display: "flex",
-      alignItems: "center",
-      gap: 14,
-      flexWrap: "wrap"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      flex: 1,
-      minWidth: 200
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 14,
-      fontWeight: 700,
-      color: "#F1F5F9",
-      marginBottom: 3
-    }
-  }, "Sync your existing contacts"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 12,
-      color: "#94A3B8"
-    }
-  }, "You have contacts saved locally on this device. Upload them to the cloud so they're available everywhere.")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 8,
-      flexShrink: 0
-    }
-  }, /*#__PURE__*/React.createElement("button", {
-    style: {
-      ...T.btn("primary"),
-      padding: "8px 18px"
-    },
-    onClick: migrateToSupabase,
-    disabled: migrating
-  }, migrating ? "Uploading…" : "Upload to Cloud"), /*#__PURE__*/React.createElement("button", {
-    style: {
-      ...T.btn("ghost"),
-      padding: "8px 14px",
-      fontSize: 12
-    },
-    onClick: () => setNeedsMigration(false)
-  }, "Dismiss"))), view === "contacts" && /*#__PURE__*/React.createElement(ContactsList, {
+  }, view === "contacts" && /*#__PURE__*/React.createElement(ContactsList, {
     contacts: contacts,
     filteredContacts: filteredContacts,
     searchQ: searchQ,
