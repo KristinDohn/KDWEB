@@ -1291,43 +1291,46 @@ function LoginScreen({
     }
   }, loading ? "Signing in…" : "Sign In"), /*#__PURE__*/React.createElement("div", {
     style: {
-      textAlign: "center",
       marginTop: 20,
       display: "flex",
-      justifyContent: "center",
-      gap: 20
+      flexDirection: "column",
+      gap: 8
     }
   }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => {
-      setMode("request");
-      setErr("");
-    },
-    style: {
-      background: "none",
-      border: "none",
-      color: "#475569",
-      fontSize: 12,
-      cursor: "pointer",
-      fontFamily: "'DM Sans',sans-serif",
-      textDecoration: "underline",
-      textUnderlineOffset: 3
-    }
-  }, "Request Access"), /*#__PURE__*/React.createElement("button", {
     onClick: () => {
       setMode("forgot");
       setErr("");
     },
     style: {
-      background: "none",
-      border: "none",
-      color: "#475569",
-      fontSize: 12,
+      width: "100%",
+      background: "#1E3A5F",
+      border: "1px solid #2563EB",
+      borderRadius: 8,
+      color: "#60A5FA",
+      fontSize: 13,
+      fontWeight: 600,
       cursor: "pointer",
       fontFamily: "'DM Sans',sans-serif",
-      textDecoration: "underline",
-      textUnderlineOffset: 3
+      padding: "9px"
     }
-  }, "Forgot Password?"))), mode === "forgot" && /*#__PURE__*/React.createElement(ForgotPasswordScreen, {
+  }, "Forgot Password?"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      setMode("request");
+      setErr("");
+    },
+    style: {
+      width: "100%",
+      background: "transparent",
+      border: "1px solid #1E3A5F",
+      borderRadius: 8,
+      color: "#94A3B8",
+      fontSize: 13,
+      fontWeight: 600,
+      cursor: "pointer",
+      fontFamily: "'DM Sans',sans-serif",
+      padding: "9px"
+    }
+  }, "Request Access"))), mode === "forgot" && /*#__PURE__*/React.createElement(ForgotPasswordScreen, {
     onBack: () => setMode("login")
   }), mode === "request" && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
     style: {
