@@ -326,7 +326,7 @@ async function sbSave(contacts, token, userId) {
     try {
       localStorage.setItem("networkpro_token", validToken);
     } catch (e) {}
-    const res = await fetch(SB_TABLE, {
+    const res = await fetch(SB_TABLE + "?on_conflict=user_id", {
       method: "POST",
       headers: SB_UPSERT_HEADERS(validToken),
       body: JSON.stringify({
@@ -4393,7 +4393,7 @@ function App() {
       if (pendingRef.current && tokenRef.current && uidRef.current) {
         try {
           const xhr = new XMLHttpRequest();
-          xhr.open("POST", SB_TABLE, false); // false = synchronous
+          xhr.open("POST", SB_TABLE + "?on_conflict=user_id", false); // false = synchronous
           xhr.setRequestHeader("Content-Type", "application/json");
           xhr.setRequestHeader("apikey", SB_KEY);
           xhr.setRequestHeader("Authorization", "Bearer " + tokenRef.current);
