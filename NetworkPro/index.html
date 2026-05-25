@@ -151,32 +151,24 @@ const {
 } = React;
 
 // ── Config ─────────────────────────────────────────────────────────────────
-const PASSWORD_HASH = "b66b6c0716af6c6b01425ccc5d87f5c53a96bec67f0de5bc4ff7c3f41c99d95d";
-const AUTH_KEY = "networkpro_auth_v1";
-const CACHE_KEY = "networkpro_contacts_cache"; // local cache for instant load
-const ROW_ID = "kristin"; // single row in Supabase storing all contacts
+const CACHE_KEY = "networkpro_contacts_cache"; // local cache
 
 // Supabase config
 const SB_URL = "https://fxxunfpgqkhsmrrlmcoo.supabase.co";
 const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ4eHVuZnBncWtoc21ycmxtY29vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MzY3MDgsImV4cCI6MjA5NTIxMjcwOH0.HENzH4CiIOQ_tgzu7Ovyd0BX23aq5KsQ_4UPTsp_3Yo";
 const SB_TABLE = `${SB_URL}/rest/v1/contacts`;
-const SB_HEADERS = {
+const SB_HEADERS = token => ({
   "Content-Type": "application/json",
   "apikey": SB_KEY,
-  "Authorization": `Bearer ${SB_KEY}`,
+  "Authorization": `Bearer ${token || SB_KEY}`,
   "Prefer": "return=minimal"
-};
-// Extra headers for upsert (used in sbSave)
+});
 const SB_UPSERT_HEADERS = token => ({
   "Content-Type": "application/json",
   "apikey": SB_KEY,
   "Authorization": `Bearer ${token}`,
   "Prefer": "resolution=merge-duplicates,return=minimal"
 });
-
-// Resend API key for access request emails
-const RESEND_KEY = "re_cfChAX3j_Gf5thnakQJZv3GAzpNJR72vD";
-const ADMIN_EMAIL = "kristin@kristindohn.com";
 async function hashPw(pw) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(pw));
   return [...new Uint8Array(buf)].map(x => x.toString(16).padStart(2, "0")).join("");
@@ -282,16 +274,6 @@ async function getValidToken() {
     return null;
   }
 }
-async function sbLoadUser(token) {
-  const res = await fetch(`${SB_URL}/auth/v1/user`, {
-    headers: {
-      "apikey": SB_KEY,
-      "Authorization": `Bearer ${token}`
-    }
-  });
-  if (!res.ok) return null;
-  return res.json();
-}
 async function sendAccessRequestEmail(firstName, lastName, email) {
   await fetch("https://fxxunfpgqkhsmrrlmcoo.supabase.co/functions/v1/send-access-request", {
     method: "POST",
@@ -311,10 +293,7 @@ async function logAccessRequest(firstName, lastName, email) {
   try {
     await fetch(`${SB_URL}/rest/v1/access_requests`, {
       method: "POST",
-      headers: {
-        ...SB_HEADERS,
-        "Prefer": "return=minimal"
-      },
+      headers: SB_HEADERS(),
       body: JSON.stringify({
         first_name: firstName,
         last_name: lastName,
@@ -414,18 +393,6 @@ function cacheSave(c) {
     localStorage.setItem(CACHE_KEY, JSON.stringify(c));
   } catch (e) {}
 }
-function isAuthed() {
-  try {
-    return localStorage.getItem(AUTH_KEY) === "1";
-  } catch (e) {
-    return false;
-  }
-}
-function setAuth(v) {
-  try {
-    v ? localStorage.setItem(AUTH_KEY, "1") : localStorage.removeItem(AUTH_KEY);
-  } catch (e) {}
-}
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 function fullName(c) {
@@ -503,7 +470,8 @@ const PAGE_TITLES = {
   detail: "Contact",
   calendar: "Calendar",
   suggested: "To Meet",
-  stats: "Overview"
+  stats: "Overview",
+  import: "Import Contacts"
 };
 const COLORS = ["#2A6B8A", "#5B4A8A", "#2A7A52", "#8A4A2A", "#6B2A8A", "#2A4A8A", "#7A2A5B", "#2A5B7A"];
 
@@ -766,6 +734,20 @@ function ContactForm({
     value: form.phone,
     onChange: e => set("phone", e.target.value)
   }))), /*#__PURE__*/React.createElement(Field, {
+    label: "LinkedIn URL"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: T.input,
+    placeholder: "https://linkedin.com/in/username",
+    value: form.linkedin || "",
+    onChange: e => set("linkedin", e.target.value)
+  })), /*#__PURE__*/React.createElement(Field, {
+    label: "Where met"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: T.input,
+    placeholder: "Conference, intro from …",
+    value: form.whereMet || "",
+    onChange: e => set("whereMet", e.target.value)
+  })), /*#__PURE__*/React.createElement(Field, {
     label: "Notes about this contact"
   }, /*#__PURE__*/React.createElement("textarea", {
     style: T.textarea,
@@ -1139,6 +1121,7 @@ function LoginScreen({
   onLogin
 }) {
   const [mode, setMode] = useState("login"); // login | request | sent | forgot
+  const [showPw, setShowPw] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState("");
@@ -1264,8 +1247,12 @@ function LoginScreen({
     }
   }, /*#__PURE__*/React.createElement("label", {
     style: T.label
-  }, "Password"), /*#__PURE__*/React.createElement("input", {
-    type: "password",
+  }, "Password"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "relative"
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    type: showPw ? "text" : "password",
     value: password,
     autoComplete: "current-password",
     onChange: e => {
@@ -1274,8 +1261,26 @@ function LoginScreen({
     },
     onKeyDown: e => e.key === "Enter" && attemptLogin(),
     placeholder: "Your password",
-    style: inputStyle(!!err)
-  }), err && /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...inputStyle(!!err),
+      paddingRight: 40
+    }
+  }), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowPw(v => !v),
+    style: {
+      position: "absolute",
+      right: 10,
+      top: "50%",
+      transform: "translateY(-50%)",
+      background: "none",
+      border: "none",
+      color: "#475569",
+      cursor: "pointer",
+      fontSize: 16,
+      padding: 0,
+      lineHeight: 1
+    }
+  }, showPw ? "🙈" : "👁")), err && /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 12,
       color: "#EF4444",
@@ -1640,7 +1645,7 @@ function PendingThanksModal({
   onMarkThanked,
   onViewContact
 }) {
-  const pending = contacts.flatMap(c => c.meetings.filter(m => !m.thankYouSent).map(m => ({
+  const pending = contacts.flatMap(c => c.meetings.filter(m => !m.thankYouSent && m.date <= isoToday()).map(m => ({
     contact: c,
     meeting: m
   }))).sort((a, b) => a.meeting.date.localeCompare(b.meeting.date));
@@ -1780,7 +1785,7 @@ function SidebarInner({
   onPendingThanksClick,
   onRetrySync
 }) {
-  const pendingThanks = contacts.reduce((s, c) => s + c.meetings.filter(m => !m.thankYouSent).length, 0);
+  const pendingThanks = contacts.reduce((s, c) => s + c.meetings.filter(m => !m.thankYouSent && m.date <= isoToday()).length, 0);
   const today = isoToday();
   const toReachOut = contacts.filter(c => (c.referredBy || c.wantToMeet) && !c.meetings.some(m => m.date >= today)).length;
   const STAT_ACTIONS = {
@@ -1832,6 +1837,21 @@ function SidebarInner({
     }
   }, n.icon), n.label))), /*#__PURE__*/React.createElement("div", {
     style: {
+      padding: "8px 22px 4px",
+      borderTop: "1px solid #1E3A5F22",
+      marginTop: 4
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex", alignItems: "center", gap: 10, padding: "9px 0",
+      cursor: "pointer", fontSize: 13, color: view === "import" ? "#60A5FA" : "#64748B",
+      fontWeight: view === "import" ? 600 : 400,
+      borderLeft: view === "import" ? "3px solid #60A5FA" : "3px solid transparent",
+      paddingLeft: view === "import" ? 7 : 10, transition: "all 0.15s"
+    },
+    onClick: () => onNavigate("import")
+  }, /*#__PURE__*/React.createElement("span", {style: {fontSize: 14}}, "⬆"), "Import Contacts")), /*#__PURE__*/React.createElement("div", {
+    style: {
       padding: "14px 22px",
       borderTop: "1px solid #1E3A5F",
       marginTop: "auto"
@@ -1855,7 +1875,7 @@ function SidebarInner({
     val: toReachOut
   }, {
     label: "Pending Thanks",
-    val: pendingThanks
+    val: contacts.reduce((s, c) => s + c.meetings.filter(m => !m.thankYouSent && m.date <= isoToday()).length, 0)
   }].map(x => {
     const action = STAT_ACTIONS[x.label];
     const isActionable = action && x.val > 0;
@@ -1901,6 +1921,12 @@ function SidebarInner({
       alignItems: "center",
       justifyContent: "space-between"
     }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 6
+    }
   }, syncStatus === "syncing" ? /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: 11,
@@ -1912,23 +1938,33 @@ function SidebarInner({
       fontSize: 11,
       color: "#4ADE80"
     }
-  }, "\u2713 Synced") : syncStatus === "error" ? /*#__PURE__*/React.createElement("button", {
-    onClick: onRetrySync,
+  }, "\u2713 Synced") : syncStatus === "error" ? /*#__PURE__*/React.createElement("span", {
     style: {
-      background: "none",
-      border: "none",
-      color: "#F87171",
       fontSize: 11,
-      cursor: "pointer",
-      padding: 0,
-      fontFamily: "'DM Sans',sans-serif"
+      color: "#F87171"
     }
-  }, "\u26A0 Tap to retry") : /*#__PURE__*/React.createElement("span", {
+  }, "\u26A0 Error") : /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: 11,
       color: "#334155"
     }
-  }, "\u2195 Cloud sync"), /*#__PURE__*/React.createElement("button", {
+  }, "\u2195 Synced"), /*#__PURE__*/React.createElement("button", {
+    onClick: onRetrySync,
+    title: "Refresh data",
+    style: {
+      background: "none",
+      border: "none",
+      color: "#475569",
+      fontSize: 14,
+      cursor: "pointer",
+      padding: "2px 4px",
+      lineHeight: 1,
+      borderRadius: 4,
+      transition: "color 0.15s"
+    },
+    onMouseEnter: e => e.currentTarget.style.color = "#60A5FA",
+    onMouseLeave: e => e.currentTarget.style.color = "#475569"
+  }, "\u21BA")), /*#__PURE__*/React.createElement("button", {
     style: {
       ...T.btn("danger"),
       padding: "4px 10px",
@@ -1957,6 +1993,8 @@ function ContactsList({
     company: "",
     email: "",
     phone: "",
+    linkedin: "",
+    whereMet: "",
     contactNotes: ""
   };
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
@@ -2046,7 +2084,6 @@ function ContactsList({
   }, filteredContacts.map(c => {
     const pending = c.meetings.flatMap(m => m.tasks).filter(t => !t.done).length;
     const last = c.meetings.slice().sort((a, b) => b.date.localeCompare(a.date))[0];
-    const thanked = c.meetings.length > 0 && c.meetings.every(m => m.thankYouSent);
     const ref = c.referredBy ? contacts.find(x => x.id === c.referredBy) : null;
     return /*#__PURE__*/React.createElement("div", {
       key: c.id,
@@ -2097,7 +2134,8 @@ function ContactsList({
         gap: 2
       }
     }, /*#__PURE__*/React.createElement("span", null, "\u2709 ", c.email), c.phone && /*#__PURE__*/React.createElement("span", null, "\uD83D\uDCDE ", c.phone)), (() => {
-      const unthanked = c.meetings.filter(m => !m.thankYouSent).length;
+      const pastMeetings = c.meetings.filter(m => m.date <= isoToday());
+      const unthanked = pastMeetings.filter(m => !m.thankYouSent).length;
       return /*#__PURE__*/React.createElement("div", {
         style: {
           display: "flex",
@@ -2113,7 +2151,7 @@ function ContactsList({
         color: "#F59E0B"
       }, pending, " task", pending !== 1 ? "s" : ""), unthanked > 0 && /*#__PURE__*/React.createElement(Tag, {
         color: "#FF1493"
-      }, unthanked, " thanks pending"), c.meetings.length > 0 && unthanked === 0 && /*#__PURE__*/React.createElement(Tag, {
+      }, unthanked, " thanks pending"), c.meetings.filter(m => m.date <= isoToday()).length > 0 && unthanked === 0 && /*#__PURE__*/React.createElement(Tag, {
         color: "#22C55E"
       }, "all thanked"));
     })(), (() => {
@@ -3029,6 +3067,8 @@ function ContactDetail({
       company: selected.company || "",
       email: selected.email || "",
       phone: selected.phone || "",
+      linkedin: selected.linkedin || "",
+      whereMet: selected.whereMet || "",
       contactNotes: selected.contactNotes || ""
     },
     onSave: form => {
@@ -3044,9 +3084,14 @@ function ContactDetail({
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
+      flexDirection: "column",
+      gap: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
       alignItems: "flex-start",
-      gap: 14,
-      flexWrap: "wrap"
+      gap: 14
     }
   }, /*#__PURE__*/React.createElement(Avatar, {
     contact: selected,
@@ -3070,6 +3115,8 @@ function ContactDetail({
       marginBottom: 7
     }
   }, selected.company), /*#__PURE__*/React.createElement("div", {
+    style: { fontSize: 11, color: "#64748B", marginBottom: 6, whiteSpace: "nowrap" }
+  }, "Added ", (function(){ var d = selected.createdAt ? new Date(selected.createdAt) : new Date(Math.floor(selected.id)); return isNaN(d.getTime()) ? "unknown" : fmtDate(d.toISOString().split("T")[0]); })()), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
@@ -3077,13 +3124,11 @@ function ContactDetail({
       fontSize: 13,
       color: "#94A3B8"
     }
-  }, /*#__PURE__*/React.createElement("span", null, "\u2709 ", selected.email), selected.phone && /*#__PURE__*/React.createElement("span", null, "\uD83D\uDCDE ", selected.phone))), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", null, "\u2709 ", selected.email), selected.phone && /*#__PURE__*/React.createElement("span", null, "\uD83D\uDCDE ", selected.phone), selected.linkedin && /*#__PURE__*/React.createElement("a", {href: (selected.linkedin.startsWith("http") ? selected.linkedin : "https://" + selected.linkedin), target: "_blank", rel: "noopener noreferrer", style: {color: "#60A5FA", textDecoration: "none"}}, "\uD83D\uDD17 LinkedIn \u2197")))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 8,
-      flexShrink: 0,
-      flexWrap: "wrap",
-      justifyContent: "flex-end"
+      flexWrap: "wrap"
     }
   }, /*#__PURE__*/React.createElement("button", {
     style: {
@@ -3115,12 +3160,27 @@ function ContactDetail({
       padding: "6px 12px"
     },
     onClick: () => deleteContact(selected.id)
-  }, "Remove"))), selected.contactNotes && /*#__PURE__*/React.createElement("div", {
+  }, "Remove"))), (selected.whereMet || selected.contactNotes) && /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 14,
       paddingTop: 14,
       borderTop: "1px solid #1E3A5F"
     }
+  }, selected.whereMet && /*#__PURE__*/React.createElement("div", {
+    style: { marginBottom: selected.contactNotes ? 10 : 0 }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      fontWeight: 700,
+      color: "#475569",
+      textTransform: "uppercase",
+      letterSpacing: "0.07em",
+      marginBottom: 4
+    }
+  }, "Where Met"), /*#__PURE__*/React.createElement("p", {
+    style: { margin: 0, fontSize: 13.5, color: "#CBD5E1", lineHeight: 1.6 }
+  }, selected.whereMet)), selected.contactNotes && /*#__PURE__*/React.createElement("div", {
+    style: {}
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 11,
@@ -3138,7 +3198,7 @@ function ContactDetail({
       lineHeight: 1.6,
       whiteSpace: "pre-wrap"
     }
-  }, selected.contactNotes))), /*#__PURE__*/React.createElement("div", {
+  }, selected.contactNotes)))), /*#__PURE__*/React.createElement("div", {
     style: {
       ...T.card,
       marginBottom: 14
@@ -3503,53 +3563,7 @@ function ContactDetail({
       ...p,
       tasks: e.target.value
     }))
-  })), /*#__PURE__*/React.createElement(Field, {
-    label: `Did ${selected.firstName || "they"} suggest anyone to talk to?`
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      flexWrap: "wrap",
-      gap: 6,
-      marginTop: 4
-    }
-  }, contacts.filter(c => c.id !== selected.id).map(c => {
-    const checked = (newMeeting.suggestedContacts || []).includes(c.id);
-    return /*#__PURE__*/React.createElement("button", {
-      key: c.id,
-      style: {
-        ...T.btn(checked ? "primary" : "ghost"),
-        padding: "4px 11px",
-        fontSize: 12,
-        display: "flex",
-        alignItems: "center",
-        gap: 5
-      },
-      onClick: () => {
-        const cur = newMeeting.suggestedContacts || [];
-        setNewMeeting(p => ({
-          ...p,
-          suggestedContacts: checked ? cur.filter(id => id !== c.id) : [...cur, c.id]
-        }));
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        width: 16,
-        height: 16,
-        borderRadius: "50%",
-        background: c.color,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontSize: 8,
-        color: "#fff"
-      }
-    }, initials(c)), fullName(c), checked && " ✓");
-  }), contacts.filter(c => c.id !== selected.id).length === 0 && /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 12,
-      color: "#475569"
-    }
-  }, "No other contacts yet."))), /*#__PURE__*/React.createElement("div", {
+  })), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 8
@@ -3754,6 +3768,7 @@ function CalendarView({
         textOverflow: "ellipsis"
       },
       onClick: () => {
+        try { sessionStorage.setItem("networkpro_view","detail"); sessionStorage.setItem("networkpro_selectedId", String(m.contact.id)); } catch(e) {}
         setSelectedId(m.contact.id);
         setView("detail");
       }
@@ -3777,6 +3792,7 @@ function CalendarView({
         cursor: "pointer"
       },
       onClick: () => {
+        try { sessionStorage.setItem("networkpro_view","detail"); sessionStorage.setItem("networkpro_selectedId", String(c.id)); } catch(e) {}
         setSelectedId(c.id);
         setView("detail");
       }
@@ -3853,6 +3869,7 @@ function CalendarView({
         whiteSpace: "nowrap"
       },
       onClick: () => {
+        try { sessionStorage.setItem("networkpro_view","detail"); sessionStorage.setItem("networkpro_selectedId", String(m.contact.id)); } catch(e) {}
         setSelectedId(m.contact.id);
         setView("detail");
       }
@@ -3880,6 +3897,7 @@ function CalendarView({
       cursor: "pointer"
     },
     onClick: () => {
+      try { sessionStorage.setItem("networkpro_view","detail"); sessionStorage.setItem("networkpro_selectedId", String(m.contact.id)); } catch(e) {}
       setSelectedId(m.contact.id);
       setView("detail");
     }
@@ -3927,6 +3945,7 @@ function CalendarView({
       transition: "border-color 0.15s"
     },
     onClick: () => {
+      try { sessionStorage.setItem("networkpro_view","detail"); sessionStorage.setItem("networkpro_selectedId", String(m.contact.id)); } catch(e) {}
       setSelectedId(m.contact.id);
       setView("detail");
     },
@@ -3965,13 +3984,15 @@ function CalendarView({
       alignItems: "flex-end",
       gap: 4
     }
-  }, m.thankYouSent ? /*#__PURE__*/React.createElement(Pill, {
+  }, m.date > isoToday() ? /*#__PURE__*/React.createElement(Pill, {
+    variant: "blue"
+  }, "Upcoming") : m.thankYouSent ? /*#__PURE__*/React.createElement(Pill, {
     variant: "green"
   }, "\u2713 Thanked") : /*#__PURE__*/React.createElement(Pill, {
     variant: "yellow"
   }, "No thank-you"), m.tasks.length > 0 && /*#__PURE__*/React.createElement(Tag, {
     color: m.tasks.some(t => !t.done) ? "#F59E0B" : "#22C55E"
-  }, m.tasks.filter(t => !t.done).length, "/", m.tasks.length, " tasks"))), m.notes && /*#__PURE__*/React.createElement("p", {
+  }, m.tasks.filter(t => t.done).length, "/", m.tasks.length, " tasks"))), m.notes && /*#__PURE__*/React.createElement("p", {
     style: {
       margin: 0,
       fontSize: 12.5,
@@ -4130,6 +4151,7 @@ function SuggestedView({
         flexShrink: 0
       },
       onClick: () => {
+        try { sessionStorage.setItem("networkpro_view","detail"); sessionStorage.setItem("networkpro_selectedId", String(s.contact.id)); } catch(e) {}
         setSelectedId(s.contact.id);
         setView("detail");
       }
@@ -4157,6 +4179,7 @@ function SuggestedView({
         cursor: "pointer"
       },
       onClick: () => {
+        try { sessionStorage.setItem("networkpro_view","detail"); sessionStorage.setItem("networkpro_selectedId", String(s.contact.id)); } catch(e) {}
         setSelectedId(s.contact.id);
         setView("detail");
       }
@@ -4191,6 +4214,7 @@ function SuggestedView({
         cursor: "pointer"
       },
       onClick: () => {
+        try { sessionStorage.setItem("networkpro_view","detail"); sessionStorage.setItem("networkpro_selectedId", String(s.suggestedBy.id)); } catch(e) {}
         setSelectedId(s.suggestedBy.id);
         setView("detail");
       }
@@ -4222,6 +4246,7 @@ function SuggestedView({
         alignSelf: "center"
       },
       onClick: () => {
+        try { sessionStorage.setItem("networkpro_view","detail"); sessionStorage.setItem("networkpro_selectedId", String(s.contact.id)); } catch(e) {}
         setSelectedId(s.contact.id);
         setView("detail");
       }
@@ -4470,7 +4495,8 @@ function StatsView({
   const total = contacts.reduce((s, c) => s + c.meetings.length, 0);
   const tTasks = contacts.reduce((s, c) => s + c.meetings.flatMap(m => m.tasks).length, 0);
   const done = contacts.reduce((s, c) => s + c.meetings.flatMap(m => m.tasks).filter(t => t.done).length, 0);
-  const unthx = contacts.reduce((s, c) => s + c.meetings.filter(m => !m.thankYouSent).length, 0);
+  const today = isoToday();
+  const unthx = contacts.reduce((s, c) => s + c.meetings.filter(m => !m.thankYouSent && m.date <= today).length, 0);
   const ref = contacts.filter(c => c.referredBy).length;
   const stat = (label, val, sub, color = "#60A5FA") => /*#__PURE__*/React.createElement("div", {
     style: {
@@ -4548,7 +4574,7 @@ function StatsView({
       textTransform: "uppercase",
       letterSpacing: "0.08em"
     }
-  }, "Thank-You Tracker"), contacts.flatMap(c => c.meetings.map(m => /*#__PURE__*/React.createElement("div", {
+  }, "Thank-You Tracker"), contacts.flatMap(c => c.meetings.filter(m => m.date <= isoToday()).map(m => /*#__PURE__*/React.createElement("div", {
     key: c.id + "-" + m.id,
     style: {
       ...T.card,
@@ -4605,6 +4631,7 @@ function StatsView({
       color: "#60A5FA"
     },
     onClick: () => {
+      try { sessionStorage.setItem("networkpro_view","detail"); sessionStorage.setItem("networkpro_selectedId", String(c.id)); } catch(e) {}
       setSelectedId(c.id);
       setView("detail");
     }
@@ -4638,6 +4665,7 @@ function StatsView({
         transition: "border-color 0.15s"
       },
       onClick: () => {
+        try { sessionStorage.setItem("networkpro_view","detail"); sessionStorage.setItem("networkpro_selectedId", String(m.contact.id)); } catch(e) {}
         setSelectedId(m.contact.id);
         setView("detail");
       },
@@ -4693,6 +4721,216 @@ function StatsView({
   })());
 }
 
+// ── Import Contacts View ───────────────────────────────────────────────────────
+function ImportView({onImport, onNavigate}) {
+  const [step, setStep] = React.useState("guide"); // guide | pick | review
+  const [parsed, setParsed] = React.useState([]);
+  const [selected, setSelected] = React.useState({});
+  const [importing, setImporting] = React.useState(false);
+  const [doneCount, setDoneCount] = React.useState(0);
+  const fileRef = React.useRef();
+
+  function parseVCF(text) {
+    const contacts = [];
+    const cards = text.split(/BEGIN:VCARD/i).filter(c => c.trim());
+    for (const card of cards) {
+      const get = (field) => {
+        const m = card.match(new RegExp(field + '[^:]*:([^\r\n]+)', 'i'));
+        return m ? m[1].trim() : '';
+      };
+      const fnLine = get('FN');
+      const nLine = get('N');
+      const emailLine = get('EMAIL');
+      const phoneLine = get('TEL');
+      const orgLine = get('ORG');
+      let firstName = '', lastName = '';
+      if (nLine) {
+        const parts = nLine.split(';');
+        lastName = (parts[0] || '').trim();
+        firstName = (parts[1] || '').trim();
+      } else if (fnLine) {
+        const parts = fnLine.split(' ');
+        firstName = parts[0] || '';
+        lastName = parts.slice(1).join(' ');
+      }
+      if (!firstName && !lastName && !fnLine) continue;
+      if (!firstName && !lastName) {
+        const parts = fnLine.split(' ');
+        firstName = parts[0] || '';
+        lastName = parts.slice(1).join(' ');
+      }
+      contacts.push({
+        firstName: firstName || fnLine,
+        lastName: lastName || '',
+        email: emailLine.replace(/^[^:]*:/,'').trim() || '',
+        phone: phoneLine.replace(/^[^:]*:/,'').trim() || '',
+        company: orgLine.replace(/;.*$/,'').trim() || '',
+        linkedin: '', whereMet: '', contactNotes: '',
+        _display: (firstName || fnLine || '') + (lastName ? ' ' + lastName : '') + (orgLine ? ' · ' + orgLine.replace(/;.*$/,'').trim() : ''),
+      });
+    }
+    return contacts;
+  }
+
+  function parseCSV(text) {
+    const lines = text.split(/\r?\n/).filter(l => l.trim());
+    if (lines.length < 2) return [];
+    const headers = lines[0].split(',').map(h => h.replace(/"/g,'').trim().toLowerCase());
+    const idx = (names) => { for (const n of names) { const i = headers.findIndex(h => h.includes(n)); if (i !== -1) return i; } return -1; };
+    const iFirst = idx(['first name','firstname','given name']);
+    const iLast  = idx(['last name','lastname','family name','surname']);
+    const iName  = idx(['name','full name']);
+    const iEmail = idx(['e-mail','email']);
+    const iPhone = idx(['phone','mobile','tel']);
+    const iOrg   = idx(['company','organization','employer']);
+    const contacts = [];
+    for (let i = 1; i < lines.length; i++) {
+      const cols = lines[i].match(/("([^"]*)"|[^,]*)/g).map(c => c.replace(/^"|"$/g,'').trim());
+      const get = (i) => (i !== -1 && cols[i]) ? cols[i] : '';
+      let firstName = get(iFirst), lastName = get(iLast);
+      if (!firstName && !lastName && iName !== -1) {
+        const parts = get(iName).split(' ');
+        firstName = parts[0]; lastName = parts.slice(1).join(' ');
+      }
+      if (!firstName && !lastName) continue;
+      contacts.push({
+        firstName, lastName,
+        email: get(iEmail), phone: get(iPhone), company: get(iOrg),
+        linkedin: '', whereMet: '', contactNotes: '',
+        _display: [firstName, lastName].filter(Boolean).join(' ') + (get(iOrg) ? ' · ' + get(iOrg) : ''),
+      });
+    }
+    return contacts;
+  }
+
+  function handleFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const text = ev.target.result;
+      let contacts = [];
+      if (file.name.match(/\.vcf$/i)) contacts = parseVCF(text);
+      else if (file.name.match(/\.csv$/i)) contacts = parseCSV(text);
+      if (contacts.length === 0) { alert("No contacts found in this file. Make sure it's a .vcf or .csv file."); return; }
+      const sel = {};
+      contacts.forEach((_, i) => sel[i] = true);
+      setParsed(contacts);
+      setSelected(sel);
+      setStep("review");
+    };
+    reader.readAsText(file);
+  }
+
+  function doImport() {
+    setImporting(true);
+    const toAdd = parsed.filter((_, i) => selected[i]);
+    const { firstName, lastName, email, phone, company, linkedin, whereMet, contactNotes } = toAdd[0] || {};
+    onImport(toAdd.map(({ _display, ...c }) => c));
+    setDoneCount(toAdd.length);
+    setImporting(false);
+    setStep("done");
+  }
+
+  const toggleAll = (val) => {
+    const s = {};
+    parsed.forEach((_, i) => s[i] = val);
+    setSelected(s);
+  };
+  const selectedCount = Object.values(selected).filter(Boolean).length;
+
+  if (step === "done") return /*#__PURE__*/React.createElement("div", {style: {...T.card, textAlign: "center", padding: "48px 24px"}},
+    /*#__PURE__*/React.createElement("div", {style: {fontSize: 36, marginBottom: 12}}, "✓"),
+    /*#__PURE__*/React.createElement("h2", {style: {fontFamily: "'DM Serif Display',serif", fontSize: 20, color: "#4ADE80", marginBottom: 8}}, doneCount + " contact" + (doneCount !== 1 ? "s" : "") + " imported"),
+    /*#__PURE__*/React.createElement("p", {style: {fontSize: 13, color: "#64748B", marginBottom: 24}}, "They've been added to your Network."),
+    /*#__PURE__*/React.createElement("button", {style: T.btn("primary"), onClick: () => onNavigate("contacts")}, "Go to Network")
+  );
+
+  if (step === "review") return /*#__PURE__*/React.createElement("div", null,
+    /*#__PURE__*/React.createElement("button", {style: {...T.btn("ghost"), marginBottom: 14, fontSize: 12}, onClick: () => setStep("guide")}, "← Back"),
+    /*#__PURE__*/React.createElement("div", {style: {...T.card, marginBottom: 14}},
+      /*#__PURE__*/React.createElement("div", {style: {display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, flexWrap: "wrap", gap: 8}},
+        /*#__PURE__*/React.createElement("div", null,
+          /*#__PURE__*/React.createElement("div", {style: {fontSize: 15, fontWeight: 700, color: "#F1F5F9"}}, parsed.length + " contacts found"),
+          /*#__PURE__*/React.createElement("div", {style: {fontSize: 12, color: "#64748B", marginTop: 2}}, selectedCount + " selected to import")
+        ),
+        /*#__PURE__*/React.createElement("div", {style: {display: "flex", gap: 8}},
+          /*#__PURE__*/React.createElement("button", {style: {...T.btn("ghost"), fontSize: 12, padding: "5px 11px"}, onClick: () => toggleAll(true)}, "Select All"),
+          /*#__PURE__*/React.createElement("button", {style: {...T.btn("ghost"), fontSize: 12, padding: "5px 11px"}, onClick: () => toggleAll(false)}, "Deselect All")
+        )
+      ),
+      /*#__PURE__*/React.createElement("div", {style: {maxHeight: 400, overflowY: "auto", borderTop: "1px solid #1E3A5F"}},
+        parsed.map((c, i) => /*#__PURE__*/React.createElement("div", {
+          key: i,
+          style: {display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: "1px solid #1E3A5F22", cursor: "pointer"},
+          onClick: () => setSelected(s => ({...s, [i]: !s[i]}))
+        },
+          /*#__PURE__*/React.createElement("div", {style: {
+            width: 18, height: 18, borderRadius: 4, flexShrink: 0,
+            border: selected[i] ? "none" : "2px solid #334155",
+            background: selected[i] ? "#2563EB" : "transparent",
+            display: "flex", alignItems: "center", justifyContent: "center"
+          }}, selected[i] && /*#__PURE__*/React.createElement("span", {style: {color: "#fff", fontSize: 11}}, "✓")),
+          /*#__PURE__*/React.createElement("div", {style: {flex: 1, minWidth: 0}},
+            /*#__PURE__*/React.createElement("div", {style: {fontSize: 13, fontWeight: 600, color: "#F1F5F9"}}, [c.firstName, c.lastName].filter(Boolean).join(" ") || "(No name)"),
+            /*#__PURE__*/React.createElement("div", {style: {fontSize: 11, color: "#64748B", marginTop: 1}},
+              [c.company, c.email].filter(Boolean).join(" · ") || " "
+            )
+          )
+        ))
+      )
+    ),
+    selectedCount > 0 && /*#__PURE__*/React.createElement("button", {
+      style: {...T.btn("primary"), width: "100%", padding: "12px"},
+      disabled: importing,
+      onClick: doImport
+    }, importing ? "Importing…" : "Import " + selectedCount + " Contact" + (selectedCount !== 1 ? "s" : ""))
+  );
+
+  // step === "guide"
+  const guideCard = (icon, title, steps) => /*#__PURE__*/React.createElement("div", {style: {...T.card, marginBottom: 12}},
+    /*#__PURE__*/React.createElement("div", {style: {display: "flex", alignItems: "center", gap: 10, marginBottom: 10}},
+      /*#__PURE__*/React.createElement("span", {style: {fontSize: 20}}, icon),
+      /*#__PURE__*/React.createElement("span", {style: {fontWeight: 700, fontSize: 14, color: "#F1F5F9"}}, title)
+    ),
+    steps.map((s, i) => /*#__PURE__*/React.createElement("div", {key: i, style: {display: "flex", gap: 10, marginBottom: 6}},
+      /*#__PURE__*/React.createElement("span", {style: {fontSize: 11, fontWeight: 700, color: "#2563EB", background: "#2563EB22", borderRadius: "50%", width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1}}, i+1),
+      /*#__PURE__*/React.createElement("span", {style: {fontSize: 13, color: "#94A3B8", lineHeight: 1.5}}, s)
+    ))
+  );
+
+  return /*#__PURE__*/React.createElement("div", null,
+    /*#__PURE__*/React.createElement("p", {style: {fontSize: 12, color: "#64748B", marginBottom: 16}},
+      "Import contacts from your phone or Gmail using a .vcf or .csv file."
+    ),
+    guideCard("📱", "iPhone / iOS Contacts", [
+      "Open the Contacts app on your iPhone",
+      "Tap a contact → Scroll down → Share Contact",
+      "To export all: use a third-party app like \"Export Contact\" from the App Store, or go to iCloud.com → Contacts → select all → Export vCard",
+      "Save the .vcf file and upload it below"
+    ]),
+    guideCard("📧", "Gmail / Google Contacts", [
+      "Go to contacts.google.com",
+      "Click Export in the left sidebar",
+      "Choose Google CSV or vCard format",
+      "Download the file and upload it below"
+    ]),
+    guideCard("💼", "LinkedIn", [
+      "Go to linkedin.com → Settings & Privacy",
+      "Click Data privacy → Get a copy of your data",
+      "Select Connections and request the export",
+      "You'll get an email with a Connections.csv — upload that below"
+    ]),
+    /*#__PURE__*/React.createElement("div", {style: {...T.card, borderColor: "#2563EB", borderStyle: "dashed", textAlign: "center", padding: "28px 20px", cursor: "pointer"}, onClick: () => fileRef.current && fileRef.current.click()},
+      /*#__PURE__*/React.createElement("div", {style: {fontSize: 28, marginBottom: 8}}, "⬆"),
+      /*#__PURE__*/React.createElement("div", {style: {fontSize: 14, fontWeight: 600, color: "#60A5FA", marginBottom: 4}}, "Upload your contacts file"),
+      /*#__PURE__*/React.createElement("div", {style: {fontSize: 12, color: "#475569"}}, "Accepts .vcf (vCard) or .csv files"),
+      /*#__PURE__*/React.createElement("input", {ref: fileRef, type: "file", accept: ".vcf,.csv", style: {display: "none"}, onChange: handleFile})
+    )
+  );
+}
+
+
 // ── App ───────────────────────────────────────────────────────────────────────
 function App() {
   // Restore session from localStorage on load
@@ -4731,9 +4969,15 @@ function App() {
       return null;
     }
   });
-  const [contacts, setContactsRaw] = useState(cacheLoad);
-  const [view, setView] = useState("contacts");
-  const [selectedId, setSelectedId] = useState(null);
+  // Start with empty contacts — always load from Supabase, never trust local cache as source of truth
+  const [contacts, setContactsRaw] = useState([]);
+  const [loading, setLoading] = useState(true); // show spinner until Supabase responds
+  const [view, setView] = useState(() => {
+    try { return sessionStorage.getItem("networkpro_view") || "contacts"; } catch(e) { return "contacts"; }
+  });
+  const [selectedId, setSelectedId] = useState(() => {
+    try { const id = sessionStorage.getItem("networkpro_selectedId"); return id ? Number(id) : null; } catch(e) { return null; }
+  });
   const [calYear, setCalYear] = useState(() => new Date().getFullYear());
   const [calMonth, setCalMonth] = useState(() => new Date().getMonth());
   const [calWeekStart, setCalWeekStart] = useState(() => startOfWeek(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()));
@@ -4749,55 +4993,71 @@ function App() {
   });
   const [showAddContact, setShowAddContact] = useState(false);
   const [savedFlash, setSavedFlash] = useState(false);
-  const [syncStatus, setSyncStatus] = useState("idle"); // idle | syncing | synced | error
+  const [syncStatus, setSyncStatus] = useState("idle");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [taskModal, setTaskModal] = useState(false);
   const [thanksModal, setThanksModal] = useState(false);
 
-  // Track if initial load from Supabase is complete
-  const [loadComplete, setLoadComplete] = useState(false);
-  const localSinceLoad = React.useRef(false); // did user make changes before load finished?
-
+  // Load from Supabase whenever auth becomes available (covers both refresh and fresh login)
   useEffect(() => {
+    if (!authed || !authToken || !authUserId) {
+      // Not logged in yet — show cached data instantly if available, no spinner
+      const cached = cacheLoad();
+      if (cached && cached.length > 0) {
+        setContactsRaw(cached);
+      }
+      setLoading(false);
+      return;
+    }
     setSyncStatus("syncing");
+    // Show cached data immediately while we fetch from Supabase
+    const cached = cacheLoad();
+    if (cached && cached.length > 0) {
+      setContactsRaw(cached);
+      setLoading(false); // show UI right away with cache
+    }
     sbLoad(authToken, authUserId).then(remote => {
       if (remote && Array.isArray(remote)) {
-        if (remote.length > 0) {
-          // Supabase has data — always authoritative on fresh load
-          // Only skip if user already made changes AND local has MORE contacts
-          const local = cacheLoad();
-          if (localSinceLoad.current && local.length > remote.length) {
-            // User added contacts before load finished — save local to Supabase
-            sbSave(local, authToken, authUserId).catch(() => {});
-            setSyncStatus("synced");
-          } else {
-            setContactsRaw(remote);
-            cacheSave(remote);
-            setSyncStatus("synced");
-          }
-        } else {
-          // Supabase empty — push local cache up if we have any
-          const local = cacheLoad();
-          if (local && local.length > 0) {
-            sbSave(local, authToken, authUserId).then(() => setSyncStatus("synced")).catch(() => setSyncStatus("error"));
-          } else {
-            setSyncStatus("idle");
-          }
-        }
+        setContactsRaw(remote);
+        cacheSave(remote);
+        setSyncStatus("synced");
       } else {
         setSyncStatus("error");
       }
-      setLoadComplete(true);
+      setLoading(false);
     }).catch(() => {
       setSyncStatus("error");
-      setLoadComplete(true);
+      setLoading(false);
     });
-  }, []);
+  }, [authed, authToken, authUserId]);
 
-  // Keep token/uid in refs so the save callback always has fresh values
+  // Keep token/uid in refs so callbacks always have fresh values
   const tokenRef = React.useRef(authToken);
   const uidRef = React.useRef(authUserId);
+
+  // Auto-refresh when app comes to foreground (fixes PWA iOS refresh issue)
+  React.useEffect(() => {
+    function handleVisibility() {
+      if (document.visibilityState === "visible") {
+        const tok = tokenRef.current;
+        const uid = uidRef.current;
+        if (!tok || !uid) return;
+        setSyncStatus("syncing");
+        sbLoad(tok, uid).then(remote => {
+          if (remote && Array.isArray(remote)) {
+            setContactsRaw(remote);
+            cacheSave(remote);
+            setSyncStatus("synced");
+          } else {
+            setSyncStatus("error");
+          }
+        }).catch(() => setSyncStatus("error"));
+      }
+    }
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, []);
   const pendingRef = React.useRef(null); // holds latest contacts pending save
   React.useEffect(() => {
     tokenRef.current = authToken;
@@ -4845,7 +5105,6 @@ function App() {
       // Always write to local cache immediately
       cacheSave(next);
       pendingRef.current = next; // track for flush-on-unload
-      localSinceLoad.current = true;
       setSavedFlash(true);
       setTimeout(() => setSavedFlash(false), 1600);
       // Debounce Supabase write — 300ms is fast enough to beat most refreshes
@@ -4881,21 +5140,28 @@ function App() {
         return dc !== 0 ? dc : (a.startTime || '99:99').localeCompare(b.startTime || '99:99');
       })[0] || null;
     }
+    function nameSortVal(c) {
+      if (sortBy === "lastName") return ((c.lastName || "") + " " + (c.firstName || "")).trim().toLowerCase();
+      if (sortBy === "firstName") return ((c.firstName || "") + " " + (c.lastName || "")).trim().toLowerCase();
+      if (sortBy === "company") return ((c.company || "") + " " + (c.lastName || "")).trim().toLowerCase();
+      return (c.lastName || "").toLowerCase();
+    }
     return filtered.slice().sort((a, b) => {
       const na = nextMeeting(a),
         nb = nextMeeting(b);
-      // 1. Upcoming meetings first
-      if (na && !nb) return -1;
-      if (!na && nb) return 1;
-      if (na && nb) return na.date.localeCompare(nb.date);
-      // 2. "Want to Meet" flagged contacts next
-      if (a.wantToMeet && !b.wantToMeet) return -1;
-      if (!a.wantToMeet && b.wantToMeet) return 1;
-      // 3. Apply selected sort
-      if (sortBy === "lastName") return (a.lastName || "").localeCompare(b.lastName || "") || (a.firstName || "").localeCompare(b.firstName || "");
-      if (sortBy === "firstName") return (a.firstName || "").localeCompare(b.firstName || "") || (a.lastName || "").localeCompare(b.lastName || "");
-      if (sortBy === "company") return (a.company || "").localeCompare(b.company || "") || (a.lastName || "").localeCompare(b.lastName || "");
-      return 0;
+      // 1. Upcoming meetings first — within this group sort by date then name
+      if (na || nb) {
+        if (na && !nb) return -1;
+        if (!na && nb) return 1;
+        // Both have upcoming — sort by soonest date, then name as tiebreaker
+        const dc = na.date.localeCompare(nb.date);
+        if (dc !== 0) return dc;
+        return nameSortVal(a).localeCompare(nameSortVal(b));
+      }
+      // 2. "Want to Meet" flagged next — within this group sort by name
+      if (a.wantToMeet !== b.wantToMeet) return a.wantToMeet ? -1 : 1;
+      // 3. Apply selected sort for everyone else
+      return nameSortVal(a).localeCompare(nameSortVal(b));
     });
   }, [contacts, searchQ, sortBy]);
   const allMeetings = useMemo(() => contacts.flatMap(c => c.meetings.map(m => ({
@@ -4954,35 +5220,23 @@ function App() {
       text: t.trim(),
       done: false
     }));
-    const suggested = newMeeting.suggestedContacts || [];
-    setContacts(prev => {
-      // Add the meeting to the contact
-      const updated = prev.map(c => c.id !== cId ? c : {
-        ...c,
-        meetings: [...c.meetings, {
-          id: Date.now(),
-          date: newMeeting.date,
-          startTime: newMeeting.startTime || null,
-          notes: newMeeting.notes,
-          tasks,
-          thankYouSent: false,
-          thankYouDate: null
-        }],
-        // Merge any newly suggested contacts into referredContacts
-        referredContacts: [...new Set([...(c.referredContacts || []), ...suggested])]
-      });
-      // For each suggested contact, set their referredBy to cId if not already set
-      return updated.map(c => suggested.includes(c.id) && !c.referredBy ? {
-        ...c,
-        referredBy: cId
-      } : c);
-    });
+    setContacts(prev => prev.map(c => c.id !== cId ? c : {
+      ...c,
+      meetings: [...c.meetings, {
+        id: Date.now(),
+        date: newMeeting.date,
+        startTime: newMeeting.startTime || null,
+        notes: newMeeting.notes,
+        tasks,
+        thankYouSent: false,
+        thankYouDate: null
+      }]
+    }));
     setNewMeeting({
       date: isoToday(),
       startTime: "",
       notes: "",
-      tasks: "",
-      suggestedContacts: []
+      tasks: ""
     });
     setAddingMeeting(false);
   }
@@ -5063,13 +5317,6 @@ function App() {
       } : o)
     }));
   }
-  function markReachedOut(cId, val) {
-    setContacts(prev => prev.map(c => c.id !== cId ? c : {
-      ...c,
-      reachedOut: val,
-      reachedOutDate: val ? isoToday() : null
-    }));
-  }
   function addContactAndLink(form, referredById) {
     const color = COLORS[contacts.length % COLORS.length];
     const newId = Date.now();
@@ -5081,6 +5328,7 @@ function App() {
         contactNotes: "",
         photo: null,
         color,
+        createdAt: new Date().toISOString(),
         referredBy: referredById,
         referredContacts: [],
         meetings: [],
@@ -5101,6 +5349,7 @@ function App() {
       ...form,
       photo: null,
       color,
+      createdAt: new Date().toISOString(),
       referredBy: null,
       referredContacts: [],
       meetings: []
@@ -5123,6 +5372,7 @@ function App() {
   function deleteContact(cId) {
     if (!window.confirm("Remove this contact?")) return;
     setContacts(prev => prev.filter(c => c.id !== cId));
+    try { sessionStorage.setItem("networkpro_view", "contacts"); sessionStorage.removeItem("networkpro_selectedId"); } catch(e) {}
     setView("contacts");
     setSelectedId(null);
   }
@@ -5137,14 +5387,104 @@ function App() {
     setAuthUserId(null);
   }
   function navigate(v) {
+    try { sessionStorage.setItem("networkpro_view", v); sessionStorage.removeItem("networkpro_selectedId"); } catch(e) {}
     setView(v);
     setMobileDrawerOpen(false);
     if (v !== 'detail') setSelectedId(null);
+  }
+  function importContacts(list) {
+    const COLORS_local = ["#2A6B8A","#5B4A8A","#2A7A52","#8A4A2A","#6B2A8A","#2A4A8A","#7A2A5B","#2A5B7A"];
+    setContacts(prev => {
+      const next = [...prev];
+      list.forEach(c => {
+        next.push({id: Date.now() + Math.random(), ...c, photo: null, color: COLORS_local[next.length % COLORS_local.length], createdAt: new Date().toISOString(), referredBy: null, referredContacts: [], meetings: [], outreaches: []});
+      });
+      return next;
+    });
   }
   if (resetToken) return /*#__PURE__*/React.createElement(ResetPasswordScreen, {
     token: resetToken,
     onDone: () => window.location.reload()
   });
+
+  // Show loading spinner while Supabase responds
+  if (loading) return /*#__PURE__*/React.createElement("div", {
+    style: {
+      minHeight: "100vh",
+      background: "#080F1A",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      flexDirection: "column",
+      gap: 16,
+      fontFamily: "'DM Sans',sans-serif"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: "'DM Serif Display',serif",
+      fontSize: 24,
+      color: "#60A5FA"
+    }
+  }, "NetworkPro"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      color: "#475569"
+    }
+  }, "Loading your contacts\u2026"), syncStatus === "error" && /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: "center"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "#F87171",
+      marginBottom: 12
+    }
+  }, "Could not connect to server"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      setLoading(true);
+      setSyncStatus("syncing");
+      sbLoad(tokenRef.current, authUserId).then(r => {
+        if (r && Array.isArray(r)) {
+          setContactsRaw(r);
+          cacheSave(r);
+          setSyncStatus("synced");
+        } else {
+          setSyncStatus("error");
+        }
+        setLoading(false);
+      }).catch(() => {
+        setSyncStatus("error");
+        setLoading(false);
+      });
+    },
+    style: {
+      background: "#2563EB",
+      color: "#fff",
+      border: "none",
+      borderRadius: 8,
+      padding: "8px 20px",
+      fontSize: 13,
+      fontWeight: 600,
+      cursor: "pointer",
+      fontFamily: "'DM Sans',sans-serif"
+    }
+  }, "Retry")));
+  async function retrySync() {
+    setSyncStatus("syncing");
+    try {
+      const remote = await sbLoad(tokenRef.current, authUserId);
+      if (remote && Array.isArray(remote)) {
+        setContactsRaw(remote);
+        cacheSave(remote);
+        setSyncStatus("synced");
+      } else {
+        setSyncStatus("error");
+      }
+    } catch (e) {
+      setSyncStatus("error");
+    }
+  }
   if (!authed) return /*#__PURE__*/React.createElement(LoginScreen, {
     onLogin: (token, uid) => {
       setAuthToken(token);
@@ -5152,28 +5492,6 @@ function App() {
       setAuthedState(true);
     }
   });
-  async function retrySync() {
-    setSyncStatus("syncing");
-    try {
-      const remote = await sbLoad(tokenRef.current, authUserId);
-      if (remote && Array.isArray(remote) && remote.length > 0) {
-        setContactsRaw(remote);
-        cacheSave(remote);
-        setSyncStatus("synced");
-      } else {
-        // Push local data up
-        const local = cacheLoad();
-        if (local && local.length > 0) {
-          await sbSave(local, tokenRef.current, authUserId);
-          setSyncStatus("synced");
-        } else {
-          setSyncStatus("idle");
-        }
-      }
-    } catch (e) {
-      setSyncStatus("error");
-    }
-  }
   const sidebarProps = {
     view,
     contacts,
@@ -5196,6 +5514,7 @@ function App() {
     onClose: () => setThanksModal(false),
     onMarkThanked: (cId, mId) => markThankYou(cId, mId),
     onViewContact: id => {
+      try { sessionStorage.setItem("networkpro_view","detail"); sessionStorage.setItem("networkpro_selectedId", String(id)); } catch(e) {}
       setSelectedId(id);
       setView("detail");
       setThanksModal(false);
@@ -5236,6 +5555,8 @@ function App() {
     setShowAddContact: setShowAddContact,
     onSaveNew: addContact,
     onSelect: id => {
+      try { sessionStorage.setItem("networkpro_view","detail"); sessionStorage.setItem("networkpro_selectedId", String(id)); } catch(e) {}
+      try { sessionStorage.setItem("networkpro_view","detail"); sessionStorage.setItem("networkpro_selectedId", String(id)); } catch(e) {}
       setSelectedId(id);
       setView("detail");
     }
@@ -5256,7 +5577,7 @@ function App() {
     addOutreach: addOutreach,
     updateOutreach: updateOutreach,
     setSelectedId: setSelectedId,
-    onBack: () => setView("contacts"),
+    onBack: () => { try { sessionStorage.setItem("networkpro_view","contacts"); sessionStorage.removeItem("networkpro_selectedId"); } catch(e) {} setView("contacts"); setSelectedId(null); setMobileDrawerOpen(false); },
     onAddContactAndLink: addContactAndLink
   }), view === "calendar" && /*#__PURE__*/React.createElement(CalendarView, {
     allMeetings: allMeetings,
@@ -5278,6 +5599,9 @@ function App() {
     addOutreach: addOutreach,
     setSelectedId: setSelectedId,
     setView: setView
+  }), view === "import" && /*#__PURE__*/React.createElement(ImportView, {
+    onImport: importContacts,
+    onNavigate: navigate
   }), view === "stats" && /*#__PURE__*/React.createElement(StatsView, {
     contacts: contacts,
     allMeetings: allMeetings,
