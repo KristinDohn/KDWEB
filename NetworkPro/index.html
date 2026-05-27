@@ -468,13 +468,18 @@ const NAV = [{
   id: "suggested",
   label: "To Meet",
   icon: "◎"
+}, {
+  id: "overview",
+  label: "Overview",
+  icon: "◉"
 }];
 const PAGE_TITLES = {
   contacts: "Network",
   detail: "Contact",
   calendar: "Calendar",
   suggested: "To Meet",
-  import: "Import Contacts"
+  import: "Import Contacts",
+  overview: "Overview"
 };
 const COLORS = ["#2A6B8A", "#5B4A8A", "#2A7A52", "#8A4A2A", "#6B2A8A", "#2A4A8A", "#7A2A5B", "#2A5B7A"];
 
@@ -4771,6 +4776,91 @@ function SuggestedView({
 }
 
 // ── Stats View ────────────────────────────────────────────────────────────────
+// ── Overview View ──────────────────────────────────────────────────────────────────────────────
+function OverviewView({ contacts, setSelectedId, setView }) {
+  const today = isoToday();
+  const [expanded, setExpanded] = useState(null);
+
+  const openTasks = contacts.flatMap(c =>
+    c.meetings.flatMap(m => (m.tasks || []).filter(t => !t.done).map(t => ({
+      text: t.text, contactName: fullName(c), contactId: c.id, meetingDate: m.date
+    })))
+  ).sort((a, b) => a.meetingDate.localeCompare(b.meetingDate));
+
+  const heldMeetings = contacts.flatMap(c =>
+    c.meetings.filter(m => m.date <= today).map(m => ({ m, c }))
+  ).sort((a, b) => b.m.date.localeCompare(a.m.date));
+
+  const upcomingMeetings = contacts.flatMap(c =>
+    c.meetings.filter(m => m.date > today).map(m => ({ m, c }))
+  ).sort((a, b) => a.m.date.localeCompare(b.m.date));
+
+  const pendingThanks = contacts.flatMap(c =>
+    c.meetings.filter(m => !m.thankYouSent && m.date <= today).map(m => ({ m, c }))
+  ).sort((a, b) => a.m.date.localeCompare(b.m.date));
+
+  const goToContact = id => {
+    try { sessionStorage.setItem("networkpro_view","detail"); sessionStorage.setItem("networkpro_selectedId", String(id)); } catch(e) {}
+    setSelectedId(id); setView("detail");
+  };
+
+  const tiles = [
+    { key: "tasks",    label: "Open Tasks",        count: openTasks.length,       color: openTasks.length > 0 ? "#F59E0B" : "#4ADE80" },
+    { key: "held",     label: "Meetings Held",      count: heldMeetings.length,    color: "#60A5FA" },
+    { key: "upcoming", label: "Upcoming Meetings",  count: upcomingMeetings.length, color: "#A78BFA" },
+    { key: "thanks",   label: "Pending Thanks",     count: pendingThanks.length,   color: pendingThanks.length > 0 ? "#F59E0B" : "#4ADE80" }
+  ];
+
+  const listItems = {
+    tasks: openTasks.map((item, i) =>
+      React.createElement("div", { key: i, style: { padding: "9px 0", borderBottom: i < openTasks.length-1 ? "1px solid #1E3A5F" : "none", cursor: "pointer" }, onClick: () => goToContact(item.contactId) },
+        React.createElement("div", { style: { fontSize: 13, color: "#F1F5F9", fontWeight: 500 } }, item.text),
+        React.createElement("div", { style: { fontSize: 11, color: "#E2E8F0", marginTop: 2 } }, item.contactName, " · ", fmtDate(item.meetingDate))
+      )
+    ),
+    held: heldMeetings.map((item, i) =>
+      React.createElement("div", { key: i, style: { padding: "9px 0", borderBottom: i < heldMeetings.length-1 ? "1px solid #1E3A5F" : "none", cursor: "pointer" }, onClick: () => goToContact(item.c.id) },
+        React.createElement("div", { style: { fontSize: 13, color: "#F1F5F9", fontWeight: 500 } }, fullName(item.c)),
+        React.createElement("div", { style: { fontSize: 11, color: "#E2E8F0", marginTop: 2 } }, fmtDate(item.m.date), item.m.startTime ? " · " + fmtTime(item.m.startTime) : "")
+      )
+    ),
+    upcoming: upcomingMeetings.map((item, i) =>
+      React.createElement("div", { key: i, style: { padding: "9px 0", borderBottom: i < upcomingMeetings.length-1 ? "1px solid #1E3A5F" : "none", cursor: "pointer" }, onClick: () => goToContact(item.c.id) },
+        React.createElement("div", { style: { fontSize: 13, color: "#F1F5F9", fontWeight: 500 } }, fullName(item.c)),
+        React.createElement("div", { style: { fontSize: 11, color: "#E2E8F0", marginTop: 2 } }, fmtDate(item.m.date), item.m.startTime ? " · " + fmtTime(item.m.startTime) : "")
+      )
+    ),
+    thanks: pendingThanks.map((item, i) =>
+      React.createElement("div", { key: i, style: { padding: "9px 0", borderBottom: i < pendingThanks.length-1 ? "1px solid #1E3A5F" : "none", cursor: "pointer" }, onClick: () => goToContact(item.c.id) },
+        React.createElement("div", { style: { fontSize: 13, color: "#F1F5F9", fontWeight: 500 } }, fullName(item.c)),
+        React.createElement("div", { style: { fontSize: 11, color: "#E2E8F0", marginTop: 2 } }, "Met ", fmtDate(item.m.date))
+      )
+    )
+  };
+
+  return React.createElement("div", null,
+    React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 } },
+      tiles.map(t =>
+        React.createElement("div", {
+          key: t.key,
+          style: { ...T.card, padding: "16px 14px", cursor: "pointer", borderColor: expanded === t.key ? "#2563EB" : "#1E3A5F", transition: "border-color 0.15s" },
+          onClick: () => setExpanded(e => e === t.key ? null : t.key)
+        },
+          React.createElement("div", { style: { fontSize: 36, fontFamily: "'DM Serif Display',serif", color: t.color, lineHeight: 1 } }, t.count),
+          React.createElement("div", { style: { fontSize: 12, fontWeight: 600, color: "#E2E8F0", marginTop: 5 } }, t.label),
+          React.createElement("div", { style: { fontSize: 10, color: "#E2E8F0", marginTop: 3 } }, expanded === t.key ? "\u25b2 hide" : "\u25bc show")
+        )
+      )
+    ),
+    expanded && React.createElement("div", { style: { ...T.card, padding: "12px 16px", marginBottom: 16 } },
+      listItems[expanded].length === 0
+        ? React.createElement("div", { style: { fontSize: 13, color: "#E2E8F0", padding: "8px 0" } }, "Nothing here yet.")
+        : listItems[expanded]
+    )
+  );
+}
+
+
 function ImportView({onImport, onNavigate}) {
   const [step, setStep] = React.useState("guide"); // guide | pick | review
   const [parsed, setParsed] = React.useState([]);
@@ -5697,7 +5787,7 @@ function App() {
     addOutreach: addOutreach,
     setSelectedId: setSelectedId,
     setView: setView
-  }), view === "import" && /*#__PURE__*/React.createElement(ImportView, {
+  }), view === "overview" && React.createElement(OverviewView, { contacts: contacts, setSelectedId: setSelectedId, setView: setView }), view === "import" && /*#__PURE__*/React.createElement(ImportView, {
     onImport: importContacts,
     onNavigate: navigate
   })), /*#__PURE__*/React.createElement("nav", {
