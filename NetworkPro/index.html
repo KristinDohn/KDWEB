@@ -4682,6 +4682,8 @@ function SuggestedView({
     scheduled: byStatus.scheduled.length,
     met: byStatus.met.length
   };
+  const [activeFilter, setActiveFilter] = useState(null);
+  const toggleFilter = key => setActiveFilter(f => f === key ? null : key);
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
     style: {
       fontSize: 12,
@@ -4696,18 +4698,22 @@ function SuggestedView({
       marginBottom: 20
     }
   }, [{
+    key: "pending",
     label: "To Contact",
     val: counts.pending,
     color: "#F59E0B"
   }, {
+    key: "contacted",
     label: "Contacted",
     val: counts.contacted,
     color: "#60A5FA"
   }, {
+    key: "scheduled",
     label: "Scheduled",
     val: counts.scheduled,
     color: "#A78BFA"
   }, {
+    key: "met",
     label: "Met",
     val: counts.met,
     color: "#4ADE80"
@@ -4716,8 +4722,12 @@ function SuggestedView({
     style: {
       ...T.card,
       textAlign: "center",
-      padding: "12px 6px"
-    }
+      padding: "12px 6px",
+      cursor: "pointer",
+      borderColor: activeFilter === x.key ? "#2563EB" : "#1E3A5F",
+      transition: "border-color 0.15s"
+    },
+    onClick: () => toggleFilter(x.key)
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 22,
@@ -4731,7 +4741,9 @@ function SuggestedView({
       fontWeight: 600,
       color: "#E2E8F0"
     }
-  }, x.label)))), [{
+  }, x.label), /*#__PURE__*/React.createElement("div", {
+    style: { fontSize: 10, color: "#E2E8F0", marginTop: 2 }
+  }, activeFilter === x.key ? "\u25B2 hide" : "\u25BC show"))), [{
     key: "pending",
     title: "To Reach Out"
   }, {
@@ -4743,7 +4755,7 @@ function SuggestedView({
   }, {
     key: "met",
     title: "Met"
-  }].filter(g => byStatus[g.key].length > 0).map(g => /*#__PURE__*/React.createElement("div", {
+  }].filter(g => activeFilter ? g.key === activeFilter : byStatus[g.key].length > 0).map(g => /*#__PURE__*/React.createElement("div", {
     key: g.key,
     style: {
       marginBottom: 20
@@ -4760,7 +4772,7 @@ function SuggestedView({
   }, g.title, " (", byStatus[g.key].length, ")"), byStatus[g.key].map(s => /*#__PURE__*/React.createElement(OutreachRow, {
     key: s.contact.id,
     s: s
-  })))));
+  }))))));
 }
 
 // ── Stats View ────────────────────────────────────────────────────────────────
