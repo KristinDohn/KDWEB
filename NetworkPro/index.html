@@ -4802,7 +4802,6 @@ function StatsView({
   const [expanded, setExpanded] = useState(null);
 
   return /*#__PURE__*/React.createElement("div", null,
-    /*#__PURE__*/React.createElement("div", {style:{background:"red",padding:8,marginBottom:8,color:"white",fontSize:14}}, "STATS GRID TEST - contacts: " + contacts.length),
     /*#__PURE__*/React.createElement("div", {style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:20}},
       /*#__PURE__*/React.createElement("div", {
         style:{...T.card,padding:"16px",cursor:"pointer",borderColor:expanded==="tasks"?"#2563EB":"#1E3A5F"},
@@ -5996,7 +5995,7 @@ function App() {
     markThankYou: markThankYou,
     setSelectedId: setSelectedId,
     setView: setView
-  })))), /*#__PURE__*/React.createElement("nav", {
+  }))), /*#__PURE__*/React.createElement("nav", {
     className: "bottom-nav"
   }, NAV.map(n => /*#__PURE__*/React.createElement("div", {
     key: n.id,
@@ -6006,7 +6005,7 @@ function App() {
     className: "ni"
   }, n.icon), /*#__PURE__*/React.createElement("span", {
     className: "nl"
-  }, n.label)))));
+  }, n.label))))));
 }
 ReactDOM.createRoot(document.getElementById("root")).render(/*#__PURE__*/React.createElement(App, null));
 
