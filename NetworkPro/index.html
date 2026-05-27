@@ -1223,7 +1223,7 @@ function LoginScreen({
       color: "#60A5FA",
       letterSpacing: "-0.02em"
     }
-  }, "NetworkPro"), ), mode === "login" && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  }, "NetworkPro")), mode === "login" && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: 12
     }
@@ -1804,7 +1804,7 @@ function SidebarInner({
       fontSize: 16,
       color: "#60A5FA"
     }
-  }, "NetworkPro"), ), /*#__PURE__*/React.createElement("div", {
+  }, "NetworkPro")), /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 12,
       flex: 1
@@ -5939,7 +5939,6 @@ function App() {
     setShowAddContact: setShowAddContact,
     onSaveNew: addContact,
     onSelect: id => {
-      try { sessionStorage.setItem("networkpro_view","detail"); sessionStorage.setItem("networkpro_selectedId", String(id)); } catch(e) {}
       try { sessionStorage.setItem("networkpro_view","detail"); sessionStorage.setItem("networkpro_selectedId", String(id)); } catch(e) {}
       setSelectedId(id);
       setView("detail");
