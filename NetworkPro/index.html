@@ -468,17 +468,12 @@ const NAV = [{
   id: "suggested",
   label: "To Meet",
   icon: "◎"
-}, {
-  id: "stats",
-  label: "Overview",
-  icon: "◉"
 }];
 const PAGE_TITLES = {
   contacts: "Network",
   detail: "Contact",
   calendar: "Calendar",
   suggested: "To Meet",
-  stats: "Overview",
   import: "Import Contacts"
 };
 const COLORS = ["#2A6B8A", "#5B4A8A", "#2A7A52", "#8A4A2A", "#6B2A8A", "#2A4A8A", "#7A2A5B", "#2A5B7A"];
@@ -4776,298 +4771,6 @@ function SuggestedView({
 }
 
 // ── Stats View ────────────────────────────────────────────────────────────────
-function StatsView({
-  contacts,
-  allMeetings,
-  allTasks,
-  openTasks,
-  setTaskModal,
-  markThankYou,
-  setSelectedId,
-  setView
-}) {
-  const today = isoToday();
-
-  const openTaskItems = contacts.flatMap(c =>
-    c.meetings.flatMap(m => (m.tasks || []).filter(t => !t.done).map(t => ({
-      task: t, meetingDate: m.date, contactName: fullName(c), contactId: c.id
-    })))
-  ).sort((a,b) => a.meetingDate.localeCompare(b.meetingDate));
-
-  const heldMeetings = contacts.flatMap(c =>
-    c.meetings.filter(m => m.date <= today).map(m => ({ m, c }))
-  ).sort((a,b) => b.m.date.localeCompare(a.m.date));
-
-  const upcomingMeetings = contacts.flatMap(c =>
-    c.meetings.filter(m => m.date > today).map(m => ({ m, c }))
-  ).sort((a,b) => a.m.date.localeCompare(b.m.date));
-
-  const pendingThanks = contacts.flatMap(c =>
-    c.meetings.filter(m => !m.thankYouSent && m.date <= today).map(m => ({ m, c }))
-  ).sort((a,b) => a.m.date.localeCompare(b.m.date));
-
-  const tTasks = contacts.reduce((s, c) => s + c.meetings.flatMap(m => m.tasks).length, 0);
-  const done = contacts.reduce((s, c) => s + c.meetings.flatMap(m => m.tasks).filter(t => t.done).length, 0);
-  const unthx = pendingThanks.length;
-  const ref = contacts.filter(c => c.referredBy).length;
-
-  const [expanded, setExpanded] = useState(null);
-
-  return /*#__PURE__*/React.createElement("div", null,
-    /*#__PURE__*/React.createElement("div", {style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:20}},
-      /*#__PURE__*/React.createElement("div", {
-        style:{...T.card,padding:"16px",cursor:"pointer",borderColor:expanded==="tasks"?"#2563EB":"#1E3A5F"},
-        onClick:()=>setExpanded(e=>e==="tasks"?null:"tasks")
-      },
-        /*#__PURE__*/React.createElement("div", {style:{fontSize:34,fontFamily:"'DM Serif Display',serif",color:openTaskItems.length>0?"#F59E0B":"#4ADE80",lineHeight:1}}, openTaskItems.length),
-        /*#__PURE__*/React.createElement("div", {style:{fontSize:12,fontWeight:600,color:"#E2E8F0",marginTop:4}}, "Open Tasks"),
-        /*#__PURE__*/React.createElement("div", {style:{fontSize:11,color:"#E2E8F0",marginTop:2}}, expanded==="tasks"?"\u25B2 hide":"\u25BC show")
-      ),
-      /*#__PURE__*/React.createElement("div", {
-        style:{...T.card,padding:"16px",cursor:"pointer",borderColor:expanded==="held"?"#2563EB":"#1E3A5F"},
-        onClick:()=>setExpanded(e=>e==="held"?null:"held")
-      },
-        /*#__PURE__*/React.createElement("div", {style:{fontSize:34,fontFamily:"'DM Serif Display',serif",color:"#60A5FA",lineHeight:1}}, heldMeetings.length),
-        /*#__PURE__*/React.createElement("div", {style:{fontSize:12,fontWeight:600,color:"#E2E8F0",marginTop:4}}, "Meetings Held"),
-        /*#__PURE__*/React.createElement("div", {style:{fontSize:11,color:"#E2E8F0",marginTop:2}}, expanded==="held"?"\u25B2 hide":"\u25BC show")
-      ),
-      /*#__PURE__*/React.createElement("div", {
-        style:{...T.card,padding:"16px",cursor:"pointer",borderColor:expanded==="upcoming"?"#2563EB":"#1E3A5F"},
-        onClick:()=>setExpanded(e=>e==="upcoming"?null:"upcoming")
-      },
-        /*#__PURE__*/React.createElement("div", {style:{fontSize:34,fontFamily:"'DM Serif Display',serif",color:"#A78BFA",lineHeight:1}}, upcomingMeetings.length),
-        /*#__PURE__*/React.createElement("div", {style:{fontSize:12,fontWeight:600,color:"#E2E8F0",marginTop:4}}, "Upcoming Meetings"),
-        /*#__PURE__*/React.createElement("div", {style:{fontSize:11,color:"#E2E8F0",marginTop:2}}, expanded==="upcoming"?"\u25B2 hide":"\u25BC show")
-      ),
-      /*#__PURE__*/React.createElement("div", {
-        style:{...T.card,padding:"16px",cursor:"pointer",borderColor:expanded==="thanks"?"#2563EB":"#1E3A5F"},
-        onClick:()=>setExpanded(e=>e==="thanks"?null:"thanks")
-      },
-        /*#__PURE__*/React.createElement("div", {style:{fontSize:34,fontFamily:"'DM Serif Display',serif",color:pendingThanks.length>0?"#F59E0B":"#4ADE80",lineHeight:1}}, pendingThanks.length),
-        /*#__PURE__*/React.createElement("div", {style:{fontSize:12,fontWeight:600,color:"#E2E8F0",marginTop:4}}, "Pending Thanks"),
-        /*#__PURE__*/React.createElement("div", {style:{fontSize:11,color:"#E2E8F0",marginTop:2}}, expanded==="thanks"?"\u25B2 hide":"\u25BC show")
-      )
-    ),
-    expanded==="tasks" && /*#__PURE__*/React.createElement("div", {style:{...T.card,marginBottom:12,padding:"12px 16px"}},
-      openTaskItems.length===0
-        ? /*#__PURE__*/React.createElement("div", {style:{fontSize:13,color:"#E2E8F0"}}, "No open tasks.")
-        : openTaskItems.map((item,i)=>/*#__PURE__*/React.createElement("div", {key:i,style:{padding:"8px 0",borderBottom:i<openTaskItems.length-1?"1px solid #1E3A5F":"none"}},
-            /*#__PURE__*/React.createElement("div", {style:{fontSize:13,color:"#F1F5F9",fontWeight:500}}, item.task.text),
-            /*#__PURE__*/React.createElement("div", {style:{fontSize:11,color:"#E2E8F0",marginTop:2}}, item.contactName, " \u00B7 ", fmtDate(item.meetingDate))
-          ))
-    ),
-    expanded==="held" && /*#__PURE__*/React.createElement("div", {style:{...T.card,marginBottom:12,padding:"12px 16px"}},
-      heldMeetings.length===0
-        ? /*#__PURE__*/React.createElement("div", {style:{fontSize:13,color:"#E2E8F0"}}, "No meetings held yet.")
-        : heldMeetings.map((item,i)=>/*#__PURE__*/React.createElement("div", {key:i,style:{padding:"8px 0",borderBottom:i<heldMeetings.length-1?"1px solid #1E3A5F":"none",cursor:"pointer"},
-            onClick:()=>{try{sessionStorage.setItem("networkpro_view","detail");sessionStorage.setItem("networkpro_selectedId",String(item.c.id));}catch(e){}setSelectedId(item.c.id);setView("detail");}},
-            /*#__PURE__*/React.createElement("div", {style:{fontSize:13,color:"#F1F5F9",fontWeight:500}}, fullName(item.c)),
-            /*#__PURE__*/React.createElement("div", {style:{fontSize:11,color:"#E2E8F0",marginTop:2}}, fmtDate(item.m.date), item.m.startTime?" \u00B7 "+fmtTime(item.m.startTime):"")
-          ))
-    ),
-    expanded==="upcoming" && /*#__PURE__*/React.createElement("div", {style:{...T.card,marginBottom:12,padding:"12px 16px"}},
-      upcomingMeetings.length===0
-        ? /*#__PURE__*/React.createElement("div", {style:{fontSize:13,color:"#E2E8F0"}}, "No upcoming meetings.")
-        : upcomingMeetings.map((item,i)=>/*#__PURE__*/React.createElement("div", {key:i,style:{padding:"8px 0",borderBottom:i<upcomingMeetings.length-1?"1px solid #1E3A5F":"none",cursor:"pointer"},
-            onClick:()=>{try{sessionStorage.setItem("networkpro_view","detail");sessionStorage.setItem("networkpro_selectedId",String(item.c.id));}catch(e){}setSelectedId(item.c.id);setView("detail");}},
-            /*#__PURE__*/React.createElement("div", {style:{fontSize:13,color:"#F1F5F9",fontWeight:500}}, fullName(item.c)),
-            /*#__PURE__*/React.createElement("div", {style:{fontSize:11,color:"#E2E8F0",marginTop:2}}, fmtDate(item.m.date), item.m.startTime?" \u00B7 "+fmtTime(item.m.startTime):"")
-          ))
-    ),
-    expanded==="thanks" && /*#__PURE__*/React.createElement("div", {style:{...T.card,marginBottom:12,padding:"12px 16px"}},
-      pendingThanks.length===0
-        ? /*#__PURE__*/React.createElement("div", {style:{fontSize:13,color:"#E2E8F0"}}, "All caught up on thank-yous!")
-        : pendingThanks.map((item,i)=>/*#__PURE__*/React.createElement("div", {key:i,style:{padding:"8px 0",borderBottom:i<pendingThanks.length-1?"1px solid #1E3A5F":"none",cursor:"pointer"},
-            onClick:()=>{try{sessionStorage.setItem("networkpro_view","detail");sessionStorage.setItem("networkpro_selectedId",String(item.c.id));}catch(e){}setSelectedId(item.c.id);setView("detail");}},
-            /*#__PURE__*/React.createElement("div", {style:{fontSize:13,color:"#F1F5F9",fontWeight:500}}, fullName(item.c)),
-            /*#__PURE__*/React.createElement("div", {style:{fontSize:11,color:"#E2E8F0",marginTop:2}}, "Met ", fmtDate(item.m.date))
-          ))
-    ), /*#__PURE__*/React.createElement("div", {
-    style: {
-      ...T.card,
-      marginBottom: 14,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      padding: "14px 16px"
-    }
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 13,
-      fontWeight: 600,
-      color: "#F1F5F9"
-    }
-  }, "Task List"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 11,
-      color: "#E2E8F0",
-      marginTop: 2
-    }
-  }, openTasks, " open \xB7 ", allTasks.filter(t => t.done).length, " completed")), /*#__PURE__*/React.createElement("button", {
-    style: T.btn("ghost"),
-    onClick: () => setTaskModal(true)
-  }, "View All")), contacts.some(c => c.meetings.length > 0) && /*#__PURE__*/React.createElement("div", {
-    id: "thx-tracker",
-    style: {
-      marginBottom: 20
-    }
-  }, /*#__PURE__*/React.createElement("h3", {
-    style: {
-      margin: "0 0 9px",
-      fontSize: 12,
-      fontWeight: 700,
-      color: "#E2E8F0",
-      textTransform: "uppercase",
-      letterSpacing: "0.08em"
-    }
-  }, "Thank-You Tracker")), contacts.flatMap(c => c.meetings.filter(m => m.date <= isoToday()).map(m => /*#__PURE__*/React.createElement("div", {
-    key: c.id + "-" + m.id,
-    style: {
-      ...T.card,
-      display: "flex",
-      alignItems: "center",
-      gap: 12,
-      padding: "12px 14px",
-      marginBottom: 8,
-      flexWrap: "wrap",
-      borderColor: m.thankYouSent ? "#14532D44" : "#1E3A5F"
-    }
-  }, /*#__PURE__*/React.createElement(Avatar, {
-    contact: c,
-    size: 32
-  }), /*#__PURE__*/React.createElement("div", {
-    style: {
-      flex: 1,
-      minWidth: 100
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 14,
-      fontWeight: 600,
-      color: "#F1F5F9"
-    }
-  }, fullName(c)), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 12,
-      color: "#E2E8F0"
-    }
-  }, "Met ", fmtDate(m.date))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 8,
-      alignItems: "center"
-    }
-  }, m.thankYouSent ? /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 12,
-      color: "#22C55E",
-      fontWeight: 600
-    }
-  }, "\u2713 Thanked ", fmtDate(m.thankYouDate)) : /*#__PURE__*/React.createElement("button", {
-    style: {
-      ...T.btn("pink"),
-      padding: "6px 14px",
-      fontSize: 12
-    },
-    onClick: () => markThankYou(c.id, m.id, true)
-  }, "Mark Thanked"), /*#__PURE__*/React.createElement("span", {
-    style: {
-      cursor: "pointer",
-      fontSize: 12,
-      color: "#60A5FA"
-    },
-    onClick: () => {
-      try { sessionStorage.setItem("networkpro_view","detail"); sessionStorage.setItem("networkpro_selectedId", String(c.id)); } catch(e) {}
-      setSelectedId(c.id);
-      setView("detail");
-    }
-  }, "\u2192")))))), (() => {
-    const today = isoToday();
-    const upcoming = allMeetings.filter(m => m.date >= today).sort((a, b) => {
-      const dc = a.date.localeCompare(b.date);
-      if (dc !== 0) return dc;
-      return (a.startTime || "99:99").localeCompare(b.startTime || "99:99");
-    });
-    if (upcoming.length === 0) return null;
-    return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
-      style: {
-        margin: "0 0 9px",
-        fontSize: 12,
-        fontWeight: 700,
-        color: "#E2E8F0",
-        textTransform: "uppercase",
-        letterSpacing: "0.08em"
-      }
-    }, "Upcoming Meetings (", upcoming.length, ")"), upcoming.map(m => /*#__PURE__*/React.createElement("div", {
-      key: m.id,
-      style: {
-        ...T.card,
-        display: "flex",
-        alignItems: "center",
-        gap: 12,
-        padding: "12px 14px",
-        marginBottom: 8,
-        cursor: "pointer",
-        transition: "border-color 0.15s"
-      },
-      onClick: () => {
-        try { sessionStorage.setItem("networkpro_view","detail"); sessionStorage.setItem("networkpro_selectedId", String(m.contact.id)); } catch(e) {}
-        setSelectedId(m.contact.id);
-        setView("detail");
-      },
-      onMouseEnter: e => e.currentTarget.style.borderColor = "#2563EB",
-      onMouseLeave: e => e.currentTarget.style.borderColor = "#1E3A5F"
-    }, /*#__PURE__*/React.createElement(Avatar, {
-      contact: m.contact,
-      size: 34
-    }), /*#__PURE__*/React.createElement("div", {
-      style: {
-        flex: 1,
-        minWidth: 0
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 14,
-        fontWeight: 600,
-        color: "#F1F5F9"
-      }
-    }, fullName(m.contact)), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 11,
-        color: "#E2E8F0",
-        marginTop: 1
-      }
-    }, m.contact.company)), /*#__PURE__*/React.createElement("div", {
-      style: {
-        textAlign: "right",
-        flexShrink: 0
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 13,
-        fontWeight: 700,
-        color: "#60A5FA"
-      }
-    }, fmtDate(m.date)), m.startTime && /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 11,
-        color: "#60A5FA",
-        marginTop: 1
-      }
-    }, fmtTime(m.startTime)), (() => {
-      const days = Math.round((new Date(m.date) - new Date(today)) / (1000 * 60 * 60 * 24));
-      return /*#__PURE__*/React.createElement("div", {
-        style: {
-          fontSize: 11,
-          color: "#E2E8F0",
-          marginTop: 1
-        }
-      }, days === 0 ? "Today" : days === 1 ? "Tomorrow" : `In ${days} days`);
-    })()))));
-  })();
-}
-
-// ── Import Contacts View ───────────────────────────────────────────────────────
 function ImportView({onImport, onNavigate}) {
   const [step, setStep] = React.useState("guide"); // guide | pick | review
   const [parsed, setParsed] = React.useState([]);
@@ -5997,16 +5700,7 @@ function App() {
   }), view === "import" && /*#__PURE__*/React.createElement(ImportView, {
     onImport: importContacts,
     onNavigate: navigate
-  }), view === "stats" && /*#__PURE__*/React.createElement(StatsView, {
-    contacts: contacts,
-    allMeetings: allMeetings,
-    allTasks: allTasks,
-    openTasks: openTasks,
-    setTaskModal: setTaskModal,
-    markThankYou: markThankYou,
-    setSelectedId: setSelectedId,
-    setView: setView
-  }))), /*#__PURE__*/React.createElement("nav", {
+  })), /*#__PURE__*/React.createElement("nav", {
     className: "bottom-nav"
   }, NAV.map(n => /*#__PURE__*/React.createElement("div", {
     key: n.id,
@@ -6016,7 +5710,7 @@ function App() {
     className: "ni"
   }, n.icon), /*#__PURE__*/React.createElement("span", {
     className: "nl"
-  }, n.label))))));
+  }, n.label)))))));
 }
 ReactDOM.createRoot(document.getElementById("root")).render(/*#__PURE__*/React.createElement(App, null));
 
