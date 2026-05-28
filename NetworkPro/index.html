@@ -192,6 +192,16 @@ async function sbSignIn(email, password) {
   if (!res.ok) throw new Error(data.error_description || data.msg || "Login failed");
   return data; // { access_token, user, ... }
 }
+async function sbSignUp(email, password) {
+  const res = await fetch(`${SB_URL}/auth/v1/signup`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "apikey": SB_KEY },
+    body: JSON.stringify({ email, password })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.msg || data.error_description || "Signup failed");
+  return data;
+}
 async function sbSignOut(token) {
   await fetch(`${SB_URL}/auth/v1/logout`, {
     method: "POST",
@@ -1128,14 +1138,16 @@ function ResetPasswordScreen({
 function LoginScreen({
   onLogin
 }) {
-  const [mode, setMode] = useState("login"); // login | request | sent | forgot
+  const [mode, setMode] = useState("login"); // login | signup | forgot
   const [showPw, setShowPw] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPw, setConfirmPw] = useState("");
   const [err, setErr] = useState("");
   const [shake, setShake] = useState(false);
   const [loading, setLoading] = useState(false);
-  // Request form
+  const [signupDone, setSignupDone] = useState(false);
+  // Request form (kept for backward compat)
   const [reqFirst, setReqFirst] = useState("");
   const [reqLast, setReqLast] = useState("");
   const [reqEmail, setReqEmail] = useState("");
@@ -1157,6 +1169,21 @@ function LoginScreen({
       setErr(e.message || "Invalid email or password.");
       setShake(true);
       setTimeout(() => setShake(false), 500);
+    }
+    setLoading(false);
+  }
+  async function attemptSignup() {
+    if (!email || !password || !confirmPw) { setErr("Please fill in all fields."); return; }
+    if (!/\S+@\S+\.\S+/.test(email)) { setErr("Please enter a valid email."); return; }
+    if (password.length < 8) { setErr("Password must be at least 8 characters."); return; }
+    if (password !== confirmPw) { setErr("Passwords do not match."); setShake(true); setTimeout(() => setShake(false), 500); return; }
+    setLoading(true); setErr("");
+    try {
+      await sbSignUp(email, password);
+      setSignupDone(true);
+    } catch(e) {
+      setErr(e.message || "Signup failed. Please try again.");
+      setShake(true); setTimeout(() => setShake(false), 500);
     }
     setLoading(false);
   }
@@ -1327,7 +1354,7 @@ function LoginScreen({
     }
   }, "Forgot Password?"), /*#__PURE__*/React.createElement("button", {
     onClick: () => {
-      setMode("request");
+      setMode("signup");
       setErr("");
     },
     style: {
@@ -1342,105 +1369,36 @@ function LoginScreen({
       fontFamily: "'DM Sans',sans-serif",
       padding: "9px"
     }
-  }, "Request Access"))), mode === "forgot" && /*#__PURE__*/React.createElement(ForgotPasswordScreen, {
+  }, "Sign Up"))), mode === "forgot" && /*#__PURE__*/React.createElement(ForgotPasswordScreen, {
     onBack: () => setMode("login")
-  }), mode === "request" && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
-    style: {
-      margin: "0 0 4px",
-      fontSize: 16,
-      color: "#F1F5F9",
-      fontFamily: "'DM Serif Display',serif"
-    }
-  }, "Request Access"), /*#__PURE__*/React.createElement("p", {
-    style: {
-      fontSize: 12,
-      color: "#E2E8F0",
-      marginBottom: 20
-    }
-  }, "Fill out the form below and Kristin will be in touch."), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "grid",
-      gridTemplateColumns: "1fr 1fr",
-      gap: 10,
-      marginBottom: 10
-    }
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
-    style: T.label
-  }, "First Name"), /*#__PURE__*/React.createElement("input", {
-    value: reqFirst,
-    onChange: e => {
-      setReqFirst(e.target.value);
-      setReqErr("");
-    },
-    placeholder: "First",
-    style: inputStyle(false)
-  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
-    style: T.label
-  }, "Last Name"), /*#__PURE__*/React.createElement("input", {
-    value: reqLast,
-    onChange: e => {
-      setReqLast(e.target.value);
-      setReqErr("");
-    },
-    placeholder: "Last",
-    style: inputStyle(false)
-  }))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginBottom: 16
-    }
-  }, /*#__PURE__*/React.createElement("label", {
-    style: T.label
-  }, "Email"), /*#__PURE__*/React.createElement("input", {
-    type: "email",
-    value: reqEmail,
-    onChange: e => {
-      setReqEmail(e.target.value);
-      setReqErr("");
-    },
-    placeholder: "you@example.com",
-    style: inputStyle(!!reqErr)
-  }), reqErr && /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 12,
-      color: "#EF4444",
-      marginTop: 6
-    }
-  }, reqErr)), /*#__PURE__*/React.createElement("button", {
-    onClick: submitRequest,
-    disabled: loading,
-    style: {
-      width: "100%",
-      background: "#2563EB",
-      color: "#fff",
-      border: "none",
-      borderRadius: 8,
-      padding: "13px",
-      fontSize: 15,
-      fontWeight: 700,
-      cursor: "pointer",
-      fontFamily: "'DM Sans',sans-serif"
-    }
-  }, loading ? "Sending…" : "Send Request"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      textAlign: "center",
-      marginTop: 16
-    }
-  }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => {
-      setMode("login");
-      setReqErr("");
-    },
-    style: {
-      background: "none",
-      border: "none",
-      color: "#E2E8F0",
-      fontSize: 12,
-      cursor: "pointer",
-      fontFamily: "'DM Sans',sans-serif",
-      textDecoration: "underline",
-      textUnderlineOffset: 3
-    }
-  }, "\u2190 Back to Sign In"))), mode === "sent" && /*#__PURE__*/React.createElement("div", {
+  }), mode === "signup" && React.createElement("div", null,
+    signupDone
+      ? React.createElement("div", { style: { textAlign: "center", padding: "20px 0" } },
+          React.createElement("div", { style: { fontSize: 36, marginBottom: 12 } }, "\u2709\ufe0f"),
+          React.createElement("h3", { style: { margin: "0 0 8px", fontSize: 18, color: "#4ADE80", fontFamily: "'DM Serif Display',serif" } }, "Check your email"),
+          React.createElement("p", { style: { fontSize: 13, color: "#E2E8F0", lineHeight: 1.5 } }, "We sent a confirmation link to ", React.createElement("strong", null, email), ". Click it to activate your account, then come back here to sign in."),
+          React.createElement("button", { onClick: () => { setMode("login"); setSignupDone(false); setEmail(""); setPassword(""); setConfirmPw(""); }, style: { marginTop: 20, width: "100%", background: "#1E3A5F", border: "1px solid #2563EB", borderRadius: 8, color: "#60A5FA", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", padding: "9px" } }, "Back to Sign In")
+        )
+      : React.createElement("div", null,
+          React.createElement("h3", { style: { margin: "0 0 4px", fontSize: 16, color: "#F1F5F9", fontFamily: "'DM Serif Display',serif" } }, "Create Account"),
+          React.createElement("p", { style: { fontSize: 12, color: "#E2E8F0", marginBottom: 20 } }, "Enter your email and choose a password to get started."),
+          React.createElement("div", { style: { marginBottom: 12 } },
+            React.createElement("label", { style: T.label }, "Email"),
+            React.createElement("input", { type: "email", value: email, autoFocus: true, autoComplete: "email", onChange: e => { setEmail(e.target.value); setErr(""); }, placeholder: "you@example.com", style: inputStyle(!!err) })
+          ),
+          React.createElement("div", { style: { marginBottom: 12 } },
+            React.createElement("label", { style: T.label }, "Password"),
+            React.createElement("input", { type: "password", value: password, autoComplete: "new-password", onChange: e => { setPassword(e.target.value); setErr(""); }, placeholder: "At least 8 characters", style: inputStyle(!!err) })
+          ),
+          React.createElement("div", { style: { marginBottom: 16 } },
+            React.createElement("label", { style: T.label }, "Confirm Password"),
+            React.createElement("input", { type: "password", value: confirmPw, autoComplete: "new-password", onChange: e => { setConfirmPw(e.target.value); setErr(""); }, onKeyDown: e => e.key === "Enter" && attemptSignup(), placeholder: "Repeat password", style: inputStyle(!!err) }),
+            err && React.createElement("div", { style: { fontSize: 12, color: "#EF4444", marginTop: 6 } }, err)
+          ),
+          React.createElement("button", { onClick: attemptSignup, disabled: !email || !password || !confirmPw || loading, style: { width: "100%", background: email && password && confirmPw && !loading ? "#2563EB" : "#1E3A5F", color: email && password && confirmPw && !loading ? "#fff" : "#E2E8F0", border: "none", borderRadius: 8, padding: "13px", fontSize: 15, fontWeight: 700, cursor: email && password && confirmPw ? "pointer" : "default", fontFamily: "'DM Sans',sans-serif" } }, loading ? "Creating account\u2026" : "Create Account"),
+          React.createElement("button", { onClick: () => { setMode("login"); setErr(""); }, style: { marginTop: 10, width: "100%", background: "transparent", border: "1px solid #1E3A5F", borderRadius: 8, color: "#E2E8F0", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", padding: "9px" } }, "Already have an account? Sign In")
+        )
+  ), mode === "sent" && /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: "center"
     }
