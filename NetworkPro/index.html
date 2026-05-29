@@ -2289,8 +2289,47 @@ function OutreachSection({
     setShowForm(false);
     setEditIdx(null);
   }
-  function FormFields() {
-    return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...T.card,
+      marginBottom: 14
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: outreaches.length > 0 || showForm ? 12 : 0
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      margin: 0,
+      fontSize: 12,
+      fontWeight: 700,
+      color: "#E2E8F0",
+      textTransform: "uppercase",
+      letterSpacing: "0.08em"
+    }
+  }, "Outreach ", outreaches.length > 0 && /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: "#E2E8F0",
+      fontWeight: 400
+    }
+  }, "(", outreaches.length, ")")), !showForm && /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...T.btn("primary"),
+      padding: "5px 12px",
+      fontSize: 12
+    },
+    onClick: startAdd
+  }, "+ Log Outreach")), showForm && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: outreaches.length > 0 ? 12 : 0,
+      paddingBottom: outreaches.length > 0 ? 12 : 0,
+      borderBottom: outreaches.length > 0 ? "1px solid #1E3A5F" : undefined
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
       style: {
         fontSize: 12,
         fontWeight: 700,
@@ -2363,48 +2402,7 @@ function OutreachSection({
         setEditIdx(null);
         setForm(BLANK);
       }
-    }, "Cancel")));
-  }
-  return /*#__PURE__*/React.createElement("div", {
-    style: {
-      ...T.card,
-      marginBottom: 14
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      marginBottom: outreaches.length > 0 || showForm ? 12 : 0
-    }
-  }, /*#__PURE__*/React.createElement("h3", {
-    style: {
-      margin: 0,
-      fontSize: 12,
-      fontWeight: 700,
-      color: "#E2E8F0",
-      textTransform: "uppercase",
-      letterSpacing: "0.08em"
-    }
-  }, "Outreach ", outreaches.length > 0 && /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: "#E2E8F0",
-      fontWeight: 400
-    }
-  }, "(", outreaches.length, ")")), !showForm && /*#__PURE__*/React.createElement("button", {
-    style: {
-      ...T.btn("primary"),
-      padding: "5px 12px",
-      fontSize: 12
-    },
-    onClick: startAdd
-  }, "+ Log Outreach")), showForm && /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginBottom: outreaches.length > 0 ? 12 : 0,
-      paddingBottom: outreaches.length > 0 ? 12 : 0,
-      borderBottom: outreaches.length > 0 ? "1px solid #1E3A5F" : undefined
-    }
-  }, /*#__PURE__*/React.createElement(FormFields, null)), outreaches.length > 0 ? /*#__PURE__*/React.createElement("div", null, outreaches.map((o, i) => /*#__PURE__*/React.createElement("div", {
+    }, "Cancel")))), outreaches.length > 0 ? /*#__PURE__*/React.createElement("div", null, outreaches.map((o, i) => /*#__PURE__*/React.createElement("div", {
     key: i,
     style: {
       display: "flex",
