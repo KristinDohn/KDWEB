@@ -482,6 +482,10 @@ const NAV = [{
   id: "overview",
   label: "Overview",
   icon: "◉"
+}, {
+  id: "tasks",
+  label: "Tasks",
+  icon: "☑"
 }];
 const PAGE_TITLES = {
   contacts: "Network",
@@ -1802,16 +1806,7 @@ function SidebarInner({
       paddingLeft: view === "import" ? 7 : 10, transition: "all 0.15s"
     },
     onClick: () => onNavigate("import")
-  }, /*#__PURE__*/React.createElement("span", {style: {fontSize: 14}}, "⬆"), "Import Contacts"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex", alignItems: "center", gap: 10, padding: "9px 0",
-      cursor: "pointer", fontSize: 13, color: view === "tasks" ? "#60A5FA" : "#E2E8F0",
-      fontWeight: view === "tasks" ? 600 : 400,
-      borderLeft: view === "tasks" ? "3px solid #60A5FA" : "3px solid transparent",
-      paddingLeft: view === "tasks" ? 7 : 10, transition: "all 0.15s"
-    },
-    onClick: () => onNavigate("tasks")
-  }, /*#__PURE__*/React.createElement("span", {style: {fontSize: 14}}, "\u2611"), " Task Management")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", {style: {fontSize: 14}}, "⬆"), "Import Contacts")), /*#__PURE__*/React.createElement("div", {
     style: {
       padding: "14px 22px",
       borderTop: "1px solid #1E3A5F",
@@ -4776,6 +4771,7 @@ function SuggestedView({
 function TaskManagementView({ contacts, addTaskToMeeting, updateTask, toggleTask, setSelectedId, setView }) {
   const today = isoToday();
   const [sortBy, setSortBy] = useState("dueDate"); // dueDate | createdDate | person | alpha
+  const [editingTask, setEditingTask] = useState(null); // { cId, mId, tId, text, dueDate }
   const [showDone, setShowDone] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [newText, setNewText] = useState("");
@@ -4812,6 +4808,14 @@ function TaskManagementView({ contacts, addTaskToMeeting, updateTask, toggleTask
   const selectedContact = contacts.find(c => c.id === Number(newContactId));
   const contactMeetings = selectedContact ? selectedContact.meetings : [];
 
+  function saveEditTask() {
+    if (!editingTask || !editingTask.text.trim()) return;
+    updateTask(editingTask.cId, editingTask.mId, editingTask.tId, {
+      text: editingTask.text.trim(),
+      dueDate: editingTask.dueDate
+    });
+    setEditingTask(null);
+  }
   function submitNewTask() {
     if (!newText.trim() || !newContactId || !newMeetingId) return;
     addTaskToMeeting(Number(newContactId), Number(newMeetingId), { text: newText.trim(), dueDate: newDue });
@@ -4904,20 +4908,31 @@ function TaskManagementView({ contacts, addTaskToMeeting, updateTask, toggleTask
             style: { width: 20, height: 20, borderRadius: 4, border: t.done ? "none" : "2px solid #475569", background: t.done ? "#2563EB" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer", marginTop: 1 },
             onClick: () => toggleTask(c.id, m.id, t.id)
           }, t.done && React.createElement("span", { style: { color: "#fff", fontSize: 11 } }, "\u2713")),
-          // Content
-          React.createElement("div", { style: { flex: 1, minWidth: 0 } },
-            React.createElement("div", { style: { fontSize: 14, color: "#F1F5F9", fontWeight: 500, textDecoration: t.done ? "line-through" : "none", marginBottom: 4 } }, t.text),
-            React.createElement("div", { style: { display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" } },
-              React.createElement("span", {
-                style: { fontSize: 12, color: c.color, fontWeight: 600, cursor: "pointer" },
-                onClick: () => goToContact(c.id)
-              }, fullName(c)),
-              React.createElement("span", { style: { fontSize: 11, color: "#E2E8F0" } }, "· " + fmtDate(m.date)),
-              t.dueDate && React.createElement("span", {
-                style: { fontSize: 11, fontWeight: 600, color: !t.done && t.dueDate < today ? "#EF4444" : !t.done && t.dueDate === today ? "#F59E0B" : "#E2E8F0" }
-              }, "Due " + fmtDate(t.dueDate))
-            )
-          )
+          // Content or inline edit
+          editingTask && editingTask.tId === t.id
+            ? React.createElement("div", { style: { flex: 1 } },
+                React.createElement("input", { style: { ...T.input, marginBottom: 6, fontSize: 13 }, value: editingTask.text, autoFocus: true, onChange: e => setEditingTask(x => ({ ...x, text: e.target.value })), onKeyDown: e => { if (e.key === "Enter") saveEditTask(); if (e.key === "Escape") setEditingTask(null); } }),
+                React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8 } },
+                  React.createElement("input", { type: "date", style: { ...T.input, fontSize: 12, padding: "5px 8px" }, value: editingTask.dueDate || "", onChange: e => setEditingTask(x => ({ ...x, dueDate: e.target.value })) }),
+                  React.createElement("button", { style: { ...T.btn("primary"), padding: "5px 12px", fontSize: 12 }, onClick: saveEditTask }, "Save"),
+                  React.createElement("button", { style: { ...T.btn("ghost"), padding: "5px 10px", fontSize: 12 }, onClick: () => setEditingTask(null) }, "Cancel")
+                )
+              )
+            : React.createElement("div", { style: { flex: 1, minWidth: 0 } },
+                React.createElement("div", { style: { fontSize: 14, color: "#F1F5F9", fontWeight: 500, textDecoration: t.done ? "line-through" : "none", marginBottom: 4 } }, t.text),
+                React.createElement("div", { style: { display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" } },
+                  React.createElement("span", { style: { fontSize: 12, color: c.color, fontWeight: 600, cursor: "pointer" }, onClick: () => goToContact(c.id) }, fullName(c)),
+                  React.createElement("span", { style: { fontSize: 11, color: "#E2E8F0" } }, "\xc2\xb7 " + fmtDate(m.date)),
+                  t.dueDate && React.createElement("span", {
+                    style: { fontSize: 11, fontWeight: 600, color: !t.done && t.dueDate < today ? "#EF4444" : !t.done && t.dueDate === today ? "#F59E0B" : "#E2E8F0" }
+                  }, "Due " + fmtDate(t.dueDate))
+                )
+              ),
+          // Edit button
+          !(editingTask && editingTask.tId === t.id) && React.createElement("button", {
+            style: { ...T.btn("ghost"), padding: "3px 8px", fontSize: 11, flexShrink: 0, marginTop: 1 },
+            onClick: () => setEditingTask({ cId: c.id, mId: m.id, tId: t.id, text: t.text, dueDate: t.dueDate || "" })
+          }, "\u270E")
         )
       )
   );
