@@ -473,7 +473,7 @@ const NAV = [{
 }, {
   id: "calendar",
   label: "Calendar",
-  icon: "◷"
+  icon: "▣"
 }, {
   id: "suggested",
   label: "To Meet",
@@ -485,7 +485,7 @@ const NAV = [{
 }, {
   id: "tasks",
   label: "Tasks",
-  icon: "☑"
+  icon: "◧"
 }];
 const PAGE_TITLES = {
   contacts: "Network",
@@ -1806,7 +1806,7 @@ function SidebarInner({
       paddingLeft: view === "import" ? 7 : 10, transition: "all 0.15s"
     },
     onClick: () => onNavigate("import")
-  }, /*#__PURE__*/React.createElement("span", {style: {fontSize: 14}}, "⬆"), "Import Contacts")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", {style: {fontSize: 14}}, "⊕"), "Import Contacts")), /*#__PURE__*/React.createElement("div", {
     style: {
       padding: "14px 22px",
       borderTop: "1px solid #1E3A5F",
@@ -5224,7 +5224,7 @@ function ImportView({onImport, onNavigate}) {
       "You'll get an email with a Connections.csv — upload that below"
     ]),
     /*#__PURE__*/React.createElement("div", {style: {...T.card, borderColor: "#2563EB", borderStyle: "dashed", textAlign: "center", padding: "28px 20px", cursor: "pointer"}, onClick: () => fileRef.current && fileRef.current.click()},
-      /*#__PURE__*/React.createElement("div", {style: {fontSize: 28, marginBottom: 8}}, "⬆"),
+      /*#__PURE__*/React.createElement("div", {style: {fontSize: 28, marginBottom: 8}}, "⊕"),
       /*#__PURE__*/React.createElement("div", {style: {fontSize: 14, fontWeight: 600, color: "#60A5FA", marginBottom: 4}}, "Upload your contacts file"),
       /*#__PURE__*/React.createElement("div", {style: {fontSize: 12, color: "#E2E8F0"}}, "Accepts .vcf (vCard) or .csv files"),
       /*#__PURE__*/React.createElement("input", {ref: fileRef, type: "file", accept: ".vcf,.csv", style: {display: "none"}, onChange: handleFile})
