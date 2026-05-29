@@ -1435,7 +1435,8 @@ function LoginScreen({
 function TaskModal({
   tasks,
   onClose,
-  onToggle
+  onToggle,
+  onNavigate
 }) {
   const open = tasks.filter(t => !t.done);
   const done = tasks.filter(t => t.done);
@@ -1525,10 +1526,8 @@ function TaskModal({
       flexWrap: "wrap"
     }
   }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: t.contact.color,
-      fontWeight: 600
-    }
+    style: { color: t.contact.color, fontWeight: 600, cursor: onNavigate ? "pointer" : "default", textDecoration: onNavigate ? "underline" : "none" },
+    onClick: e => { if (onNavigate) { e.stopPropagation(); onNavigate(t.contact.id); } }
   }, fullName(t.contact)), /*#__PURE__*/React.createElement("span", null, "\xB7"), /*#__PURE__*/React.createElement("span", null, fmtDate(t.meeting.date))))))), done.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 11,
@@ -2482,21 +2481,34 @@ function MeetingList({
 }) {
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft] = useState({});
+  const [newTaskText, setNewTaskText] = useState("");
   function startEdit(m) {
     setEditingId(m.id);
+    setNewTaskText("");
     setDraft({
       date: m.date,
       startTime: m.startTime || "",
-      notes: m.notes || ""
+      notes: m.notes || "",
+      tasks: (m.tasks || []).map(t => ({ ...t }))
     });
   }
   function saveEdit(mId) {
     updateMeeting(contactId, mId, {
       date: draft.date,
       startTime: draft.startTime || null,
-      notes: draft.notes
+      notes: draft.notes,
+      tasks: draft.tasks
     });
     setEditingId(null);
+    setNewTaskText("");
+  }
+  function addDraftTask() {
+    if (!newTaskText.trim()) return;
+    setDraft(p => ({ ...p, tasks: [...(p.tasks||[]), { id: Date.now(), text: newTaskText.trim(), done: false }] }));
+    setNewTaskText("");
+  }
+  function removeDraftTask(id) {
+    setDraft(p => ({ ...p, tasks: (p.tasks||[]).filter(t => t.id !== id) }));
   }
   return /*#__PURE__*/React.createElement("div", null, meetings.slice().sort((a, b) => b.date.localeCompare(a.date)).map(m => /*#__PURE__*/React.createElement("div", {
     key: m.id,
@@ -2550,7 +2562,21 @@ function MeetingList({
       notes: e.target.value
     })),
     placeholder: "Meeting notes\u2026"
-  })), /*#__PURE__*/React.createElement("div", {
+  })), /*#__PURE__*/React.createElement("div", { style: { marginTop: 12 } },
+    /*#__PURE__*/React.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: "#E2E8F0", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 8 } }, "Tasks"),
+    (draft.tasks || []).map((t, i) => /*#__PURE__*/React.createElement("div", { key: t.id, style: { display: "flex", alignItems: "center", gap: 8, marginBottom: 6 } },
+      /*#__PURE__*/React.createElement("div", {
+        style: { width: 16, height: 16, borderRadius: 3, border: t.done ? "none" : "2px solid #334155", background: t.done ? "#2563EB" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" },
+        onClick: () => setDraft(p => ({ ...p, tasks: p.tasks.map((x, j) => j === i ? { ...x, done: !x.done } : x) }))
+      }, t.done && /*#__PURE__*/React.createElement("span", { style: { color: "#fff", fontSize: 10 } }, "\u2713")),
+      /*#__PURE__*/React.createElement("span", { style: { flex: 1, fontSize: 13, color: "#E2E8F0", textDecoration: t.done ? "line-through" : "none" } }, t.text),
+      /*#__PURE__*/React.createElement("span", { style: { cursor: "pointer", color: "#EF4444", fontSize: 14, lineHeight: 1, padding: "0 4px" }, onClick: () => removeDraftTask(t.id) }, "\u00D7")
+    )),
+    /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 6, marginTop: 4 } },
+      /*#__PURE__*/React.createElement("input", { style: { ...T.input, flex: 1, fontSize: 12, padding: "6px 10px" }, placeholder: "Add a task\u2026", value: newTaskText, onChange: e => setNewTaskText(e.target.value), onKeyDown: e => e.key === "Enter" && addDraftTask() }),
+      /*#__PURE__*/React.createElement("button", { style: { ...T.btn("primary"), padding: "5px 10px", fontSize: 12 }, onClick: addDraftTask }, "+")
+    )
+  ), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 8,
@@ -5645,7 +5671,8 @@ function App() {
   }, taskModal && /*#__PURE__*/React.createElement(TaskModal, {
     tasks: allTasks,
     onClose: () => setTaskModal(false),
-    onToggle: t => toggleTask(t.contact.id, t.meeting.id, t.id)
+    onToggle: t => toggleTask(t.contact.id, t.meeting.id, t.id),
+    onNavigate: id => { try { sessionStorage.setItem("networkpro_view","detail"); sessionStorage.setItem("networkpro_selectedId", String(id)); } catch(e) {} setTaskModal(false); setSelectedId(id); setView("detail"); }
   }), thanksModal && /*#__PURE__*/React.createElement(PendingThanksModal, {
     contacts: contacts,
     onClose: () => setThanksModal(false),
