@@ -489,7 +489,8 @@ const PAGE_TITLES = {
   calendar: "Calendar",
   suggested: "To Meet",
   import: "Import Contacts",
-  overview: "Overview"
+  overview: "Overview",
+  tasks: "Task Management"
 };
 const COLORS = ["#2A6B8A", "#5B4A8A", "#2A7A52", "#8A4A2A", "#6B2A8A", "#2A4A8A", "#7A2A5B", "#2A5B7A"];
 
@@ -1801,7 +1802,16 @@ function SidebarInner({
       paddingLeft: view === "import" ? 7 : 10, transition: "all 0.15s"
     },
     onClick: () => onNavigate("import")
-  }, /*#__PURE__*/React.createElement("span", {style: {fontSize: 14}}, "⬆"), "Import Contacts")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", {style: {fontSize: 14}}, "⬆"), "Import Contacts"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex", alignItems: "center", gap: 10, padding: "9px 0",
+      cursor: "pointer", fontSize: 13, color: view === "tasks" ? "#60A5FA" : "#E2E8F0",
+      fontWeight: view === "tasks" ? 600 : 400,
+      borderLeft: view === "tasks" ? "3px solid #60A5FA" : "3px solid transparent",
+      paddingLeft: view === "tasks" ? 7 : 10, transition: "all 0.15s"
+    },
+    onClick: () => onNavigate("tasks")
+  }, /*#__PURE__*/React.createElement("span", {style: {fontSize: 14}}, "\u2611"), " Task Management")), /*#__PURE__*/React.createElement("div", {
     style: {
       padding: "14px 22px",
       borderTop: "1px solid #1E3A5F",
@@ -2482,9 +2492,11 @@ function MeetingList({
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft] = useState({});
   const [newTaskText, setNewTaskText] = useState("");
+  const [newTaskDue, setNewTaskDue] = useState("");
   function startEdit(m) {
     setEditingId(m.id);
     setNewTaskText("");
+    setNewTaskDue("");
     setDraft({
       date: m.date,
       startTime: m.startTime || "",
@@ -2501,10 +2513,11 @@ function MeetingList({
     });
     setEditingId(null);
     setNewTaskText("");
+    setNewTaskDue("");
   }
   function addDraftTask() {
     if (!newTaskText.trim()) return;
-    setDraft(p => ({ ...p, tasks: [...(p.tasks||[]), { id: Date.now(), text: newTaskText.trim(), done: false }] }));
+    setDraft(p => ({ ...p, tasks: [...(p.tasks||[]), { id: Date.now(), text: newTaskText.trim(), done: false, dueDate: newTaskDue }] }));
     setNewTaskText("");
   }
   function removeDraftTask(id) {
@@ -2574,6 +2587,7 @@ function MeetingList({
     )),
     /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 6, marginTop: 4 } },
       /*#__PURE__*/React.createElement("input", { style: { ...T.input, flex: 1, fontSize: 12, padding: "6px 10px" }, placeholder: "Add a task\u2026", value: newTaskText, onChange: e => setNewTaskText(e.target.value), onKeyDown: e => e.key === "Enter" && addDraftTask() }),
+      /*#__PURE__*/React.createElement("input", { type: "date", style: { ...T.input, fontSize: 12, padding: "6px 8px", width: 130 }, value: newTaskDue, onChange: e => setNewTaskDue(e.target.value), title: "Due date (optional)" }),
       /*#__PURE__*/React.createElement("button", { style: { ...T.btn("primary"), padding: "5px 10px", fontSize: 12 }, onClick: addDraftTask }, "+")
     )
   ), /*#__PURE__*/React.createElement("div", {
@@ -2708,7 +2722,7 @@ function MeetingList({
       color: t.done ? "#E2E8F0" : "#E2E8F0",
       textDecoration: t.done ? "line-through" : "none"
     }
-  }, t.text))))))));
+  }, t.text), t.dueDate && /*#__PURE__*/React.createElement("span", { style: { fontSize: 11, color: t.dueDate < isoToday() && !t.done ? "#EF4444" : "#E2E8F0", marginLeft: 6 } }, "Due ", fmtDate(t.dueDate)))))))));
 }
 
 // ── ContactSearchPicker — searchable dropdown to link contacts ───────────────
@@ -4758,6 +4772,158 @@ function SuggestedView({
 }
 
 // ── Stats View ────────────────────────────────────────────────────────────────
+// ── Task Management View ─────────────────────────────────────────────────────────────
+function TaskManagementView({ contacts, addTaskToMeeting, updateTask, toggleTask, setSelectedId, setView }) {
+  const today = isoToday();
+  const [sortBy, setSortBy] = useState("dueDate"); // dueDate | createdDate | person | alpha
+  const [showDone, setShowDone] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
+  const [newText, setNewText] = useState("");
+  const [newDue, setNewDue] = useState("");
+  const [newContactId, setNewContactId] = useState("");
+  const [newMeetingId, setNewMeetingId] = useState("");
+  const [contactSearch, setContactSearch] = useState("");
+
+  // Gather all tasks with context
+  const allTasks = contacts.flatMap(c =>
+    c.meetings.flatMap(m =>
+      (m.tasks || []).map(t => ({ t, m, c }))
+    )
+  );
+  const visible = allTasks.filter(x => showDone ? true : !x.t.done);
+
+  const sorted = visible.slice().sort((a, b) => {
+    if (sortBy === "dueDate") {
+      if (!a.t.dueDate && !b.t.dueDate) return 0;
+      if (!a.t.dueDate) return 1;
+      if (!b.t.dueDate) return -1;
+      return a.t.dueDate.localeCompare(b.t.dueDate);
+    }
+    if (sortBy === "createdDate") return (b.t.id || 0) - (a.t.id || 0);
+    if (sortBy === "person") return fullName(a.c).localeCompare(fullName(b.c));
+    if (sortBy === "alpha") return a.t.text.localeCompare(b.t.text);
+    return 0;
+  });
+
+  // Contacts for the new task picker
+  const filteredContacts = contactSearch.trim()
+    ? contacts.filter(c => fullName(c).toLowerCase().includes(contactSearch.toLowerCase()) || (c.company||"").toLowerCase().includes(contactSearch.toLowerCase()))
+    : contacts;
+  const selectedContact = contacts.find(c => c.id === Number(newContactId));
+  const contactMeetings = selectedContact ? selectedContact.meetings : [];
+
+  function submitNewTask() {
+    if (!newText.trim() || !newContactId || !newMeetingId) return;
+    addTaskToMeeting(Number(newContactId), Number(newMeetingId), { text: newText.trim(), dueDate: newDue });
+    setNewText(""); setNewDue(""); setNewContactId(""); setNewMeetingId(""); setContactSearch(""); setShowAdd(false);
+  }
+
+  const goToContact = id => {
+    try { sessionStorage.setItem("networkpro_view","detail"); sessionStorage.setItem("networkpro_selectedId", String(id)); } catch(e) {}
+    setSelectedId(id); setView("detail");
+  };
+
+  const SORTS = [
+    { key: "dueDate", label: "Due Date" },
+    { key: "createdDate", label: "Created" },
+    { key: "person", label: "Person" },
+    { key: "alpha", label: "A\u2013Z" }
+  ];
+
+  return React.createElement("div", null,
+    // Header row: sort tabs + toggle done + add button
+    React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8, marginBottom: 14, flexWrap: "wrap" } },
+      React.createElement("div", { style: { display: "flex", gap: 4, flex: 1, flexWrap: "wrap" } },
+        SORTS.map(s => React.createElement("button", {
+          key: s.key,
+          style: { ...T.btn(sortBy === s.key ? "primary" : "ghost"), padding: "5px 11px", fontSize: 12 },
+          onClick: () => setSortBy(s.key)
+        }, s.label))
+      ),
+      React.createElement("button", {
+        style: { ...T.btn("ghost"), padding: "5px 11px", fontSize: 12, color: showDone ? "#4ADE80" : "#E2E8F0" },
+        onClick: () => setShowDone(d => !d)
+      }, showDone ? "Hide Done" : "Show Done"),
+      React.createElement("button", {
+        style: { ...T.btn("primary"), padding: "5px 12px", fontSize: 12 },
+        onClick: () => setShowAdd(s => !s)
+      }, showAdd ? "Cancel" : "+ New Task")
+    ),
+
+    // New task form
+    showAdd && React.createElement("div", { style: { ...T.card, marginBottom: 14, padding: "14px 16px" } },
+      React.createElement("div", { style: { fontSize: 12, fontWeight: 700, color: "#E2E8F0", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 12 } }, "New Task"),
+      React.createElement("div", { style: { marginBottom: 10 } },
+        React.createElement("label", { style: T.label }, "Task"),
+        React.createElement("input", { style: T.input, placeholder: "What needs to be done?", value: newText, onChange: e => setNewText(e.target.value) })
+      ),
+      React.createElement("div", { style: { marginBottom: 10 } },
+        React.createElement("label", { style: T.label }, "Due Date (optional)"),
+        React.createElement("input", { type: "date", style: T.input, value: newDue, onChange: e => setNewDue(e.target.value) })
+      ),
+      React.createElement("div", { style: { marginBottom: 10 } },
+        React.createElement("label", { style: T.label }, "Contact"),
+        React.createElement("input", { style: { ...T.input, marginBottom: 6 }, placeholder: "Search contact\u2026", value: contactSearch, onChange: e => { setContactSearch(e.target.value); setNewContactId(""); setNewMeetingId(""); } }),
+        contactSearch.trim() && !selectedContact && filteredContacts.length > 0 && React.createElement("div", { style: { background: "#0A1628", border: "1px solid #1E3A5F", borderRadius: 8, maxHeight: 160, overflowY: "auto" } },
+          filteredContacts.slice(0, 8).map(c => React.createElement("div", {
+            key: c.id, style: { padding: "9px 12px", cursor: "pointer", fontSize: 13, color: "#F1F5F9", borderBottom: "1px solid #1E3A5F22" },
+            onClick: () => { setNewContactId(String(c.id)); setContactSearch(fullName(c)); setNewMeetingId(""); }
+          }, fullName(c), c.company ? React.createElement("span", { style: { color: "#E2E8F0", fontSize: 11, marginLeft: 6 } }, c.company) : null))
+        ),
+        selectedContact && React.createElement("div", { style: { fontSize: 12, color: "#4ADE80", marginTop: 4 } }, "\u2713 ", fullName(selectedContact))
+      ),
+      selectedContact && React.createElement("div", { style: { marginBottom: 12 } },
+        React.createElement("label", { style: T.label }, "Meeting"),
+        contactMeetings.length === 0
+          ? React.createElement("div", { style: { fontSize: 12, color: "#E2E8F0" } }, "No meetings logged for this contact.")
+          : React.createElement("select", {
+              style: { ...T.input },
+              value: newMeetingId,
+              onChange: e => setNewMeetingId(e.target.value)
+            },
+            React.createElement("option", { value: "" }, "Select a meeting\u2026"),
+            contactMeetings.slice().sort((a,b) => b.date.localeCompare(a.date)).map(m => React.createElement("option", { key: m.id, value: String(m.id) }, fmtDate(m.date) + (m.startTime ? " " + fmtTime(m.startTime) : "") + (m.notes ? " \u2014 " + m.notes.slice(0,30) : "")))
+          )
+      ),
+      React.createElement("button", {
+        style: { ...T.btn("primary"), width: "100%", padding: "10px", opacity: newText && newContactId && newMeetingId ? 1 : 0.5 },
+        onClick: submitNewTask,
+        disabled: !newText || !newContactId || !newMeetingId
+      }, "Add Task")
+    ),
+
+    // Task list
+    sorted.length === 0
+      ? React.createElement("div", { style: { textAlign: "center", color: "#E2E8F0", padding: "40px 0", fontSize: 14 } }, allTasks.length === 0 ? "No tasks yet. Add tasks from meeting edit screens or here." : "No open tasks \u2014 nice work!")
+      : sorted.map(({ t, m, c }) => React.createElement("div", {
+          key: t.id,
+          style: { ...T.card, marginBottom: 10, padding: "12px 16px", display: "flex", alignItems: "flex-start", gap: 12, opacity: t.done ? 0.6 : 1 }
+        },
+          // Checkbox
+          React.createElement("div", {
+            style: { width: 20, height: 20, borderRadius: 4, border: t.done ? "none" : "2px solid #475569", background: t.done ? "#2563EB" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer", marginTop: 1 },
+            onClick: () => toggleTask(c.id, m.id, t.id)
+          }, t.done && React.createElement("span", { style: { color: "#fff", fontSize: 11 } }, "\u2713")),
+          // Content
+          React.createElement("div", { style: { flex: 1, minWidth: 0 } },
+            React.createElement("div", { style: { fontSize: 14, color: "#F1F5F9", fontWeight: 500, textDecoration: t.done ? "line-through" : "none", marginBottom: 4 } }, t.text),
+            React.createElement("div", { style: { display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" } },
+              React.createElement("span", {
+                style: { fontSize: 12, color: c.color, fontWeight: 600, cursor: "pointer" },
+                onClick: () => goToContact(c.id)
+              }, fullName(c)),
+              React.createElement("span", { style: { fontSize: 11, color: "#E2E8F0" } }, "· " + fmtDate(m.date)),
+              t.dueDate && React.createElement("span", {
+                style: { fontSize: 11, fontWeight: 600, color: !t.done && t.dueDate < today ? "#EF4444" : !t.done && t.dueDate === today ? "#F59E0B" : "#E2E8F0" }
+              }, "Due " + fmtDate(t.dueDate))
+            )
+          )
+        )
+      )
+  );
+}
+
+
 // ── Overview View ──────────────────────────────────────────────────────────────────────────────
 function OverviewView({ contacts, setSelectedId, setView }) {
   const today = isoToday();
@@ -5339,6 +5505,24 @@ function App() {
       })
     }));
   }
+  function updateTask(cId, mId, tId, changes) {
+    setContacts(prev => prev.map(c => c.id !== cId ? c : {
+      ...c,
+      meetings: c.meetings.map(m => m.id !== mId ? m : {
+        ...m,
+        tasks: m.tasks.map(t => t.id !== tId ? t : { ...t, ...changes })
+      })
+    }));
+  }
+  function addTaskToMeeting(cId, mId, task) {
+    setContacts(prev => prev.map(c => c.id !== cId ? c : {
+      ...c,
+      meetings: c.meetings.map(m => m.id !== mId ? m : {
+        ...m,
+        tasks: [...(m.tasks||[]), { id: Date.now(), done: false, ...task }]
+      })
+    }));
+  }
   function toggleTask(cId, mId, tId) {
     setContacts(prev => prev.map(c => c.id !== cId ? c : {
       ...c,
@@ -5775,7 +5959,7 @@ function App() {
     addOutreach: addOutreach,
     setSelectedId: setSelectedId,
     setView: setView
-  }), view === "overview" && React.createElement(OverviewView, { contacts: contacts, setSelectedId: setSelectedId, setView: setView }), view === "import" && /*#__PURE__*/React.createElement(ImportView, {
+  }), view === "tasks" && React.createElement(TaskManagementView, { contacts: contacts, addTaskToMeeting: addTaskToMeeting, updateTask: updateTask, toggleTask: toggleTask, setSelectedId: setSelectedId, setView: setView }), view === "overview" && React.createElement(OverviewView, { contacts: contacts, setSelectedId: setSelectedId, setView: setView }), view === "import" && /*#__PURE__*/React.createElement(ImportView, {
     onImport: importContacts,
     onNavigate: navigate
   })), /*#__PURE__*/React.createElement("nav", {
