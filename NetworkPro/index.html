@@ -5619,6 +5619,11 @@ function App() {
   }
   if (!authed) return /*#__PURE__*/React.createElement(LoginScreen, {
     onLogin: (token, uid) => {
+      // Clear cache and banner so a new user never sees another account's data
+      try { localStorage.removeItem("networkpro_contacts_cache"); } catch(e) {}
+      setContactsRaw([]);
+      setTodayBanner([]);
+      setBannerDismissed(false);
       setAuthToken(token);
       setAuthUserId(uid);
       setAuthedState(true);
