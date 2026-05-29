@@ -2486,6 +2486,8 @@ function MeetingList({
 }) {
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft] = useState({});
+  const [thankingId, setThankingId] = useState(null); // meeting id awaiting thank-you date
+  const [thankDate, setThankDate] = useState("");
   const [newTaskText, setNewTaskText] = useState("");
   const [newTaskDue, setNewTaskDue] = useState("");
   function startEdit(m) {
@@ -2660,14 +2662,27 @@ function MeetingList({
     },
     onClick: () => markThankYou(contactId, m.id, false),
     title: "Click to undo"
-  }, "\u2713 Thanked ", fmtDate(m.thankYouDate), " \xD7") : /*#__PURE__*/React.createElement("button", {
-    style: {
-      ...T.btn("pink"),
-      padding: "5px 13px",
-      fontSize: 12
-    },
-    onClick: () => markThankYou(contactId, m.id, true)
-  }, "Mark Thanked"))), m.notes && /*#__PURE__*/React.createElement("p", {
+  }, "\u2713 Thanked ", fmtDate(m.thankYouDate), " \xD7") : thankingId === m.id
+    ? /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" } },
+        /*#__PURE__*/React.createElement("input", {
+          type: "date",
+          style: { ...T.input, fontSize: 11, padding: "3px 8px", width: "auto" },
+          value: thankDate,
+          onChange: e => setThankDate(e.target.value)
+        }),
+        /*#__PURE__*/React.createElement("button", {
+          style: { ...T.btn("primary"), padding: "4px 10px", fontSize: 11 },
+          onClick: () => { markThankYou(contactId, m.id, true, thankDate || isoToday()); setThankingId(null); setThankDate(""); }
+        }, "Save"),
+        /*#__PURE__*/React.createElement("button", {
+          style: { ...T.btn("ghost"), padding: "4px 8px", fontSize: 11 },
+          onClick: () => { setThankingId(null); setThankDate(""); }
+        }, "Cancel")
+      )
+    : /*#__PURE__*/React.createElement("button", {
+        style: { ...T.btn("pink"), padding: "5px 13px", fontSize: 12 },
+        onClick: () => { setThankingId(m.id); setThankDate(isoToday()); }
+      }, "Mark Thanked"))), m.notes && /*#__PURE__*/React.createElement("p", {
     style: {
       margin: "0 0 10px",
       fontSize: 13.5,
@@ -5556,14 +5571,14 @@ function App() {
       })
     }));
   }
-  function markThankYou(cId, mId, force = null) {
+  function markThankYou(cId, mId, force = null, customDate = null) {
     setContacts(prev => {
       const next = prev.map(c => c.id !== cId ? c : {
         ...c,
         meetings: c.meetings.map(m => m.id !== mId ? m : {
           ...m,
           thankYouSent: force !== null ? force : !m.thankYouSent,
-          thankYouDate: (force !== null ? force : !m.thankYouSent) ? isoToday() : null
+          thankYouDate: (force !== null ? force : !m.thankYouSent) ? (customDate || isoToday()) : null
         })
       });
       // Schedule immediate save outside the updater so token refs are fresh
