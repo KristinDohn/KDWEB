@@ -3111,7 +3111,7 @@ function ContactDetail({
       fontSize: 13,
       color: "#E2E8F0"
     }
-  }, /*#__PURE__*/React.createElement("span", null, "\u2709 ", selected.email), selected.phone && /*#__PURE__*/React.createElement("span", null, "\uD83D\uDCDE ", selected.phone), selected.linkedin && /*#__PURE__*/React.createElement("a", {href: (selected.linkedin.startsWith("http") ? selected.linkedin : "https://" + selected.linkedin), target: "_blank", rel: "noopener noreferrer", style: {color: "#60A5FA", textDecoration: "none"}}, "\uD83D\uDD17 LinkedIn \u2197")))), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", null, "\u2709 ", selected.email), selected.phone && /*#__PURE__*/React.createElement("a", {href: "tel:" + selected.phone.replace(/\D/g,""), style: {color: "#E2E8F0", textDecoration: "none"}}, "\uD83D\uDCDE ", selected.phone), selected.linkedin && /*#__PURE__*/React.createElement("a", {href: (selected.linkedin.startsWith("http") ? selected.linkedin : "https://" + selected.linkedin), target: "_blank", rel: "noopener noreferrer", style: {color: "#60A5FA", textDecoration: "none"}}, "\uD83D\uDD17 LinkedIn \u2197")))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 8,
@@ -5036,39 +5036,45 @@ function ImportView({onImport, onNavigate}) {
     const contacts = [];
     const cards = text.split(/BEGIN:VCARD/i).filter(c => c.trim());
     for (const card of cards) {
-      const get = (field) => {
-        const m = card.match(new RegExp(field + '[^:]*:([^\r\n]+)', 'i'));
+      // Use line-start match to avoid "N" matching "FN" or "VERSION"
+      const getField = (field) => {
+        const m = card.match(new RegExp('(?:^|\n)' + field + '(?:[;:][^\n]*)?:([^\r\n]+)', 'im'));
         return m ? m[1].trim() : '';
       };
-      const fnLine = get('FN');
-      const nLine = get('N');
-      const emailLine = get('EMAIL');
-      const phoneLine = get('TEL');
-      const orgLine = get('ORG');
+      const fnLine = getField('FN');
+      const nRaw   = getField('N');
+      const emailLine = getField('EMAIL');
+      const phoneLine = getField('TEL');
+      const orgLine   = getField('ORG');
       let firstName = '', lastName = '';
-      if (nLine) {
-        const parts = nLine.split(';');
-        lastName = (parts[0] || '').trim();
+      if (nRaw) {
+        const parts = nRaw.split(';');
+        lastName  = (parts[0] || '').trim();
         firstName = (parts[1] || '').trim();
-      } else if (fnLine) {
-        const parts = fnLine.split(' ');
-        firstName = parts[0] || '';
-        lastName = parts.slice(1).join(' ');
       }
-      if (!firstName && !lastName && !fnLine) continue;
-      if (!firstName && !lastName) {
-        const parts = fnLine.split(' ');
-        firstName = parts[0] || '';
-        lastName = parts.slice(1).join(' ');
+      if ((!firstName && !lastName) && fnLine) {
+        const fp = fnLine.split(' ');
+        firstName = fp[0] || '';
+        lastName  = fp.slice(1).join(' ');
+      }
+      if (!firstName && !lastName) continue;
+      // Format phone to (xxx) xxx-xxxx
+      const rawPhone = phoneLine.replace(/^[^:]*:/, '').trim();
+      const digits = rawPhone.replace(/\D/g, '');
+      let phone = rawPhone;
+      if (digits.length === 11 && digits[0] === '1') {
+        phone = '(' + digits.slice(1,4) + ') ' + digits.slice(4,7) + '-' + digits.slice(7);
+      } else if (digits.length === 10) {
+        phone = '(' + digits.slice(0,3) + ') ' + digits.slice(3,6) + '-' + digits.slice(6);
       }
       contacts.push({
-        firstName: firstName || fnLine,
-        lastName: lastName || '',
-        email: emailLine.replace(/^[^:]*:/,'').trim() || '',
-        phone: phoneLine.replace(/^[^:]*:/,'').trim() || '',
-        company: orgLine.replace(/;.*$/,'').trim() || '',
+        firstName,
+        lastName,
+        email: emailLine.replace(/^[^:]*:/, '').trim() || '',
+        phone,
+        company: orgLine.replace(/;.*$/, '').trim() || '',
         linkedin: '', whereMet: '', contactNotes: '',
-        _display: (firstName || fnLine || '') + (lastName ? ' ' + lastName : '') + (orgLine ? ' · ' + orgLine.replace(/;.*$/,'').trim() : ''),
+        _display: [firstName, lastName].filter(Boolean).join(' ') + (orgLine ? ' \xc2\xb7 ' + orgLine.replace(/;.*$/, '').trim() : ''),
       });
     }
     return contacts;
