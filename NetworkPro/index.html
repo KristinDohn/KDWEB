@@ -33,7 +33,7 @@
     .saved-toast { animation: savedPop 0.2s ease; }
 
     /* ── Layout shell ── */
-    .app-shell { display:flex; min-height:100vh; background:#F1F5F9; font-family:'DM Sans',sans-serif; color:#E2E8F0; }
+    .app-shell { display:flex; min-height:100vh; background:#F1F5F9; font-family:'DM Sans',sans-serif; color:#374151; }
 
     /* ── Desktop sidebar (always visible, collapsible) ── */
     .sidebar {
@@ -125,8 +125,8 @@
         flex:1; display:flex; flex-direction:column; align-items:center;
         justify-content:center; padding:10px 0 8px; cursor:pointer; gap:3px;
       }
-      .bottom-nav-item.active { background:#EFF6FF; }
-      .bottom-nav-item .ni { font-size:20px; }
+      .bottom-nav-item.active { background:#E8F4F9; color:#1C5575; }
+      .bottom-nav-item .ni { font-size:20px; color:#1C5575; }
       .bottom-nav-item .nl { font-size:10px; font-weight:600; letter-spacing:0.04em; color:#475569; }
       .bottom-nav-item.active .nl { color:#60A5FA; }
 
@@ -645,7 +645,7 @@ function Pill({
 }) {
   const s = {
     default: {
-      bg: "#374151",
+      bg: "#F3F4F6",
       c: "#374151"
     },
     green: {
@@ -657,7 +657,7 @@ function Pill({
       c: "#F59E0B"
     },
     blue: {
-      bg: "#CBD5E122",
+      bg: "#E0F2FE",
       c: "#1C5575"
     }
   }[variant] || {};
@@ -711,7 +711,7 @@ function ContactForm({
     style: {
       margin: "0 0 16px",
       fontSize: 15,
-      color: "#3B82F6"
+      color: "#1C5575"
     }
   }, title), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -898,7 +898,7 @@ function ForgotPasswordScreen({
     }
   }, "We sent a reset link to ", /*#__PURE__*/React.createElement("strong", {
     style: {
-      color: "#3B82F6"
+      color: "#1C5575"
     }
   }, email), ". Click the link in the email to set a new password."), /*#__PURE__*/React.createElement("button", {
     onClick: onBack,
@@ -1250,7 +1250,7 @@ function LoginScreen({
     /*#__PURE__*/React.createElement("div", { style: { textAlign: "center", marginBottom: 36 } },
       /*#__PURE__*/React.createElement("img", { src: "./NetworkPro_logo.png", alt: "NetworkPro", style: { maxWidth: 260, width: "100%", marginBottom: 8 } }),
       /*#__PURE__*/React.createElement("p", {
-        style: { fontSize: 18, color: "#F1F5F9", fontWeight: 600, marginBottom: 10, lineHeight: 1.4 }
+        style: { fontSize: 18, color: "#111827", fontWeight: 600, marginBottom: 10, lineHeight: 1.4 }
       }, "Your personal networking tracker"),
       /*#__PURE__*/React.createElement("p", {
         style: { fontSize: 14, color: "#374151", lineHeight: 1.7, marginBottom: 28 }
@@ -1415,7 +1415,7 @@ function LoginScreen({
           React.createElement("button", { onClick: () => { setMode("login"); setSignupDone(false); setEmail(""); setPassword(""); setConfirmPw(""); }, style: { marginTop: 20, width: "100%", background: "#EFF6FF", border: "1px solid #BFDBFE", borderRadius: 8, color: "#1C5575", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", padding: "9px" } }, "Back to Sign In")
         )
       : React.createElement("div", null,
-          React.createElement("h3", { style: { margin: "0 0 4px", fontSize: 16, color: "#F1F5F9", fontFamily: "'DM Serif Display',serif" } }, "Create Account"),
+          React.createElement("h3", { style: { margin: "0 0 4px", fontSize: 16, color: "#111827", fontFamily: "'DM Serif Display',serif" } }, "Create Account"),
           React.createElement("p", { style: { fontSize: 12, color: "#374151", marginBottom: 20 } }, "Enter your email and choose a password to get started."),
           React.createElement("div", { style: { marginBottom: 12 } },
             React.createElement("label", { style: T.label }, "Email"),
@@ -1446,7 +1446,7 @@ function LoginScreen({
     style: {
       margin: "0 0 8px",
       fontSize: 16,
-      color: "#F1F5F9",
+      color: "#111827",
       fontFamily: "'DM Serif Display',serif"
     }
   }, "Request Sent"), /*#__PURE__*/React.createElement("p", {
@@ -1493,7 +1493,7 @@ function TaskModal({
       margin: 0,
       fontSize: 18,
       fontFamily: "'DM Serif Display',serif",
-      color: "#F1F5F9"
+      color: "#111827"
     }
   }, "All Tasks"), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -1659,7 +1659,7 @@ function PendingThanksModal({
       margin: 0,
       fontSize: 18,
       fontFamily: "'DM Serif Display',serif",
-      color: "#F1F5F9"
+      color: "#111827"
     }
   }, "Pending Thank-Yous"), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -1715,7 +1715,7 @@ function PendingThanksModal({
     style: {
       fontSize: 14,
       fontWeight: 600,
-      color: "#F1F5F9",
+      color: "#111827",
       cursor: "pointer"
     },
     onClick: () => {
@@ -1831,7 +1831,7 @@ function SidebarInner({
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex", alignItems: "center", gap: 10, padding: "9px 0",
-      cursor: "pointer", fontSize: 13, color: view === "import" ? "#60A5FA" : "#CBD5E1",
+      cursor: "pointer", fontSize: 13, color: view === "import" ? "#7DD3F0" : "#CBD5E1",
       fontWeight: view === "import" ? 600 : 400,
       borderLeft: view === "import" ? "3px solid #60A5FA" : "3px solid transparent",
       paddingLeft: view === "import" ? 7 : 10, transition: "all 0.15s"
@@ -1840,7 +1840,7 @@ function SidebarInner({
   }, /*#__PURE__*/React.createElement("span", {style: {fontSize: 14}}, "⊕"), "Import Contacts")), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex", alignItems: "center", gap: 10, padding: "9px 0",
-      cursor: "pointer", fontSize: 13, color: view === "help" ? "#60A5FA" : "#CBD5E1",
+      cursor: "pointer", fontSize: 13, color: view === "help" ? "#7DD3F0" : "#CBD5E1",
       fontWeight: view === "help" ? 600 : 400,
       borderLeft: view === "help" ? "3px solid #60A5FA" : "3px solid transparent",
       paddingLeft: view === "help" ? 7 : 10, transition: "all 0.15s"
@@ -1908,7 +1908,7 @@ function SidebarInner({
       style: {
         fontSize: 12,
         fontWeight: 700,
-        color: x.val > 0 && x.label !== "Contacts" ? "#FCD34D" : "#3B82F6",
+        color: x.val > 0 && x.label !== "Contacts" ? "#FCD34D" : "#7DD3F0",
         textDecoration: isActionable ? "underline" : "none",
         textUnderlineOffset: 2
       }
@@ -2115,10 +2115,11 @@ function ContactsList({
       style: {
         fontWeight: 700,
         fontSize: 15,
-        color: "#F1F5F9",
+        color: "#111827",
         whiteSpace: "nowrap",
         overflow: "hidden",
-        textOverflow: "ellipsis"
+        textOverflow: "ellipsis",
+        color: "#111827"
       }
     }, fullName(c)), /*#__PURE__*/React.createElement("div", {
       style: {
@@ -2147,7 +2148,7 @@ function ContactsList({
       }, c.wantToMeet && !c.meetings.some(m => m.date >= isoToday()) && /*#__PURE__*/React.createElement(Tag, {
         color: "#751C54"
       }, "\uD83D\uDCC5 Want to Meet"), /*#__PURE__*/React.createElement(Tag, {
-        color: "#3B82F6"
+        color: "#1C5575"
       }, c.meetings.length, " mtg", c.meetings.length !== 1 ? "s" : ""), pending > 0 && /*#__PURE__*/React.createElement(Tag, {
         color: "#F59E0B"
       }, pending, " task", pending !== 1 ? "s" : ""), unthanked > 0 && /*#__PURE__*/React.createElement(Tag, {
@@ -2188,7 +2189,7 @@ function ContactsList({
       }
     }, "Via ", /*#__PURE__*/React.createElement("span", {
       style: {
-        color: "#3B82F6"
+        color: "#1C5575"
       }
     }, fullName(ref))), last && !c.meetings.some(m => m.date >= isoToday()) && /*#__PURE__*/React.createElement("div", {
       style: {
@@ -2264,7 +2265,7 @@ function ContactsList({
       }, initials(s)), /*#__PURE__*/React.createElement("span", {
         style: {
           fontSize: 10,
-          color: "#3B82F6",
+          color: "#1C5575",
           fontWeight: 600
         }
       }, fullName(s))))));
@@ -2671,7 +2672,7 @@ function MeetingList({
     style: {
       fontWeight: 700,
       fontSize: 14,
-      color: "#3B82F6"
+      color: "#1C5575"
     }
   }, fmtDate(m.date), m.startTime && /*#__PURE__*/React.createElement("span", {
     style: {
@@ -2828,7 +2829,7 @@ function ContactSearchPicker({
   }, initials(c)), /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: 12,
-      color: "#3B82F6",
+      color: "#1C5575",
       fontWeight: 600
     }
   }, fullName(c)), /*#__PURE__*/React.createElement("button", {
@@ -2902,7 +2903,7 @@ function ContactSearchPicker({
     style: {
       fontSize: 13,
       fontWeight: 600,
-      color: "#F1F5F9"
+      color: "#111827"
     }
   }, fullName(c)), c.company && /*#__PURE__*/React.createElement("div", {
     style: {
@@ -3153,7 +3154,7 @@ function ContactDetail({
       margin: "0 0 2px",
       fontSize: 20,
       fontFamily: "'DM Serif Display',serif",
-      color: "#F1F5F9"
+      color: "#111827"
     }
   }, fullName(selected)), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -3299,7 +3300,7 @@ function ContactDetail({
     style: {
       fontSize: 13,
       fontWeight: 600,
-      color: "#3B82F6",
+      color: "#1C5575",
       flex: 1
     }
   }, fullName(ref)), /*#__PURE__*/React.createElement("button", {
@@ -3413,7 +3414,7 @@ function ContactDetail({
     style: {
       fontSize: 13,
       fontWeight: 600,
-      color: "#3B82F6",
+      color: "#1C5575",
       cursor: "pointer"
     },
     onClick: () => setSelectedId(ref.id)
@@ -3462,7 +3463,7 @@ function ContactDetail({
     style: {
       fontSize: 13,
       fontWeight: 600,
-      color: "#3B82F6"
+      color: "#1C5575"
     }
   }, fullName(r)), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -3552,7 +3553,7 @@ function ContactDetail({
   }, /*#__PURE__*/React.createElement("h4", {
     style: {
       margin: "0 0 10px",
-      color: "#3B82F6",
+      color: "#1C5575",
       fontSize: 14
     }
   }, "Log a Meeting"), /*#__PURE__*/React.createElement("div", {
@@ -3723,7 +3724,7 @@ function CalendarView({
     style: {
       fontFamily: "'DM Serif Display',serif",
       fontSize: 15,
-      color: "#F1F5F9",
+      color: "#111827",
       whiteSpace: "nowrap"
     }
   }, MONTHS[calMonth], " ", calYear), /*#__PURE__*/React.createElement("button", {
@@ -3748,7 +3749,7 @@ function CalendarView({
     style: {
       fontFamily: "'DM Serif Display',serif",
       fontSize: 14,
-      color: "#F1F5F9",
+      color: "#111827",
       whiteSpace: "nowrap"
     }
   }, fmtDate(toISO(calWeekStart)), " \u2013 ", fmtDate(toISO(addDays(calWeekStart, 6)))), /*#__PURE__*/React.createElement("button", {
@@ -3964,7 +3965,7 @@ function CalendarView({
     style: {
       fontSize: 13,
       fontWeight: 600,
-      color: "#F1F5F9"
+      color: "#111827"
     }
   }, fullName(m.contact)), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -4021,7 +4022,7 @@ function CalendarView({
     style: {
       fontSize: 14,
       fontWeight: 600,
-      color: "#F1F5F9"
+      color: "#111827"
     }
   }, fullName(m.contact)), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -4066,7 +4067,7 @@ function CalendarView({
     style: {
       fontSize: 13,
       fontWeight: 600,
-      color: "#F1F5F9"
+      color: "#111827"
     }
   }, "Open Tasks"), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -4229,7 +4230,7 @@ function OutreachRow({
 
       fontWeight: 600,
 
-      color: "#F1F5F9",
+      color: "#111827",
 
       cursor: "pointer"
 
@@ -4417,7 +4418,7 @@ function OutreachRow({
 
       borderRadius: "50%",
 
-      background: "#3B82F6",
+      background: "#1C5575",
 
       marginTop: 5,
 
@@ -4934,7 +4935,7 @@ function TaskManagementView({ contacts, addTaskToMeeting, updateTask, toggleTask
         React.createElement("input", { style: { ...T.input, marginBottom: 6 }, placeholder: "Search contact\u2026", value: contactSearch, onChange: e => { setContactSearch(e.target.value); setNewContactId(""); setNewMeetingId(""); } }),
         contactSearch.trim() && !selectedContact && filteredContacts.length > 0 && React.createElement("div", { style: { background: "#F8FAFC", border: "1px solid #E2E8F0", borderRadius: 8, maxHeight: 160, overflowY: "auto" } },
           filteredContacts.slice(0, 8).map(c => React.createElement("div", {
-            key: c.id, style: { padding: "9px 12px", cursor: "pointer", fontSize: 13, color: "#F1F5F9", borderBottom: "1px solid #E2E8F022" },
+            key: c.id, style: { padding: "9px 12px", cursor: "pointer", fontSize: 13, color: "#111827", borderBottom: "1px solid #E2E8F022" },
             onClick: () => { setNewContactId(String(c.id)); setContactSearch(fullName(c)); setNewMeetingId(""); }
           }, fullName(c), c.company ? React.createElement("span", { style: { color: "#374151", fontSize: 11, marginLeft: 6 } }, c.company) : null))
         ),
@@ -4983,7 +4984,7 @@ function TaskManagementView({ contacts, addTaskToMeeting, updateTask, toggleTask
                 )
               )
             : React.createElement("div", { style: { flex: 1, minWidth: 0 } },
-                React.createElement("div", { style: { fontSize: 14, color: "#F1F5F9", fontWeight: 500, textDecoration: t.done ? "line-through" : "none", marginBottom: 4 } }, t.text),
+                React.createElement("div", { style: { fontSize: 14, color: "#111827", fontWeight: 500, textDecoration: t.done ? "line-through" : "none", marginBottom: 4 } }, t.text),
                 React.createElement("div", { style: { display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" } },
                   React.createElement("span", { style: { fontSize: 12, color: c.color, fontWeight: 600, cursor: "pointer" }, onClick: () => goToContact(c.id) }, fullName(c)),
                   React.createElement("span", { style: { fontSize: 11, color: "#374151" } }, "\xc2\xb7 " + fmtDate(m.date)),
@@ -5013,7 +5014,7 @@ function HelpView({ onNavigate }) {
     header: { ...T.card, padding: "14px 16px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" },
     headerTitle: { display: "flex", alignItems: "center", gap: 10 },
     icon: { fontSize: 18, width: 28, textAlign: "center" },
-    title: { fontSize: 14, fontWeight: 700, color: "#F1F5F9" },
+    title: { fontSize: 14, fontWeight: 700, color: "#111827" },
     body: { background: "#F8FAFC", border: "1px solid #E2E8F0", borderTop: "none", borderRadius: "0 0 12px 12px", padding: "16px" },
     step: { display: "flex", gap: 12, marginBottom: 14 },
     stepNum: { width: 22, height: 22, borderRadius: "50%", background: "#1C5575", color: "#fff", fontSize: 11, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 },
@@ -5166,7 +5167,7 @@ function QuickLogMeetingModal({ contacts, onClose, onSave, initialContact, initi
     },
       // Header
       React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 } },
-        React.createElement("h3", { style: { margin: 0, fontSize: 17, fontFamily: "'DM Serif Display',serif", color: "#F1F5F9" } }, "Log a Meeting"),
+        React.createElement("h3", { style: { margin: 0, fontSize: 17, fontFamily: "'DM Serif Display',serif", color: "#111827" } }, "Log a Meeting"),
         React.createElement("button", { style: { background: "none", border: "none", color: "#374151", fontSize: 22, cursor: "pointer", lineHeight: 1 }, onClick: onClose }, "×")
       ),
 
@@ -5187,7 +5188,7 @@ function QuickLogMeetingModal({ contacts, onClose, onSave, initialContact, initi
             ? React.createElement("div", { style: { padding: "12px", fontSize: 13, color: "#374151" } }, "No contacts found")
             : filtered.slice(0, 10).map(c => React.createElement("div", {
                 key: c.id,
-                style: { padding: "10px 14px", cursor: "pointer", fontSize: 13, color: "#F1F5F9", borderBottom: "1px solid #E2E8F022", display: "flex", alignItems: "center", gap: 10 },
+                style: { padding: "10px 14px", cursor: "pointer", fontSize: 13, color: "#111827", borderBottom: "1px solid #E2E8F022", display: "flex", alignItems: "center", gap: 10 },
                 onClick: () => pickContact(c)
               },
               React.createElement(Avatar, { contact: c, size: 28 }),
@@ -5272,25 +5273,25 @@ function OverviewView({ contacts, setSelectedId, setView, onQuickLog }) {
   const listItems = {
     tasks: openTasks.map((item, i) =>
       React.createElement("div", { key: i, style: { padding: "9px 0", borderBottom: i < openTasks.length-1 ? "1px solid #E2E8F0" : "none", cursor: "pointer" }, onClick: () => goToContact(item.contactId) },
-        React.createElement("div", { style: { fontSize: 13, color: "#F1F5F9", fontWeight: 500 } }, item.text),
+        React.createElement("div", { style: { fontSize: 13, color: "#111827", fontWeight: 500 } }, item.text),
         React.createElement("div", { style: { fontSize: 11, color: "#374151", marginTop: 2 } }, item.contactName, " · ", fmtDate(item.meetingDate))
       )
     ),
     held: heldMeetings.map((item, i) =>
       React.createElement("div", { key: i, style: { padding: "9px 0", borderBottom: i < heldMeetings.length-1 ? "1px solid #E2E8F0" : "none", cursor: "pointer" }, onClick: () => goToContact(item.c.id) },
-        React.createElement("div", { style: { fontSize: 13, color: "#F1F5F9", fontWeight: 500 } }, fullName(item.c)),
+        React.createElement("div", { style: { fontSize: 13, color: "#111827", fontWeight: 500 } }, fullName(item.c)),
         React.createElement("div", { style: { fontSize: 11, color: "#374151", marginTop: 2 } }, fmtDate(item.m.date), item.m.startTime ? " · " + fmtTime(item.m.startTime) : "")
       )
     ),
     upcoming: upcomingMeetings.map((item, i) =>
       React.createElement("div", { key: i, style: { padding: "9px 0", borderBottom: i < upcomingMeetings.length-1 ? "1px solid #E2E8F0" : "none", cursor: "pointer" }, onClick: () => goToContact(item.c.id) },
-        React.createElement("div", { style: { fontSize: 13, color: "#F1F5F9", fontWeight: 500 } }, fullName(item.c)),
+        React.createElement("div", { style: { fontSize: 13, color: "#111827", fontWeight: 500 } }, fullName(item.c)),
         React.createElement("div", { style: { fontSize: 11, color: "#374151", marginTop: 2 } }, fmtDate(item.m.date), item.m.startTime ? " · " + fmtTime(item.m.startTime) : "")
       )
     ),
     thanks: pendingThanks.map((item, i) =>
       React.createElement("div", { key: i, style: { padding: "9px 0", borderBottom: i < pendingThanks.length-1 ? "1px solid #E2E8F0" : "none", cursor: "pointer" }, onClick: () => goToContact(item.c.id) },
-        React.createElement("div", { style: { fontSize: 13, color: "#F1F5F9", fontWeight: 500 } }, fullName(item.c)),
+        React.createElement("div", { style: { fontSize: 13, color: "#111827", fontWeight: 500 } }, fullName(item.c)),
         React.createElement("div", { style: { fontSize: 11, color: "#374151", marginTop: 2 } }, "Met ", fmtDate(item.m.date))
       )
     )
@@ -5458,7 +5459,7 @@ function ImportView({onImport, onNavigate}) {
     /*#__PURE__*/React.createElement("div", {style: {...T.card, marginBottom: 14}},
       /*#__PURE__*/React.createElement("div", {style: {display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, flexWrap: "wrap", gap: 8}},
         /*#__PURE__*/React.createElement("div", null,
-          /*#__PURE__*/React.createElement("div", {style: {fontSize: 15, fontWeight: 700, color: "#F1F5F9"}}, parsed.length + " contacts found"),
+          /*#__PURE__*/React.createElement("div", {style: {fontSize: 15, fontWeight: 700, color: "#111827"}}, parsed.length + " contacts found"),
           /*#__PURE__*/React.createElement("div", {style: {fontSize: 12, color: "#374151", marginTop: 2}}, selectedCount + " selected to import")
         ),
         /*#__PURE__*/React.createElement("div", {style: {display: "flex", gap: 8}},
@@ -5479,7 +5480,7 @@ function ImportView({onImport, onNavigate}) {
             display: "flex", alignItems: "center", justifyContent: "center"
           }}, selected[i] && /*#__PURE__*/React.createElement("span", {style: {color: "#fff", fontSize: 11}}, "✓")),
           /*#__PURE__*/React.createElement("div", {style: {flex: 1, minWidth: 0}},
-            /*#__PURE__*/React.createElement("div", {style: {fontSize: 13, fontWeight: 600, color: "#F1F5F9"}}, [c.firstName, c.lastName].filter(Boolean).join(" ") || "(No name)"),
+            /*#__PURE__*/React.createElement("div", {style: {fontSize: 13, fontWeight: 600, color: "#111827"}}, [c.firstName, c.lastName].filter(Boolean).join(" ") || "(No name)"),
             /*#__PURE__*/React.createElement("div", {style: {fontSize: 11, color: "#374151", marginTop: 1}},
               [c.company, c.email].filter(Boolean).join(" · ") || " "
             )
@@ -5498,7 +5499,7 @@ function ImportView({onImport, onNavigate}) {
   const guideCard = (icon, title, steps) => /*#__PURE__*/React.createElement("div", {style: {...T.card, marginBottom: 12}},
     /*#__PURE__*/React.createElement("div", {style: {display: "flex", alignItems: "center", gap: 10, marginBottom: 10}},
       /*#__PURE__*/React.createElement("span", {style: {fontSize: 20}}, icon),
-      /*#__PURE__*/React.createElement("span", {style: {fontWeight: 700, fontSize: 14, color: "#F1F5F9"}}, title)
+      /*#__PURE__*/React.createElement("span", {style: {fontWeight: 700, fontSize: 14, color: "#111827"}}, title)
     ),
     steps.map((s, i) => /*#__PURE__*/React.createElement("div", {key: i, style: {display: "flex", gap: 10, marginBottom: 6}},
       /*#__PURE__*/React.createElement("span", {style: {fontSize: 11, fontWeight: 700, color: "#1C5575", background: "#1C557522", borderRadius: "50%", width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1}}, i+1),
@@ -6276,7 +6277,7 @@ function App() {
     /*#__PURE__*/React.createElement("div", {style:{flex:1}},
       /*#__PURE__*/React.createElement("div", {style:{fontSize:11,fontWeight:700,color:"#1C5575",textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:6}}, "\uD83D\uDCC5 Today's Meetings"),
       todayBanner.map((m, i) => /*#__PURE__*/React.createElement("div", {key:i, style:{fontSize:13,color:"#374151",marginBottom:i<todayBanner.length-1?6:0,display:"flex",alignItems:"center",gap:6}},
-        /*#__PURE__*/React.createElement("span", {style:{color:"#3B82F6",fontWeight:600}}, m.contactName),
+        /*#__PURE__*/React.createElement("span", {style:{color:"#1C5575",fontWeight:600}}, m.contactName),
         m.startTime && /*#__PURE__*/React.createElement("span", {style:{color:"#374151",fontSize:12}}, "\u00B7 " + fmtTime(m.startTime)),
         m.notes && /*#__PURE__*/React.createElement("span", {style:{color:"#374151",fontSize:12}}, "\u00B7 " + m.notes.slice(0,40) + (m.notes.length>40?"\u2026":""))
       ))
