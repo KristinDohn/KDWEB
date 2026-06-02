@@ -5412,6 +5412,38 @@ function App() {
     }
     return null;
   }, []);
+
+  // Handle OAuth redirect (Google sign-in returns token in URL hash)
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (!hash) return;
+    const params = new URLSearchParams(hash.replace('#', ''));
+    const accessToken = params.get('access_token');
+    const refreshToken = params.get('refresh_token');
+    const type = params.get('type');
+    if (accessToken && type !== 'recovery') {
+      // Decode JWT to get user id
+      try {
+        const payload = JSON.parse(atob(accessToken.split('.')[1]));
+        const uid = payload.sub;
+        // Store tokens
+        try {
+          localStorage.setItem('networkpro_token', accessToken);
+          if (refreshToken) localStorage.setItem('networkpro_refresh_token', refreshToken);
+          localStorage.setItem('networkpro_uid', uid);
+        } catch(e) {}
+        // Clear hash from URL
+        window.history.replaceState(null, '', window.location.pathname);
+        // Log in
+        setAuthToken(accessToken);
+        setAuthUserId(uid);
+        setAuthedState(true);
+      } catch(e) {
+        console.error('OAuth token parse error:', e);
+      }
+    }
+  }, []);
+
   const [authed, setAuthedState] = useState(() => {
     try {
       return !!localStorage.getItem("networkpro_token");
