@@ -192,6 +192,10 @@ async function sbSignIn(email, password) {
   if (!res.ok) throw new Error(data.error_description || data.msg || "Login failed");
   return data; // { access_token, user, ... }
 }
+function sbSignInWithGoogle() {
+  var redirectTo = encodeURIComponent("https://kristindohn.com/NetworkPro/");
+  window.location.href = SB_URL + "/auth/v1/authorize?provider=google&redirect_to=" + redirectTo;
+}
 async function sbSignUp(email, password) {
   const res = await fetch(`${SB_URL}/auth/v1/signup`, {
     method: "POST",
@@ -1223,39 +1227,48 @@ function LoginScreen({
     fontFamily: "'DM Sans',sans-serif",
     boxSizing: "border-box"
   });
+  const features = [
+    { icon: "\u25c8", text: "Track contacts with LinkedIn, phone, company, and email" },
+    { icon: "\u25a3", text: "Log meeting dates, notes, and follow-up tasks" },
+    { icon: "\u25ce", text: "Track outreach attempts and who you want to meet" },
+    { icon: "\u2713", text: "Never forget a thank-you after a meeting" },
+    { icon: "\u25a7", text: "Manage tasks that come out of meetings" },
+    { icon: "\u25c9", text: "See your whole network and who\'s connected to who" }
+  ];
   return /*#__PURE__*/React.createElement("div", {
     style: {
       minHeight: "100vh",
       background: "#080F1A",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
       fontFamily: "'DM Sans',sans-serif",
-      padding: "16px"
+      overflowY: "auto"
     }
   }, /*#__PURE__*/React.createElement("div", {
-    className: `login-card${shake ? " shake" : ""}`,
-    style: {
-      background: "#0D1B2E",
-      border: "1px solid #1E3A5F",
-      borderRadius: 16,
-      padding: "40px 32px",
-      width: "100%",
-      maxWidth: 360
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      textAlign: "center",
-      marginBottom: 28
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: "'DM Serif Display',serif",
-      fontSize: 28,
-      color: "#60A5FA",
-      letterSpacing: "-0.02em"
-    }
-  }, "NetworkPro")), mode === "login" && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: { maxWidth: 480, margin: "0 auto", padding: "40px 20px 60px" }
+  },
+    /*#__PURE__*/React.createElement("div", { style: { textAlign: "center", marginBottom: 36 } },
+      /*#__PURE__*/React.createElement("img", { src: "./NetworkPro_logo.png", alt: "NetworkPro", style: { maxWidth: 260, width: "100%", marginBottom: 8 } }),
+      /*#__PURE__*/React.createElement("p", {
+        style: { fontSize: 18, color: "#E2E8F0", fontWeight: 600, marginBottom: 10, lineHeight: 1.4 }
+      }, "Your personal networking tracker"),
+      /*#__PURE__*/React.createElement("p", {
+        style: { fontSize: 14, color: "#94A3B8", lineHeight: 1.7, marginBottom: 28 }
+      }, "Stay on top of your professional relationships. Track the people you want to reach out to, log meetings and contact details, record outreach attempts, and never lose track of a follow-up."),
+      /*#__PURE__*/React.createElement("div", {
+        style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 32, textAlign: "left" }
+      },
+        features.map((f, i) => /*#__PURE__*/React.createElement("div", {
+          key: i,
+          style: { background: "#0D1B2E", border: "1px solid #1E3A5F", borderRadius: 10, padding: "10px 12px", display: "flex", gap: 8, alignItems: "flex-start" }
+        },
+          /*#__PURE__*/React.createElement("span", { style: { color: "#60A5FA", fontSize: 14, marginTop: 1, flexShrink: 0 } }, f.icon),
+          /*#__PURE__*/React.createElement("span", { style: { fontSize: 12, color: "#94A3B8", lineHeight: 1.5 } }, f.text)
+        ))
+      )
+    ),
+    /*#__PURE__*/React.createElement("div", {
+      className: `login-card${shake ? " shake" : ""}`,
+      style: { background: "#0D1B2E", border: "1px solid #1E3A5F", borderRadius: 16, padding: "28px 24px", boxShadow: "0 4px 24px rgba(0,0,0,0.18)" }
+    }, mode === "login" && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: 12
     }
@@ -1334,8 +1347,23 @@ function LoginScreen({
       fontFamily: "'DM Sans',sans-serif"
     }
   }, loading ? "Signing in…" : "Sign In"), /*#__PURE__*/React.createElement("div", {
+    style: { display: "flex", alignItems: "center", gap: 10, margin: "16px 0" }
+  }, /*#__PURE__*/React.createElement("div", { style: { flex: 1, height: 1, background: "#1E3A5F" } }), /*#__PURE__*/React.createElement("span", { style: { fontSize: 12, color: "#94A3B8" } }, "or"), /*#__PURE__*/React.createElement("div", { style: { flex: 1, height: 1, background: "#1E3A5F" } })), /*#__PURE__*/React.createElement("button", {
+    onClick: sbSignInWithGoogle,
     style: {
-      marginTop: 20,
+      width: "100%", background: "#fff", color: "#1F2937", border: "none",
+      borderRadius: 8, padding: "12px", fontSize: 14, fontWeight: 600,
+      cursor: "pointer", fontFamily: "'DM Sans',sans-serif",
+      display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 12
+    }
+  }, /*#__PURE__*/React.createElement("svg", { width: 18, height: 18, viewBox: "0 0 48 48" },
+    /*#__PURE__*/React.createElement("path", { fill: "#EA4335", d: "M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.8 2.5 30.3 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.8 6C12.3 13.2 17.7 9.5 24 9.5z" }),
+    /*#__PURE__*/React.createElement("path", { fill: "#4285F4", d: "M46.5 24.5c0-1.6-.1-3.2-.4-4.7H24v8.9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4 6.9-10 6.9-17.2z" }),
+    /*#__PURE__*/React.createElement("path", { fill: "#FBBC05", d: "M10.5 28.7c-.6-1.6-.9-3.3-.9-5.2s.3-3.6.9-5.2l-7.8-6C.9 15.2 0 19.5 0 24s.9 8.8 2.7 12.7l7.8-6z" }),
+    /*#__PURE__*/React.createElement("path", { fill: "#34A853", d: "M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.2 1.5-5 2.3-8.4 2.3-6.3 0-11.7-3.7-14-9.3l-7.8 6C6.6 42.6 14.6 48 24 48z" })
+  ), "Continue with Google")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 0,
       display: "flex",
       flexDirection: "column",
       gap: 8
