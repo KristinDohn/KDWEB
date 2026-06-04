@@ -20,6 +20,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;600;700&family=DM+Mono:wght@600&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js" crossorigin></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <style>
     /* ── CSS custom properties (light = default) ── */
     :root {
@@ -802,6 +803,140 @@ function ThemeToggle() {
 }
 
 // ── Contact Form (shared by Add and Edit) ─────────────────────────────────────
+
+// ── Business Card Scanner ─────────────────────────────────────────────────────
+function BusinessCardScanner({ onPrefill, onClose }) {
+  const [stage, setStage] = React.useState("idle"); // idle | scanning | parsing | done | error
+  const [progress, setProgress] = React.useState(0);
+  const [statusMsg, setStatusMsg] = React.useState("");
+  const [preview, setPreview] = React.useState(null);
+  const fileRef = React.useRef();
+
+  async function handleFile(file) {
+    if (!file) return;
+    setPreview(URL.createObjectURL(file));
+    setStage("scanning");
+    setProgress(0);
+    setStatusMsg("Reading card...");
+
+    try {
+      const worker = await Tesseract.createWorker("eng", 1, {
+        logger: m => {
+          if (m.status === "recognizing text") {
+            setProgress(Math.round(m.progress * 100));
+          }
+        }
+      });
+      const { data: { text } } = await worker.recognize(file);
+      await worker.terminate();
+
+      if (!text.trim()) throw new Error("No text found on card.");
+
+      setStage("parsing");
+      setStatusMsg("Extracting contact info...");
+
+      const resp = await fetch("https://fxxunfpgqkhsmrrlmcoo.supabase.co/functions/v1/parse-business-card", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SB_KEY,
+          "Authorization": "Bearer " + SB_KEY
+        },
+        body: JSON.stringify({ text })
+      });
+
+      if (!resp.ok) throw new Error("Parsing failed. Please fill in manually.");
+      const parsed = await resp.json();
+
+      setStage("done");
+      onPrefill({
+        firstName: parsed.firstName || "",
+        lastName: parsed.lastName || "",
+        company: parsed.company || "",
+        email: parsed.email || "",
+        phone: parsed.phone || "",
+        linkedin: parsed.linkedin || "",
+        whereMet: "",
+        contactNotes: parsed.title ? "Title: " + parsed.title : ""
+      });
+    } catch (e) {
+      setStage("error");
+      setStatusMsg(e.message || "Something went wrong.");
+    }
+  }
+
+  const overlayStyle = {
+    position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)",
+    display: "flex", alignItems: "center", justifyContent: "center",
+    zIndex: 1000, padding: 20
+  };
+  const boxStyle = {
+    background: "var(--bg-card)", borderRadius: 16, padding: "24px 20px",
+    width: "100%", maxWidth: 400, boxShadow: "0 8px 40px rgba(0,0,0,0.25)",
+    fontFamily: "'DM Sans',sans-serif"
+  };
+
+  return React.createElement("div", { style: overlayStyle, onClick: e => { if (e.target === e.currentTarget) onClose(); } },
+    React.createElement("div", { style: boxStyle },
+      React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 } },
+        React.createElement("h3", { style: { margin: 0, fontSize: 16, color: "var(--text-head)", fontWeight: 700 } }, "📷 Scan Business Card"),
+        React.createElement("button", { style: { background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "var(--text-muted)", lineHeight: 1 }, onClick: onClose }, "×")
+      ),
+
+      stage === "idle" && React.createElement("div", null,
+        React.createElement("p", { style: { fontSize: 13, color: "var(--text-dim)", marginTop: 0, marginBottom: 16 } },
+          "Take a photo or upload an image of a business card. We'll extract the contact info automatically."
+        ),
+        React.createElement("div", {
+          style: {
+            border: "2px dashed var(--border)", borderRadius: 12, padding: "32px 20px",
+            textAlign: "center", cursor: "pointer", background: "var(--bg-input)",
+            transition: "border-color 0.15s"
+          },
+          onClick: () => fileRef.current.click()
+        },
+          React.createElement("div", { style: { fontSize: 36, marginBottom: 8 } }, "🪪"),
+          React.createElement("div", { style: { fontSize: 14, fontWeight: 600, color: "var(--accent)", marginBottom: 4 } }, "Tap to choose image"),
+          React.createElement("div", { style: { fontSize: 12, color: "var(--text-muted)" } }, "Camera or photo library")
+        ),
+        React.createElement("input", {
+          ref: fileRef, type: "file",
+          accept: "image/*", capture: "environment",
+          style: { display: "none" },
+          onChange: e => handleFile(e.target.files[0])
+        })
+      ),
+
+      (stage === "scanning" || stage === "parsing") && React.createElement("div", { style: { textAlign: "center", padding: "20px 0" } },
+        preview && React.createElement("img", {
+          src: preview, alt: "card",
+          style: { width: "100%", maxHeight: 160, objectFit: "contain", borderRadius: 8, marginBottom: 16 }
+        }),
+        React.createElement("div", { style: { fontSize: 13, color: "var(--text-dim)", marginBottom: 10 } }, statusMsg),
+        stage === "scanning" && React.createElement("div", { style: { background: "var(--bg-input)", borderRadius: 99, height: 6, overflow: "hidden", margin: "0 auto", maxWidth: 240 } },
+          React.createElement("div", {
+            style: {
+              height: "100%", width: progress + "%",
+              background: "var(--accent)", borderRadius: 99,
+              transition: "width 0.2s"
+            }
+          })
+        ),
+        stage === "parsing" && React.createElement("div", { style: { fontSize: 22 } }, "✨")
+      ),
+
+      stage === "error" && React.createElement("div", { style: { textAlign: "center", padding: "12px 0" } },
+        React.createElement("div", { style: { fontSize: 32, marginBottom: 10 } }, "⚠️"),
+        React.createElement("p", { style: { fontSize: 13, color: "var(--text-dim)", marginBottom: 16 } }, statusMsg),
+        React.createElement("div", { style: { display: "flex", gap: 8, justifyContent: "center" } },
+          React.createElement("button", { style: T.btn("primary"), onClick: () => { setStage("idle"); setPreview(null); } }, "Try Again"),
+          React.createElement("button", { style: T.btn("ghost"), onClick: onClose }, "Cancel")
+        )
+      )
+    )
+  );
+}
+
 function ContactForm({
   initial,
   onSave,
@@ -2093,6 +2228,8 @@ function ContactsList({
   onSaveNew,
   onSelect
 }) {
+  const [showScanner, setShowScanner] = React.useState(false);
+  const [prefilled, setPrefilled] = React.useState(null);
   const BLANK = {
     firstName: "",
     lastName: "",
@@ -2147,6 +2284,9 @@ function ContactsList({
     },
     onClick: () => setSortBy(k)
   }, l))), /*#__PURE__*/React.createElement("button", {
+    style: {...T.btn("ghost"), fontSize: 13},
+    onClick: () => setShowScanner(true)
+  }, "\uD83D\uDCF7 Scan Card"), /*#__PURE__*/React.createElement("button", {
     style: T.btn("primary"),
     onClick: () => setShowAddContact(true)
   }, "+ Add"))), /*#__PURE__*/React.createElement("input", {
@@ -2157,14 +2297,22 @@ function ContactsList({
     placeholder: "Search name, company, email\u2026",
     value: searchQ,
     onChange: e => setSearchQ(e.target.value)
+  }), showScanner && /*#__PURE__*/React.createElement(BusinessCardScanner, {
+    onPrefill: data => {
+      setPrefilled(data);
+      setShowScanner(false);
+      setShowAddContact(true);
+    },
+    onClose: () => setShowScanner(false)
   }), showAddContact && /*#__PURE__*/React.createElement(ContactForm, {
     title: "New Contact",
-    initial: BLANK,
+    initial: prefilled || BLANK,
     onSave: form => {
       onSaveNew(form);
       setShowAddContact(false);
+      setPrefilled(null);
     },
-    onCancel: () => setShowAddContact(false)
+    onCancel: () => { setShowAddContact(false); setPrefilled(null); }
   }), contacts.length === 0 && !showAddContact && /*#__PURE__*/React.createElement("div", {
     style: {
       ...T.card,
