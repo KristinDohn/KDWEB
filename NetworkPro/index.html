@@ -1460,7 +1460,7 @@ function LoginScreen({
   }, /*#__PURE__*/React.createElement("div", { style: { flex: 1, height: 1, background: "var(--border)" } }), /*#__PURE__*/React.createElement("span", { style: { fontSize: 12, color: "var(--text-muted)" } }, "or"), /*#__PURE__*/React.createElement("div", { style: { flex: 1, height: 1, background: "var(--border)" } })), /*#__PURE__*/React.createElement("button", {
     onClick: sbSignInWithGoogle,
     style: {
-      width: "100%", background: "#fff", color: "var(--text-body)", border: "1px solid #CBD5E1",
+      width: "100%", background: "#fff", color: "var(--text-body)", border: "none",
       borderRadius: 8, padding: "12px", fontSize: 14, fontWeight: 600,
       cursor: "pointer", fontFamily: "'DM Sans',sans-serif",
       display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 12
@@ -1570,15 +1570,7 @@ function LoginScreen({
       width: "100%",
       padding: "11px"
     }
-  }, "\u2190 Back to Sign In")),
-  /*#__PURE__*/React.createElement("div", {
-    style: { textAlign: "center", marginTop: 24, fontSize: 12, color: "var(--text-dim)" }
-  }, "By using NetworkPro you agree to our ",
-    /*#__PURE__*/React.createElement("a", { href: "tos.html", target: "_blank", rel: "noopener", style: { color: "var(--accent)", textDecoration: "none", fontWeight: 600 } }, "Terms of Service"),
-    " and ",
-    /*#__PURE__*/React.createElement("a", { href: "privacy.html", target: "_blank", rel: "noopener", style: { color: "var(--accent)", textDecoration: "none", fontWeight: 600 } }, "Privacy Policy"),
-    "."
-  )));
+  }, "\u2190 Back to Sign In"))));
 }
 
 // ── Task Modal ────────────────────────────────────────────────────────────────
@@ -3277,7 +3269,7 @@ function ContactDetail({
       fontSize: 13,
       color: "var(--text-body)"
     }
-  }, /*#__PURE__*/React.createElement("a", {href: "mailto:" + selected.email, style: {color: "var(--text-body)", textDecoration: "none"}}, "\u2709 ", selected.email), selected.phone && /*#__PURE__*/React.createElement("a", {href: "tel:" + selected.phone.replace(/\D/g,""), style: {color: "var(--text-body)", textDecoration: "none"}}, "\uD83D\uDCDE ", selected.phone), selected.linkedin && /*#__PURE__*/React.createElement("a", {href: (selected.linkedin.startsWith("http") ? selected.linkedin : "https://" + selected.linkedin), target: "_blank", rel: "noopener noreferrer", style: {color: "var(--accent)", textDecoration: "none"}}, "\uD83D\uDD17 LinkedIn \u2197")))), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("a", {href: "mailto:" + selected.email, style: {color: "var(--text-body)", textDecoration: "none"}}, "\u2709 ", selected.email), selected.phone && /*#__PURE__*/React.createElement("span", {style: {display: "inline-flex", alignItems: "center", gap: 10}}, /*#__PURE__*/React.createElement("a", {href: "tel:" + selected.phone.replace(/\D/g,""), style: {color: "var(--text-body)", textDecoration: "none"}}, "\uD83D\uDCDE ", selected.phone), /*#__PURE__*/React.createElement("a", {href: "sms:" + selected.phone.replace(/\D/g,""), style: {color: "var(--accent)", textDecoration: "none", fontSize: 13, fontWeight: 600}}, "\uD83D\uDCAC Text")), selected.linkedin && /*#__PURE__*/React.createElement("a", {href: (selected.linkedin.startsWith("http") ? selected.linkedin : "https://" + selected.linkedin), target: "_blank", rel: "noopener noreferrer", style: {color: "var(--accent)", textDecoration: "none"}}, "\uD83D\uDD17 LinkedIn \u2197")))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 8,
