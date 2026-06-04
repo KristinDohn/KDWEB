@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — NetworkPro</title>
+  <meta name="description" content="NetworkPro Privacy Policy" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-page:      #F0F4F8;
+      --bg-card:      #FFFFFF;
+      --border:       #CBD5E1;
+      --text-body:    #1E293B;
+      --text-head:    #0F172A;
+      --text-muted:   #64748B;
+      --text-dim:     #94A3B8;
+      --accent:       #2563EB;
+      --accent-alpha: rgba(37,99,235,0.08);
+      --shadow-card:  0 4px 24px rgba(0,0,0,0.07);
+    }
+
+
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg-page);
+      color: var(--text-body);
+      line-height: 1.7;
+      min-height: 100vh;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    /* ── Header ── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+    }
+
+    .header-inner {
+      max-width: 760px;
+      margin: 0 auto;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+
+
+
+
+    /* ── Main layout ── */
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 3rem 2rem 5rem;
+    }
+
+    /* ── Hero block ── */
+    .hero {
+      margin-bottom: 2.5rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero-label {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-alpha);
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2rem, 5vw, 2.75rem);
+      color: var(--text-head);
+      line-height: 1.2;
+      margin-bottom: 0.75rem;
+    }
+
+    .hero-meta {
+      font-size: 0.875rem;
+      color: var(--text-dim);
+    }
+
+    /* ── Table of contents ── */
+    .toc {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2.5rem;
+      box-shadow: var(--shadow-card);
+    }
+
+    .toc-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 0.75rem;
+    }
+
+    .toc ol {
+      list-style: none;
+      counter-reset: toc;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .toc li { counter-increment: toc; }
+
+    .toc a {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      text-decoration: none;
+      color: var(--text-body);
+      font-size: 0.9rem;
+      transition: color 0.15s;
+    }
+
+    .toc a:hover { color: var(--accent); }
+
+    .toc a::before {
+      content: counter(toc, decimal-leading-zero);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    /* ── Sections ── */
+    section {
+      margin-bottom: 2.5rem;
+      scroll-margin-top: 72px;
+    }
+
+    h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.4rem;
+      color: var(--text-head);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .section-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--accent);
+      background: var(--accent-alpha);
+      padding: 3px 8px;
+      border-radius: 20px;
+      flex-shrink: 0;
+    }
+
+    p { margin-bottom: 0.85rem; font-size: 0.95rem; color: var(--text-body); }
+    p:last-child { margin-bottom: 0; }
+
+    ul {
+      list-style: none;
+      margin: 0.5rem 0 0.85rem 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    ul li {
+      font-size: 0.95rem;
+      padding-left: 1.25rem;
+      position: relative;
+      color: var(--text-body);
+    }
+
+    ul li::before {
+      content: '–';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    strong { font-weight: 700; color: var(--text-head); }
+
+    /* ── Callout box ── */
+    .callout {
+      background: var(--accent-alpha);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      padding: 1rem 1.25rem;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+
+    .callout p { margin: 0; }
+
+    /* ── Contact card ── */
+    .contact-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow-card);
+    }
+
+    .contact-card p { font-size: 0.9rem; }
+
+    .contact-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      transition: opacity 0.15s;
+    }
+
+    .contact-link:hover { opacity: 0.75; }
+
+    /* ── Dividers ── */
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 2.5rem 0;
+    }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 1.5rem 2rem;
+    }
+
+    .footer-inner {
+      max-width: 760px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .footer-copy {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+
+    .footer-back {
+      font-size: 0.8rem;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      transition: opacity 0.15s;
+    }
+
+    .footer-back:hover { opacity: 0.7; }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      main { padding: 2rem 1.25rem 4rem; }
+      header { padding: 0 1.25rem; }
+      footer { padding: 1.25rem; }
+    }
+
+    /* ── Entry animation ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero        { animation: fadeUp 0.45s ease both; }
+    .toc         { animation: fadeUp 0.45s 0.1s ease both; }
+    section      { animation: fadeUp 0.45s 0.15s ease both; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <a href="/"><img src="NetworkPro_logo-light.png" alt="NetworkPro" style="height: 28px; display: block;" /></a>
+
+    </div>
+  </header>
+
+  <main>
+    <div class="hero">
+      <span class="hero-label">Legal</span>
+      <h1>Privacy Policy</h1>
+      <p class="hero-meta">Effective date: June 3, 2025 &nbsp;·&nbsp; Last updated: June 3, 2025</p>
+    </div>
+
+    <div class="callout">
+      <p><strong>The short version:</strong> NetworkPro collects only what it needs to make the app work. Your login credentials are used solely to authenticate you. We don't sell your data, share it with advertisers, or use it for anything other than operating this service.</p>
+    </div>
+
+    <nav class="toc" aria-label="Table of contents">
+      <div class="toc-title">Contents</div>
+      <ol>
+        <li><a href="#who-we-are">Who We Are</a></li>
+        <li><a href="#what-we-collect">What We Collect</a></li>
+        <li><a href="#how-we-use">How We Use Your Information</a></li>
+        <li><a href="#what-we-dont-do">What We Don't Do</a></li>
+        <li><a href="#data-storage">Data Storage &amp; Security</a></li>
+        <li><a href="#third-parties">Third-Party Services</a></li>
+        <li><a href="#your-rights">Your Rights &amp; Choices</a></li>
+        <li><a href="#data-retention">Data Retention</a></li>
+        <li><a href="#children">Children's Privacy</a></li>
+        <li><a href="#changes">Changes to This Policy</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ol>
+    </nav>
+
+    <section id="who-we-are">
+      <h2><span class="section-num">01</span> Who We Are</h2>
+      <p>NetworkPro is a personal networking tracker designed to help job seekers manage professional contacts, track outreach, and stay on top of their job search pipeline. The app is operated by Kristin Dohn as a personal project.</p>
+    </section>
+
+    <section id="what-we-collect">
+      <h2><span class="section-num">02</span> What We Collect</h2>
+      <p>We collect only the minimum information necessary to provide the service:</p>
+      <ul>
+        <li><strong>Account credentials:</strong> Your email address and a hashed password, used solely to authenticate you.</li>
+        <li><strong>Contact &amp; networking data:</strong> Information you enter into the app — contact names, companies, notes, meeting logs, and related data. This is your data; you create it and control it.</li>
+        <li><strong>Technical data:</strong> Basic server logs (IP address, browser type, request timestamps) generated automatically when you use the app. These are used only for debugging and security monitoring.</li>
+      </ul>
+      <p>We do <strong>not</strong> collect payment information, location data, or any data beyond what you explicitly enter into the app.</p>
+    </section>
+
+    <section id="how-we-use">
+      <h2><span class="section-num">03</span> How We Use Your Information</h2>
+      <p>Your information is used for exactly one purpose: making the app work for you.</p>
+      <ul>
+        <li>Your email and password authenticate you and keep your account secure.</li>
+        <li>Your networking data is synced to the cloud so you can access it across devices.</li>
+        <li>Your email may be used to send you a password-reset link if you request one.</li>
+        <li>Server logs help us identify bugs, outages, and unauthorized access attempts.</li>
+      </ul>
+    </section>
+
+    <section id="what-we-dont-do">
+      <h2><span class="section-num">04</span> What We Don't Do</h2>
+      <p>To be explicit about things we will never do:</p>
+      <ul>
+        <li>We do not sell your data to anyone, ever.</li>
+        <li>We do not share your data with advertisers or marketing platforms.</li>
+        <li>We do not use your data to train AI models.</li>
+        <li>We do not send marketing emails or newsletters.</li>
+        <li>We do not profile you or build behavioral models about you.</li>
+        <li>We do not share your data with third parties except as described in Section 6 below.</li>
+      </ul>
+    </section>
+
+    <section id="data-storage">
+      <h2><span class="section-num">05</span> Data Storage &amp; Security</h2>
+      <p>Your data is stored on <strong>Supabase</strong>, a managed cloud database platform with industry-standard encryption at rest and in transit (TLS). Passwords are never stored in plain text — they are hashed before storage.</p>
+      <p>While we take reasonable precautions to protect your data, no internet-based service can guarantee absolute security. You are responsible for keeping your login credentials confidential.</p>
+    </section>
+
+    <section id="third-parties">
+      <h2><span class="section-num">06</span> Third-Party Services</h2>
+      <p>NetworkPro uses a small number of third-party infrastructure providers to operate:</p>
+      <ul>
+        <li><strong>Supabase</strong> — database, authentication, and backend hosting. <a href="https://supabase.com/privacy" target="_blank" rel="noopener" style="color: var(--accent);">Supabase Privacy Policy →</a></li>
+        <li><strong>GitHub Pages</strong> — static file hosting for the web app frontend. <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener" style="color: var(--accent);">GitHub Privacy Policy →</a></li>
+        <li><strong>Resend</strong> — transactional email (password resets, access requests). <a href="https://resend.com/legal/privacy-policy" target="_blank" rel="noopener" style="color: var(--accent);">Resend Privacy Policy →</a></li>
+      </ul>
+      <p>These providers process data only to the extent necessary to deliver their services. We do not use analytics platforms, advertising networks, or social media trackers.</p>
+    </section>
+
+    <section id="your-rights">
+      <h2><span class="section-num">07</span> Your Rights &amp; Choices</h2>
+      <p>You have full control over your data:</p>
+      <ul>
+        <li><strong>Access:</strong> All the data you've entered is visible directly within the app.</li>
+        <li><strong>Correction:</strong> You can edit or update any information you've entered at any time.</li>
+        <li><strong>Deletion:</strong> You can request deletion of your account and all associated data at any time by contacting us (see Section 11).</li>
+        <li><strong>Export:</strong> If you'd like a copy of your data, contact us and we'll provide it in a readable format.</li>
+      </ul>
+    </section>
+
+    <section id="data-retention">
+      <h2><span class="section-num">08</span> Data Retention</h2>
+      <p>Your data is retained for as long as your account is active. If you request account deletion, your data will be permanently removed within 30 days. Server logs are retained for up to 90 days for security purposes, then automatically deleted.</p>
+    </section>
+
+    <section id="children">
+      <h2><span class="section-num">09</span> Children's Privacy</h2>
+      <p>NetworkPro is intended for adults engaged in professional networking and job searching. We do not knowingly collect personal information from anyone under the age of 13. If you believe a minor has created an account, please contact us and we will delete it promptly.</p>
+    </section>
+
+    <section id="changes">
+      <h2><span class="section-num">10</span> Changes to This Policy</h2>
+      <p>If we make material changes to this privacy policy, we will update the "Last updated" date at the top of this page. For significant changes, we may also send a notice to the email address associated with your account. Continued use of the app after changes are posted constitutes acceptance of the updated policy.</p>
+    </section>
+
+    <hr />
+
+    <section id="contact">
+      <h2><span class="section-num">11</span> Contact</h2>
+      <div class="contact-card">
+        <p>If you have questions about this privacy policy, want to request data deletion or export, or need to report a privacy concern, please reach out directly:</p>
+        <a class="contact-link" href="mailto:kristin@kristindohn.com">
+          ✉ kristin@kristindohn.com
+        </a>
+        <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-dim);">We aim to respond to all privacy-related inquiries within 5 business days.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <span class="footer-copy">© 2025 NetworkPro · Kristin Dohn</span>
+      <a class="footer-back" href="/">← Back to app</a>
+    </div>
+  </footer>
+
+
+
+</body>
+</html>

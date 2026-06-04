@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terms of Service — NetworkPro</title>
+  <meta name="description" content="NetworkPro Terms of Service" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-page:      #F0F4F8;
+      --bg-card:      #FFFFFF;
+      --border:       #CBD5E1;
+      --text-body:    #1E293B;
+      --text-head:    #0F172A;
+      --text-muted:   #64748B;
+      --text-dim:     #94A3B8;
+      --accent:       #2563EB;
+      --accent-alpha: rgba(37,99,235,0.08);
+      --shadow-card:  0 4px 24px rgba(0,0,0,0.07);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg-page);
+      color: var(--text-body);
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+    }
+
+    .header-inner {
+      max-width: 760px;
+      margin: 0 auto;
+      height: 56px;
+      display: flex;
+      align-items: center;
+    }
+
+    /* ── Main layout ── */
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 3rem 2rem 5rem;
+    }
+
+    /* ── Hero block ── */
+    .hero {
+      margin-bottom: 2.5rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero-label {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-alpha);
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2rem, 5vw, 2.75rem);
+      color: var(--text-head);
+      line-height: 1.2;
+      margin-bottom: 0.75rem;
+    }
+
+    .hero-meta {
+      font-size: 0.875rem;
+      color: var(--text-dim);
+    }
+
+    /* ── Table of contents ── */
+    .toc {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2.5rem;
+      box-shadow: var(--shadow-card);
+    }
+
+    .toc-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 0.75rem;
+    }
+
+    .toc ol {
+      list-style: none;
+      counter-reset: toc;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .toc li { counter-increment: toc; }
+
+    .toc a {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      text-decoration: none;
+      color: var(--text-body);
+      font-size: 0.9rem;
+      transition: color 0.15s;
+    }
+
+    .toc a:hover { color: var(--accent); }
+
+    .toc a::before {
+      content: counter(toc, decimal-leading-zero);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    /* ── Sections ── */
+    section {
+      margin-bottom: 2.5rem;
+      scroll-margin-top: 72px;
+    }
+
+    h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.4rem;
+      color: var(--text-head);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .section-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--accent);
+      background: var(--accent-alpha);
+      padding: 3px 8px;
+      border-radius: 20px;
+      flex-shrink: 0;
+    }
+
+    p { margin-bottom: 0.85rem; font-size: 0.95rem; color: var(--text-body); }
+    p:last-child { margin-bottom: 0; }
+
+    ul {
+      list-style: none;
+      margin: 0.5rem 0 0.85rem 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    ul li {
+      font-size: 0.95rem;
+      padding-left: 1.25rem;
+      position: relative;
+      color: var(--text-body);
+    }
+
+    ul li::before {
+      content: '–';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    strong { font-weight: 700; color: var(--text-head); }
+
+    /* ── Callout box ── */
+    .callout {
+      background: var(--accent-alpha);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      padding: 1rem 1.25rem;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+
+    .callout p { margin: 0; }
+
+    /* ── Contact card ── */
+    .contact-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow-card);
+    }
+
+    .contact-card p { font-size: 0.9rem; }
+
+    .contact-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      transition: opacity 0.15s;
+    }
+
+    .contact-link:hover { opacity: 0.75; }
+
+    /* ── Dividers ── */
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 2.5rem 0;
+    }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 1.5rem 2rem;
+    }
+
+    .footer-inner {
+      max-width: 760px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .footer-copy {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+
+    .footer-back {
+      font-size: 0.8rem;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      transition: opacity 0.15s;
+    }
+
+    .footer-back:hover { opacity: 0.7; }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      main { padding: 2rem 1.25rem 4rem; }
+      header { padding: 0 1.25rem; }
+      footer { padding: 1.25rem; }
+    }
+
+    /* ── Entry animation ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero    { animation: fadeUp 0.45s ease both; }
+    .toc     { animation: fadeUp 0.45s 0.1s ease both; }
+    section  { animation: fadeUp 0.45s 0.15s ease both; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <a href="/"><img src="NetworkPro_logo-light.png" alt="NetworkPro" style="height: 28px; display: block;" /></a>
+    </div>
+  </header>
+
+  <main>
+    <div class="hero">
+      <span class="hero-label">Legal</span>
+      <h1>Terms of Service</h1>
+      <p class="hero-meta">Effective date: June 3, 2025 &nbsp;·&nbsp; Last updated: June 3, 2025</p>
+    </div>
+
+    <div class="callout">
+      <p><strong>The short version:</strong> NetworkPro is a personal networking tool provided in good faith. Use it honestly, keep your account secure, and don't abuse the service. By using the app, you agree to these terms.</p>
+    </div>
+
+    <nav class="toc" aria-label="Table of contents">
+      <div class="toc-title">Contents</div>
+      <ol>
+        <li><a href="#acceptance">Acceptance of Terms</a></li>
+        <li><a href="#description">Description of Service</a></li>
+        <li><a href="#eligibility">Eligibility</a></li>
+        <li><a href="#accounts">Your Account</a></li>
+        <li><a href="#your-data">Your Data</a></li>
+        <li><a href="#acceptable-use">Acceptable Use</a></li>
+        <li><a href="#availability">Availability &amp; Changes</a></li>
+        <li><a href="#disclaimers">Disclaimers</a></li>
+        <li><a href="#limitation">Limitation of Liability</a></li>
+        <li><a href="#termination">Termination</a></li>
+        <li><a href="#governing-law">Governing Law</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ol>
+    </nav>
+
+    <section id="acceptance">
+      <h2><span class="section-num">01</span> Acceptance of Terms</h2>
+      <p>By creating an account or using NetworkPro (the "Service"), you agree to be bound by these Terms of Service. If you do not agree, please do not use the Service.</p>
+      <p>These terms apply to all users of the Service. They may be updated from time to time — continued use of the Service after changes are posted constitutes your acceptance of the revised terms.</p>
+    </section>
+
+    <section id="description">
+      <h2><span class="section-num">02</span> Description of Service</h2>
+      <p>NetworkPro is a personal networking tracker that helps job seekers organize professional contacts, log outreach and meetings, and manage their job search pipeline. The Service is operated by Kristin Dohn as a personal project and is provided as-is, free of charge.</p>
+    </section>
+
+    <section id="eligibility">
+      <h2><span class="section-num">03</span> Eligibility</h2>
+      <p>You must be at least 13 years old to use the Service. By using NetworkPro, you confirm that you meet this requirement. The Service is intended for individuals engaged in professional networking and job searching.</p>
+    </section>
+
+    <section id="accounts">
+      <h2><span class="section-num">04</span> Your Account</h2>
+      <p>You are responsible for maintaining the confidentiality of your login credentials and for all activity that occurs under your account. Please:</p>
+      <ul>
+        <li>Use a strong, unique password for your NetworkPro account.</li>
+        <li>Notify us immediately if you suspect unauthorized access to your account.</li>
+        <li>Not share your account credentials with others.</li>
+        <li>Not create more than one account per person.</li>
+      </ul>
+      <p>We are not liable for any loss or damage resulting from unauthorized use of your account due to your failure to keep your credentials secure.</p>
+    </section>
+
+    <section id="your-data">
+      <h2><span class="section-num">05</span> Your Data</h2>
+      <p>All content you enter into the Service — contacts, notes, meeting logs, and related information — belongs to you. We do not claim ownership of your data.</p>
+      <p>You are responsible for ensuring that any information you enter does not violate the privacy or rights of third parties. By entering information about other individuals (such as professional contacts), you represent that you have a legitimate, professional reason for doing so.</p>
+      <p>For details on how we handle your data, please review our <a href="privacy.html" style="color: var(--accent);">Privacy Policy</a>.</p>
+    </section>
+
+    <section id="acceptable-use">
+      <h2><span class="section-num">06</span> Acceptable Use</h2>
+      <p>You agree to use the Service only for its intended purpose — personal, professional networking and job search management. You may not:</p>
+      <ul>
+        <li>Use the Service for any unlawful purpose or in violation of any applicable laws.</li>
+        <li>Attempt to gain unauthorized access to any part of the Service or its infrastructure.</li>
+        <li>Interfere with or disrupt the Service or its servers.</li>
+        <li>Reverse engineer, decompile, or attempt to extract the source code of the Service.</li>
+        <li>Use the Service to store or transmit malicious code or harmful content.</li>
+        <li>Resell, sublicense, or commercialize access to the Service.</li>
+      </ul>
+      <p>We reserve the right to suspend or terminate accounts that violate these terms.</p>
+    </section>
+
+    <section id="availability">
+      <h2><span class="section-num">07</span> Availability &amp; Changes</h2>
+      <p>We provide the Service on a best-effort basis. NetworkPro is a personal project and we make no guarantees about uptime, availability, or uninterrupted access. The Service may be temporarily unavailable due to maintenance, updates, or circumstances beyond our control.</p>
+      <p>We reserve the right to modify, suspend, or discontinue the Service at any time, with or without notice. We may also update these Terms of Service, the features of the app, or the access model (e.g. invite-only) at any time.</p>
+    </section>
+
+    <section id="disclaimers">
+      <h2><span class="section-num">08</span> Disclaimers</h2>
+      <p>The Service is provided <strong>"as is"</strong> and <strong>"as available"</strong> without warranties of any kind, express or implied. We do not warrant that:</p>
+      <ul>
+        <li>The Service will be error-free or uninterrupted.</li>
+        <li>Data stored in the Service will never be lost or corrupted.</li>
+        <li>The Service will meet your specific requirements or expectations.</li>
+      </ul>
+      <p>We strongly recommend maintaining your own backup of important information. While we take reasonable steps to protect your data, we cannot guarantee against data loss in all circumstances.</p>
+    </section>
+
+    <section id="limitation">
+      <h2><span class="section-num">09</span> Limitation of Liability</h2>
+      <p>To the fullest extent permitted by applicable law, Kristin Dohn and NetworkPro shall not be liable for any indirect, incidental, special, consequential, or punitive damages — including but not limited to loss of data, loss of opportunity, or loss of goodwill — arising out of or related to your use of the Service.</p>
+      <p>Our total liability for any claim related to the Service shall not exceed the amount you have paid to use the Service (which, as a free service, is zero).</p>
+    </section>
+
+    <section id="termination">
+      <h2><span class="section-num">10</span> Termination</h2>
+      <p>You may stop using the Service and request account deletion at any time by contacting us. We will delete your account and associated data within 30 days of your request.</p>
+      <p>We may suspend or terminate your access to the Service at any time if we believe you have violated these terms or are using the Service in a way that could harm others or the Service itself. We will attempt to provide notice when reasonable to do so.</p>
+    </section>
+
+    <section id="governing-law">
+      <h2><span class="section-num">11</span> Governing Law</h2>
+      <p>These Terms of Service are governed by the laws of the United States. Any disputes arising from or related to these terms or your use of the Service shall be resolved in good faith through direct communication before any other recourse is pursued.</p>
+    </section>
+
+    <hr />
+
+    <section id="contact">
+      <h2><span class="section-num">12</span> Contact</h2>
+      <div class="contact-card">
+        <p>If you have questions about these Terms of Service or need to report a concern, please reach out directly:</p>
+        <a class="contact-link" href="mailto:kristin@kristindohn.com">
+          ✉ kristin@kristindohn.com
+        </a>
+        <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-dim);">We aim to respond to all inquiries within 5 business days.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <span class="footer-copy">© 2025 NetworkPro · Kristin Dohn</span>
+      <a class="footer-back" href="/">← Back to app</a>
+    </div>
+  </footer>
+
+</body>
+</html>
