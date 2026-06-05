@@ -38,25 +38,25 @@
          Purple (tertiary):#801d7f
          Yellow (accent):  #f5c800  — use sparingly for contrast
       */
-      --bg-page:      #e0ebec;
+      --bg-page:      #edf5f7;
       --bg-card:      #ffffff;
       --bg-input:     #f0f7f8;
-      --bg-hover:     #d4e8ea;
-      --border:       #a8cdd0;
-      --border-alpha: rgba(0,170,173,0.13);
-      --border-alpha2: rgba(0,170,173,0.18);
-      --border-alpha3: rgba(0,170,173,0.22);
+      --bg-hover:     #d6e9f0;
+      --border:       #9ac5d6;
+      --border-alpha: rgba(9,132,173,0.13);
+      --border-alpha2: rgba(9,132,173,0.18);
+      --border-alpha3: rgba(9,132,173,0.22);
       --text-body:    #0d2b2c;
       --text-head:    #001c1c;
       --text-muted:   #5a8a8c;
       --text-dim:     #3d6e70;
-      --accent:       #00aaad;
-      --accent-dark:  #007f82;
-      --accent-alpha: rgba(0,170,173,0.12);
-      --accent-alpha2: rgba(0,170,173,0.18);
-      --green:        #007f82;
-      --green-alpha:  rgba(0,127,130,0.12);
-      --green-alpha2: rgba(0,127,130,0.2);
+      --accent:       #0984ad;
+      --accent-dark:  #066e92;
+      --accent-alpha: rgba(9,132,173,0.12);
+      --accent-alpha2: rgba(9,132,173,0.18);
+      --green:        #066e92;
+      --green-alpha:  rgba(9,132,173,0.12);
+      --green-alpha2: rgba(9,132,173,0.20);
       --amber:        #b38900;
       --amber-alpha:  rgba(179,137,0,0.13);
       --red:          #c0004e;
@@ -64,35 +64,35 @@
       --purple:       #801d7f;
       --purple-alpha: rgba(128,29,127,0.12);
       --pink:         #ec008c;
-      --scrollbar-thumb: #a8cdd0;
+      --scrollbar-thumb: #9ac5d6;
       --cal-picker-filter: invert(0);
       --overlay:      rgba(0,28,28,0.45);
       --shadow-card:  0 4px 24px rgba(0,170,173,0.10);
       --shadow-login: 0 4px 24px rgba(0,170,173,0.18);
-      --today-banner-bg: linear-gradient(135deg,#d4eef0,#c0e4e5);
+      --today-banner-bg: linear-gradient(135deg,#d4eaf2,#bcd8e8);
     }
 
     /* ── Dark mode overrides ── */
     [data-theme="dark"] {
-      --bg-page:      #001c1c;
-      --bg-card:      #002828;
-      --bg-input:     #003333;
-      --bg-hover:     #003d3d;
-      --border:       #005558;
-      --border-alpha: rgba(0,170,173,0.13);
-      --border-alpha2: rgba(0,170,173,0.18);
-      --border-alpha3: rgba(0,170,173,0.22);
+      --bg-page:      #010a0d;
+      --bg-card:      #051418;
+      --bg-input:     #081e24;
+      --bg-hover:     #0c2830;
+      --border:       #0d3d52;
+      --border-alpha: rgba(9,132,173,0.13);
+      --border-alpha2: rgba(9,132,173,0.18);
+      --border-alpha3: rgba(9,132,173,0.22);
       --text-body:    #c8e8e9;
       --text-head:    #e0f4f5;
       --text-muted:   #4a8082;
       --text-dim:     #3a6668;
-      --accent:       #00d0d4;
-      --accent-dark:  #5ee8eb;
-      --accent-alpha: rgba(0,170,173,0.15);
-      --accent-alpha2: rgba(0,170,173,0.22);
-      --green:        #00d0d4;
-      --green-alpha:  rgba(0,170,173,0.13);
-      --green-alpha2: rgba(0,170,173,0.22);
+      --accent:       #22b4e0;
+      --accent-dark:  #6dd0ef;
+      --accent-alpha: rgba(9,132,173,0.15);
+      --accent-alpha2: rgba(9,132,173,0.22);
+      --green:        #22b4e0;
+      --green-alpha:  rgba(9,132,173,0.13);
+      --green-alpha2: rgba(9,132,173,0.22);
       --amber:        #f5c800;
       --amber-alpha:  rgba(245,200,0,0.13);
       --red:          #ff5fa8;
@@ -100,12 +100,12 @@
       --purple:       #c060bf;
       --purple-alpha: rgba(128,29,127,0.18);
       --pink:         #ff3daa;
-      --scrollbar-thumb: #005558;
+      --scrollbar-thumb: #0d3d52;
       --cal-picker-filter: invert(0.6) hue-rotate(150deg);
       --overlay:      rgba(0,0,0,0.65);
       --shadow-card:  0 4px 24px rgba(0,0,0,0.4);
       --shadow-login: 0 4px 24px rgba(0,0,0,0.6);
-      --today-banner-bg: linear-gradient(135deg,#003d3d,#002828);
+      --today-banner-bg: linear-gradient(135deg,#0c2830,#051418);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -612,7 +612,7 @@ const PAGE_TITLES = {
   overview: "Overview",
   tasks: "Task Management"
 };
-const COLORS = ["#00aaad", "#801d7f", "#ec008c", "#007f82", "#5a1f7f", "#c0006e", "#005558", "#9e2b9e"];
+const COLORS = ["#0984ad", "#801d7f", "#ec008c", "#066e92", "#5a1f7f", "#c0006e", "#0d3d52", "#9e2b9e"];
 
 // ── Style tokens ─────────────────────────────────────────────────────────────
 const T = {
