@@ -5114,7 +5114,7 @@ function TaskManagementView({ contacts, addTaskToMeeting, updateTask, toggleTask
                 React.createElement("div", { style: { fontSize: 14, color: "var(--text-head)", fontWeight: 500, textDecoration: t.done ? "line-through" : "none", marginBottom: 4 } }, t.text),
                 React.createElement("div", { style: { display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" } },
                   React.createElement("span", { style: { fontSize: 12, color: c.color, fontWeight: 600, cursor: "pointer" }, onClick: () => goToContact(c.id) }, fullName(c)),
-                  React.createElement("span", { style: { fontSize: 11, color: "var(--text-body)" } }, "\xc2\xb7 " + fmtDate(m.date)),
+                  React.createElement("span", { style: { fontSize: 11, color: "var(--text-body)" } }, "\u00B7 " + fmtDate(m.date)),
                   t.dueDate && React.createElement("span", {
                     style: { fontSize: 11, fontWeight: 600, color: !t.done && t.dueDate < today ? "var(--red)" : !t.done && t.dueDate === today ? "var(--amber)" : "var(--text-body)" }
                   }, "Due " + fmtDate(t.dueDate))
@@ -5369,7 +5369,7 @@ function ImportView({onImport, onNavigate}) {
         phone,
         company: orgLine.replace(/;.*$/, '').trim() || '',
         linkedin: '', whereMet: '', contactNotes: '',
-        _display: [firstName, lastName].filter(Boolean).join(' ') + (orgLine ? ' \xc2\xb7 ' + orgLine.replace(/;.*$/, '').trim() : ''),
+        _display: [firstName, lastName].filter(Boolean).join(' ') + (orgLine ? ' \u00B7 ' + orgLine.replace(/;.*$/, '').trim() : ''),
       });
     }
     return contacts;
