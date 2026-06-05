@@ -1638,7 +1638,7 @@ function TaskModal({
       color: "var(--text-body)",
       marginTop: 2
     }
-  }, open.length, " open \xB7 ", done.length, " completed")), /*#__PURE__*/React.createElement("button", {
+  }, open.length, " open \u00B7 ", done.length, " completed")), /*#__PURE__*/React.createElement("button", {
     onClick: onClose,
     style: {
       ...T.btn("ghost"),
@@ -1700,7 +1700,7 @@ function TaskModal({
   }, /*#__PURE__*/React.createElement("span", {
     style: { color: t.contact.color, fontWeight: 600, cursor: onNavigate ? "pointer" : "default", textDecoration: onNavigate ? "underline" : "none" },
     onClick: e => { if (onNavigate) { e.stopPropagation(); onNavigate(t.contact.id); } }
-  }, fullName(t.contact)), /*#__PURE__*/React.createElement("span", null, "\xB7"), /*#__PURE__*/React.createElement("span", null, fmtDate(t.meeting.date))))))), done.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  }, fullName(t.contact)), /*#__PURE__*/React.createElement("span", null, "\u00B7"), /*#__PURE__*/React.createElement("span", null, fmtDate(t.meeting.date))))))), done.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 11,
       fontWeight: 700,
@@ -1758,7 +1758,7 @@ function TaskModal({
       gap: 8,
       flexWrap: "wrap"
     }
-  }, /*#__PURE__*/React.createElement("span", null, fullName(t.contact)), /*#__PURE__*/React.createElement("span", null, "\xB7"), /*#__PURE__*/React.createElement("span", null, fmtDate(t.meeting.date))))))), tasks.length === 0 && /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", null, fullName(t.contact)), /*#__PURE__*/React.createElement("span", null, "\u00B7"), /*#__PURE__*/React.createElement("span", null, fmtDate(t.meeting.date))))))), tasks.length === 0 && /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: "center",
       color: "var(--text-body)",
@@ -1865,7 +1865,7 @@ function PendingThanksModal({
       color: "var(--text-body)",
       marginTop: 1
     }
-  }, c.company && /*#__PURE__*/React.createElement("span", null, c.company, " \xB7 "), "Met ", fmtDate(m.date)), m.notes && /*#__PURE__*/React.createElement("div", {
+  }, c.company && /*#__PURE__*/React.createElement("span", null, c.company, " \u00B7 "), "Met ", fmtDate(m.date)), m.notes && /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 11,
       color: "var(--text-body)",
@@ -2332,7 +2332,7 @@ function ContactsList({
           color: "var(--text-body)",
           marginTop: 2
         }
-      }, (c.outreaches || []).length, " outreach", (c.outreaches || []).length !== 1 ? "es" : "", " \xB7 last ", fmtDate(lastO.date));
+      }, (c.outreaches || []).length, " outreach", (c.outreaches || []).length !== 1 ? "es" : "", " \u00B7 last ", fmtDate(lastO.date));
     })(), c.contactNotes && /*#__PURE__*/React.createElement("div", {
       style: {
         fontSize: 11,
@@ -4059,7 +4059,7 @@ function CalendarView({
         color: "var(--border)",
         marginTop: 4
       }
-    }, "\xB7"));
+    }, "\u00B7"));
   })), weekDays.some(dt => mtgsOnDay(toISO(dt)).length > 0) && /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 14
@@ -4099,7 +4099,7 @@ function CalendarView({
       fontSize: 11,
       color: "var(--text-body)"
     }
-  }, fmtDateTime(toISO(dt), m.startTime), " \xB7 ", m.contact.company)), /*#__PURE__*/React.createElement("span", {
+  }, fmtDateTime(toISO(dt), m.startTime), " \u00B7 ", m.contact.company)), /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: 12,
       color: "var(--accent)"
@@ -4156,7 +4156,7 @@ function CalendarView({
       fontSize: 11,
       color: "var(--text-body)"
     }
-  }, fmtDateTime(m.date, m.startTime), " \xB7 ", m.contact.company)), /*#__PURE__*/React.createElement("div", {
+  }, fmtDateTime(m.date, m.startTime), " \u00B7 ", m.contact.company)), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
