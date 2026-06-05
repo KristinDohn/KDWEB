@@ -4960,7 +4960,7 @@ function SuggestedView({
 
 // ── Stats View ────────────────────────────────────────────────────────────────
 // ── Task Management View ─────────────────────────────────────────────────────────────
-function TaskManagementView({ contacts, addTaskToMeeting, updateTask, toggleTask, setSelectedId, setView }) {
+function TaskManagementView({ contacts, addTaskToMeeting, updateTask, removeTask, toggleTask, setSelectedId, setView }) {
   const today = isoToday();
   const [sortBy, setSortBy] = useState("dueDate"); // dueDate | createdDate | person | alpha
   const [editingTask, setEditingTask] = useState(null); // { cId, mId, tId, text, dueDate }
@@ -5002,10 +5002,16 @@ function TaskManagementView({ contacts, addTaskToMeeting, updateTask, toggleTask
 
   function saveEditTask() {
     if (!editingTask || !editingTask.text.trim()) return;
-    updateTask(editingTask.cId, editingTask.mId, editingTask.tId, {
-      text: editingTask.text.trim(),
-      dueDate: editingTask.dueDate
-    });
+    const { cId, mId, tId, newCId, newMId, text, dueDate, done } = editingTask;
+    const targetCId = newCId ? Number(newCId) : cId;
+    const targetMId = newMId ? Number(newMId) : mId;
+    if (targetCId !== cId || targetMId !== mId) {
+      // Move task: remove from old, add to new
+      removeTask(cId, mId, tId);
+      addTaskToMeeting(targetCId, targetMId, { id: tId, text: text.trim(), dueDate, done: done || false });
+    } else {
+      updateTask(cId, mId, tId, { text: text.trim(), dueDate });
+    }
     setEditingTask(null);
   }
   function submitNewTask() {
@@ -5103,11 +5109,38 @@ function TaskManagementView({ contacts, addTaskToMeeting, updateTask, toggleTask
           // Content or inline edit
           editingTask && editingTask.tId === t.id
             ? React.createElement("div", { style: { flex: 1 } },
-                React.createElement("input", { style: { ...T.input, marginBottom: 6, fontSize: 13 }, value: editingTask.text, autoFocus: true, onChange: e => setEditingTask(x => ({ ...x, text: e.target.value })), onKeyDown: e => { if (e.key === "Enter") saveEditTask(); if (e.key === "Escape") setEditingTask(null); } }),
-                React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8 } },
-                  React.createElement("input", { type: "date", style: { ...T.input, fontSize: 12, padding: "5px 8px" }, value: editingTask.dueDate || "", onChange: e => setEditingTask(x => ({ ...x, dueDate: e.target.value })) }),
-                  React.createElement("button", { style: { ...T.btn("primary"), padding: "5px 12px", fontSize: 12 }, onClick: saveEditTask }, "Save"),
-                  React.createElement("button", { style: { ...T.btn("ghost"), padding: "5px 10px", fontSize: 12 }, onClick: () => setEditingTask(null) }, "Cancel")
+                // Task text
+                React.createElement("label", { style: { ...T.label, marginBottom: 3 } }, "Task"),
+                React.createElement("input", { style: { ...T.input, marginBottom: 10, fontSize: 13 }, value: editingTask.text, autoFocus: true, onChange: e => setEditingTask(x => ({ ...x, text: e.target.value })), onKeyDown: e => { if (e.key === "Enter") saveEditTask(); if (e.key === "Escape") setEditingTask(null); } }),
+                // Contact dropdown
+                React.createElement("label", { style: { ...T.label, marginBottom: 3 } }, "Contact"),
+                React.createElement("select", {
+                  style: { ...T.input, marginBottom: 10, fontSize: 13 },
+                  value: editingTask.newCId || String(editingTask.cId),
+                  onChange: e => setEditingTask(x => ({ ...x, newCId: e.target.value, newMId: "" }))
+                },
+                  contacts.map(ct => React.createElement("option", { key: ct.id, value: String(ct.id) }, fullName(ct)))
+                ),
+                // Meeting dropdown — filtered to selected contact
+                React.createElement("label", { style: { ...T.label, marginBottom: 3 } }, "Meeting"),
+                React.createElement("select", {
+                  style: { ...T.input, marginBottom: 10, fontSize: 13 },
+                  value: editingTask.newMId || String(editingTask.mId),
+                  onChange: e => setEditingTask(x => ({ ...x, newMId: e.target.value }))
+                },
+                  (contacts.find(ct => ct.id === Number(editingTask.newCId || editingTask.cId))?.meetings || [])
+                    .slice().sort((a,b) => b.date.localeCompare(a.date))
+                    .map(mg => React.createElement("option", { key: mg.id, value: String(mg.id) },
+                      fmtDate(mg.date) + (mg.startTime ? " " + fmtTime(mg.startTime) : "") + (mg.notes ? " — " + mg.notes.slice(0,30) : "")
+                    ))
+                ),
+                // Due date
+                React.createElement("label", { style: { ...T.label, marginBottom: 3 } }, "Due Date"),
+                React.createElement("input", { type: "date", style: { ...T.input, fontSize: 13, marginBottom: 12 }, value: editingTask.dueDate || "", onChange: e => setEditingTask(x => ({ ...x, dueDate: e.target.value })) }),
+                // Buttons
+                React.createElement("div", { style: { display: "flex", gap: 8 } },
+                  React.createElement("button", { style: { ...T.btn("primary"), padding: "7px 16px", fontSize: 13 }, onClick: saveEditTask }, "Save"),
+                  React.createElement("button", { style: { ...T.btn("ghost"), padding: "7px 12px", fontSize: 13 }, onClick: () => setEditingTask(null) }, "Cancel")
                 )
               )
             : React.createElement("div", { style: { flex: 1, minWidth: 0 } },
@@ -5123,7 +5156,7 @@ function TaskManagementView({ contacts, addTaskToMeeting, updateTask, toggleTask
           // Edit button
           !(editingTask && editingTask.tId === t.id) && React.createElement("button", {
             style: { ...T.btn("ghost"), padding: "3px 8px", fontSize: 11, flexShrink: 0, marginTop: 1 },
-            onClick: () => setEditingTask({ cId: c.id, mId: m.id, tId: t.id, text: t.text, dueDate: t.dueDate || "" })
+            onClick: () => setEditingTask({ cId: c.id, mId: m.id, tId: t.id, text: t.text, dueDate: t.dueDate || "", done: t.done || false, newCId: "", newMId: "" })
           }, "\u270E")
         )
       )
@@ -5865,6 +5898,15 @@ function App() {
       })
     }));
   }
+  function removeTask(cId, mId, tId) {
+    setContacts(prev => prev.map(c => c.id !== cId ? c : {
+      ...c,
+      meetings: c.meetings.map(m => m.id !== mId ? m : {
+        ...m,
+        tasks: (m.tasks||[]).filter(t => t.id !== tId)
+      })
+    }));
+  }
   function addTaskToMeeting(cId, mId, task) {
     setContacts(prev => prev.map(c => c.id !== cId ? c : {
       ...c,
@@ -6338,7 +6380,7 @@ function App() {
     addOutreach: addOutreach,
     setSelectedId: setSelectedId,
     setView: setView
-  }), view === "tasks" && React.createElement(TaskManagementView, { contacts: contacts, addTaskToMeeting: addTaskToMeeting, updateTask: updateTask, toggleTask: toggleTask, setSelectedId: setSelectedId, setView: setView }), view === "overview" && React.createElement(OverviewView, { contacts: contacts, setSelectedId: setSelectedId, setView: setView, onQuickLog: () => setQuickLogModal(true) }), view === "import" && /*#__PURE__*/React.createElement(ImportView, {
+  }), view === "tasks" && React.createElement(TaskManagementView, { contacts: contacts, addTaskToMeeting: addTaskToMeeting, updateTask: updateTask, removeTask: removeTask, toggleTask: toggleTask, setSelectedId: setSelectedId, setView: setView }), view === "overview" && React.createElement(OverviewView, { contacts: contacts, setSelectedId: setSelectedId, setView: setView, onQuickLog: () => setQuickLogModal(true) }), view === "import" && /*#__PURE__*/React.createElement(ImportView, {
     onImport: importContacts,
     onNavigate: navigate
   })), /*#__PURE__*/React.createElement("nav", {
