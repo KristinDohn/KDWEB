@@ -1528,7 +1528,13 @@ function LoginScreen({
       fontFamily: "'DM Sans',sans-serif",
       padding: "9px"
     }
-  }, "Sign Up"))), mode === "forgot" && /*#__PURE__*/React.createElement(ForgotPasswordScreen, {
+  }, "Sign Up")), React.createElement("p", { style: { fontSize: 11, color: "var(--text-muted)", textAlign: "center", marginTop: 14, marginBottom: 0, lineHeight: 1.6 } },
+          "By signing up, you agree to our ",
+          React.createElement("a", { href: "/NetworkPro/tos.html", target: "_blank", style: { color: "var(--accent)", textDecoration: "none" } }, "Terms of Service"),
+          " and ",
+          React.createElement("a", { href: "/NetworkPro/privacy.html", target: "_blank", style: { color: "var(--accent)", textDecoration: "none" } }, "Privacy Policy"),
+          "."
+        )), mode === "forgot" && /*#__PURE__*/React.createElement(ForgotPasswordScreen, {
     onBack: () => setMode("login")
   }), mode === "signup" && React.createElement("div", null,
     signupDone
@@ -1555,7 +1561,14 @@ function LoginScreen({
             err && React.createElement("div", { style: { fontSize: 12, color: "var(--red)", marginTop: 6 } }, err)
           ),
           React.createElement("button", { onClick: attemptSignup, disabled: !email || !password || !confirmPw || loading, style: { width: "100%", background: email && password && confirmPw && !loading ? "var(--accent)" : "var(--border)", color: email && password && confirmPw && !loading ? "#fff" : "var(--text-body)", border: "none", borderRadius: 8, padding: "13px", fontSize: 15, fontWeight: 700, cursor: email && password && confirmPw ? "pointer" : "default", fontFamily: "'DM Sans',sans-serif" } }, loading ? "Creating account\u2026" : "Create Account"),
-          React.createElement("button", { onClick: () => { setMode("login"); setErr(""); }, style: { marginTop: 10, width: "100%", background: "transparent", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-body)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", padding: "9px" } }, "Already have an account? Sign In")
+          React.createElement("button", { onClick: () => { setMode("login"); setErr(""); }, style: { marginTop: 10, width: "100%", background: "transparent", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-body)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", padding: "9px" } }, "Already have an account? Sign In"),
+        React.createElement("p", { style: { fontSize: 11, color: "var(--text-muted)", textAlign: "center", marginTop: 14, marginBottom: 0, lineHeight: 1.6 } },
+          "By signing up, you agree to our ",
+          React.createElement("a", { href: "/NetworkPro/tos.html", target: "_blank", style: { color: "var(--accent)", textDecoration: "none" } }, "Terms of Service"),
+          " and ",
+          React.createElement("a", { href: "/NetworkPro/privacy.html", target: "_blank", style: { color: "var(--accent)", textDecoration: "none" } }, "Privacy Policy"),
+          "."
+        )
         )
   ), mode === "sent" && /*#__PURE__*/React.createElement("div", {
     style: {
