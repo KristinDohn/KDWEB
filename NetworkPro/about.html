@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D8C6YG1G09"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D8C6YG1G09');
+  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About NetworkPro</title>
+  <meta name="description" content="Learn about NetworkPro features and functions for tracking your networking meetings when looking for a new job" />
+  <meta property="og:title" content="NetworkPro" />
+  <meta property="og:description" content="Learn about NetworkPro features and functions for tracking your networking meetings when looking for a new job" />
+  <meta property="og:image" content="https://kristindohn.com/NetworkPro/NetworkPro_meta.jpg" />
+  <meta property="og:url" content="https://kristindohn.com/NetworkPro/" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://kristindohn.com/NetworkPro/NetworkPro_meta.jpg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-page:      #F0F4F8;
+      --bg-card:      #FFFFFF;
+      --border:       #CBD5E1;
+      --text-body:    #1E293B;
+      --text-head:    #0F172A;
+      --text-muted:   #64748B;
+      --text-dim:     #94A3B8;
+      --accent:       #2563EB;
+      --accent-dark:  #1D4ED8;
+      --accent-alpha: rgba(37,99,235,0.08);
+      --accent-alpha2: rgba(37,99,235,0.13);
+      --green:        #16A34A;
+      --green-alpha:  rgba(22,163,74,0.1);
+      --amber:        #D97706;
+      --amber-alpha:  rgba(217,119,6,0.1);
+      --shadow-card:  0 4px 24px rgba(0,0,0,0.07);
+      --shadow-lift:  0 20px 60px rgba(0,0,0,0.13);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg-page); color: var(--text-body); line-height: 1.6; min-height: 100vh; }
+
+    /* HERO */
+    .hero-wrap { max-width: 1100px; margin: 0 auto; padding: 5rem 2rem 4rem; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+    @media (max-width: 860px) { .hero-wrap { grid-template-columns: 1fr; padding: 3rem 1.25rem; text-align: center; } .hero-logo { order: -1; } }
+    .hero-eyebrow { display: inline-block; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); background: var(--accent-alpha); padding: 4px 10px; border-radius: 20px; margin-bottom: 1.25rem; }
+    .hero-wrap h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2.4rem, 5vw, 3.4rem); color: var(--text-head); line-height: 1.12; margin-bottom: 1rem; }
+    .hero-wrap h1 em { font-style: italic; color: var(--accent); }
+    .hero-sub { font-size: 1.05rem; color: var(--text-muted); line-height: 1.7; max-width: 44ch; }
+    @media (max-width: 860px) { .hero-sub { max-width: 100%; } }
+
+    /* HERO LOGO */
+    .hero-logo { display: flex; justify-content: center; align-items: center; }
+    .hero-logo img { max-width: 340px; width: 100%; height: auto; }
+
+    .btn-primary { display: inline-flex; align-items: center; gap: 0.35rem; background: var(--accent); color: #fff; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 600; padding: 0.7rem 1.5rem; border-radius: 8px; text-decoration: none; box-shadow: 0 2px 8px rgba(37,99,235,0.22); transition: background 0.15s, transform 0.15s; }
+    .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); }
+    .btn-ghost { display: inline-flex; align-items: center; gap: 0.35rem; background: transparent; color: var(--text-body); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 600; padding: 0.7rem 1.5rem; border-radius: 8px; border: 1.5px solid var(--border); text-decoration: none; transition: border-color 0.15s, color 0.15s, transform 0.15s; }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+
+
+
+    /* FEATURES */
+    .feature-stripe { padding: 4.5rem 0; border-top: 1px solid var(--border); }
+    .feature-stripe.card-bg { background: var(--bg-card); }
+    .feature-inner { max-width: 1100px; margin: 0 auto; padding: 0 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+    .feature-inner.flip { direction: rtl; }
+    .feature-inner.flip > * { direction: ltr; }
+    @media (max-width: 800px) { .feature-inner, .feature-inner.flip { grid-template-columns: 1fr; direction: ltr; gap: 2.5rem; } }
+
+    .feat-num { font-family: 'DM Mono', monospace; font-size: 0.7rem; font-weight: 600; color: var(--accent); background: var(--accent-alpha); display: inline-block; padding: 3px 8px; border-radius: 20px; margin-bottom: 0.9rem; }
+    .feat-title { font-family: 'DM Serif Display', serif; font-size: clamp(1.5rem, 3vw, 2.1rem); color: var(--text-head); line-height: 1.2; margin-bottom: 0.75rem; }
+    .feat-title em { font-style: italic; color: var(--accent); }
+    .feat-desc { font-size: 0.95rem; color: var(--text-muted); line-height: 1.75; margin-bottom: 1.2rem; }
+    .feat-list { list-style: none; display: flex; flex-direction: column; gap: 0.45rem; }
+    .feat-list li { font-size: 0.9rem; color: var(--text-body); padding-left: 1.2rem; position: relative; line-height: 1.55; }
+    .feat-list li::before { content: '--'; position: absolute; left: 0; color: var(--accent); font-weight: 700; }
+
+    .pills-row { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 1.1rem; }
+    .ui-pill { display: inline-flex; align-items: center; font-family: 'DM Mono', monospace; font-size: 0.7rem; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+    .pill-blue   { background: var(--accent-alpha2); color: var(--accent); }
+    .pill-green  { background: var(--green-alpha);  color: var(--green); }
+    .pill-amber  { background: var(--amber-alpha);  color: var(--amber); }
+
+    .feat-visual { display: flex; justify-content: center; align-items: flex-end; gap: 0.85rem; }
+    .mockup { border-radius: 24px; overflow: hidden; background: #fff; border: 5px solid #fff; box-shadow: var(--shadow-lift); transition: transform 0.3s ease; }
+    .mockup:hover { transform: translateY(-5px); }
+    .mockup img { display: block; width: 100%; height: auto; }
+    .mockup.a { width: 200px; }
+    .mockup.b { width: 168px; opacity: 0.6; transform: translateY(20px); box-shadow: 0 10px 30px rgba(0,0,0,0.09); }
+    .mockup.b:hover { opacity: 0.8; transform: translateY(14px); }
+    @media (max-width: 480px) { .mockup.b { display: none; } .mockup.a { width: 240px; } }
+
+    /* HOW IT WORKS */
+    .how-section { background: var(--text-head); padding: 5rem 2rem; }
+    .how-inner { max-width: 1100px; margin: 0 auto; }
+    .how-eyebrow { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.07); display: inline-block; padding: 4px 10px; border-radius: 20px; margin-bottom: 1rem; }
+    .how-title { font-family: 'DM Serif Display', serif; font-size: clamp(1.75rem, 4vw, 2.5rem); color: #fff; margin-bottom: 0.5rem; }
+    .how-sub { font-size: 1rem; color: rgba(255,255,255,0.45); line-height: 1.65; }
+    .steps-grid { margin-top: 3rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.1rem; }
+    .step-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09); border-radius: 12px; padding: 1.75rem 1.5rem; transition: background 0.2s; }
+    .step-card:hover { background: rgba(255,255,255,0.09); }
+    .step-num { font-family: 'DM Mono', monospace; font-size: 0.7rem; font-weight: 600; color: var(--accent); background: rgba(37,99,235,0.2); display: inline-block; padding: 3px 8px; border-radius: 20px; margin-bottom: 0.9rem; }
+    .step-title { font-family: 'DM Serif Display', serif; font-size: 1.2rem; color: #fff; margin-bottom: 0.5rem; }
+    .step-desc { font-size: 0.875rem; color: rgba(255,255,255,0.45); line-height: 1.65; }
+
+    /* CTA */
+    .cta-wrap { max-width: 1100px; margin: 0 auto; padding: 5rem 2rem; }
+    .cta-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 4rem 2rem; text-align: center; box-shadow: var(--shadow-card); }
+    .cta-eyebrow { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); background: var(--accent-alpha); display: inline-block; padding: 4px 10px; border-radius: 20px; margin-bottom: 1rem; }
+    .cta-title { font-family: 'DM Serif Display', serif; font-size: clamp(1.75rem, 4vw, 2.4rem); color: var(--text-head); margin-bottom: 0.75rem; }
+    .cta-title em { font-style: italic; color: var(--accent); }
+    .cta-sub { font-size: 1rem; color: var(--text-muted); line-height: 1.65; margin-bottom: 2rem; max-width: 48ch; margin-left: auto; margin-right: auto; }
+    .cta-actions { display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap; }
+
+    /* FOOTER */
+    footer { border-top: 1px solid var(--border); padding: 1.5rem 2rem; }
+    .footer-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; }
+    .footer-logo img { height: 22px; display: block; }
+    .footer-links { display: flex; gap: 1.25rem; list-style: none; }
+    .footer-links a { font-size: 0.8rem; color: var(--text-dim); text-decoration: none; transition: color 0.15s; }
+    .footer-links a:hover { color: var(--accent); }
+    .footer-copy { font-size: 0.8rem; color: var(--text-dim); }
+    @media (max-width: 640px) { footer { padding: 1.25rem; } .footer-inner { flex-direction: column; align-items: flex-start; } }
+
+    /* ANIMATIONS */
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    .hero-text   { animation: fadeUp 0.5s ease both; }
+    .hero-phones { animation: fadeUp 0.5s 0.15s ease both; }
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.55s ease, transform 0.55s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .d1 { transition-delay: 0.1s; }
+    .d2 { transition-delay: 0.2s; }
+    .d3 { transition-delay: 0.3s; }
+  </style>
+</head>
+<body>
+
+  <div class="hero-wrap">
+    <div class="hero-text">
+      <span class="hero-eyebrow">Built for job seekers</span>
+      <h1>Your network,<br><em>finally organized.</em></h1>
+      <p class="hero-sub">NetworkPro helps you track every contact, meeting, and follow-up while you search for your next role — so nothing slips through the cracks.</p>
+    </div>
+    <div class="hero-logo">
+      <img src="NetworkPro_logo-light.png" alt="NetworkPro" />
+    </div>
+  </div>
+
+  <!-- Network -->
+  <div class="feature-stripe" id="network">
+    <div class="feature-inner">
+      <div class="reveal">
+        <div class="feat-num">01</div>
+        <h2 class="feat-title">Everyone you know,<br><em>in one place.</em></h2>
+        <p class="feat-desc">Add contacts as you meet them &mdash; at events, through referrals, or online. See at a glance who you've met with, who's next on your radar, and who still needs outreach.</p>
+        <ul class="feat-list">
+          <li>Sort by last name, first name, or company</li>
+          <li>Search instantly across name, company, and email</li>
+          <li>See meeting count and upcoming events at a glance</li>
+          <li>"Want to Meet" flag keeps warm leads front and center</li>
+          <li>Track who referred you to each contact</li>
+        </ul>
+      </div>
+      <div class="feat-visual reveal d1">
+        <div class="mockup a"><img src="IMG_9454.jpeg" alt="Network contacts list" loading="lazy"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contact Detail -->
+  <div class="feature-stripe card-bg">
+    <div class="feature-inner flip">
+      <div class="reveal">
+        <div class="feat-num">02</div>
+        <h2 class="feat-title">The full story on<br><em>every person.</em></h2>
+        <p class="feat-desc">Each contact has a rich profile &mdash; their company, how you met, every meeting you've had, and every follow-up task. Log outreach, mark thank-you notes sent, and navigate between connections.</p>
+        <ul class="feat-list">
+          <li>Track exactly where you met each person</li>
+          <li>Log outreach with method (email, call, LinkedIn) and date</li>
+          <li>See all meetings with notes and thank-you status</li>
+          <li>Link connections &mdash; who suggested you talk to whom</li>
+          <li>One tap to email or text directly from the app</li>
+        </ul>
+        <div class="pills-row">
+          <span class="ui-pill pill-green">&#10003; Thanked</span>
+          <span class="ui-pill pill-amber">No thank-you</span>
+          <span class="ui-pill pill-blue">Upcoming</span>
+        </div>
+      </div>
+      <div class="feat-visual reveal d1">
+        <div class="mockup a"><img src="IMG_9458.jpeg" alt="Contact detail view" loading="lazy"></div>
+        <div class="mockup b"><img src="IMG_9457.jpeg" alt="Contact outreach" loading="lazy"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Connections -->
+  <div class="feature-stripe">
+    <div class="feature-inner">
+      <div class="reveal">
+        <div class="feat-num">03</div>
+        <h2 class="feat-title">Map <em>who knows who</em><br>in your network.</h2>
+        <p class="feat-desc">When a contact suggests people you should meet, log it. NetworkPro connects the dots &mdash; so you always know how you got to someone and can reference that warm introduction.</p>
+        <ul class="feat-list">
+          <li>Record who referred you to each contact</li>
+          <li>Track who each contact suggested you talk to</li>
+          <li>Log mutual connections you both share</li>
+          <li>Navigate directly to any connected contact's profile</li>
+          <li>Add brand-new contacts from the connections panel</li>
+        </ul>
+      </div>
+      <div class="feat-visual reveal d1">
+        <div class="mockup a"><img src="IMG_9456.jpeg" alt="Connections editing" loading="lazy"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calendar -->
+  <div class="feature-stripe card-bg" id="calendar">
+    <div class="feature-inner flip">
+      <div class="reveal">
+        <div class="feat-num">04</div>
+        <h2 class="feat-title">See your momentum<br><em>at a glance.</em></h2>
+        <p class="feat-desc">Switch between month, week, and list views. Every meeting is color-coded by contact. Spot gaps in your networking cadence instantly and never miss an upcoming conversation.</p>
+        <ul class="feat-list">
+          <li>Month view with color-coded events per contact</li>
+          <li>List view with status badges: Upcoming, Thanked, No thank-you</li>
+          <li>Open tasks summary always visible at the bottom</li>
+          <li>Log a new meeting in seconds from any view</li>
+          <li>Meeting notes and task counts surfaced inline</li>
+        </ul>
+      </div>
+      <div class="feat-visual reveal d1">
+        <div class="mockup a"><img src="IMG_9462.jpeg" alt="Calendar month view" loading="lazy"></div>
+        <div class="mockup b"><img src="IMG_9461.jpeg" alt="Calendar list view" loading="lazy"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tasks -->
+  <div class="feature-stripe" id="tasks">
+    <div class="feature-inner">
+      <div class="reveal">
+        <div class="feat-num">05</div>
+        <h2 class="feat-title">Every follow-up,<br><em>accounted for.</em></h2>
+        <p class="feat-desc">Create tasks tied to contacts and meetings. Sort by due date, creation, person, or alphabetically. Mark them done as you go. Nothing falls off your radar during a busy job search.</p>
+        <ul class="feat-list">
+          <li>Link any task to a specific contact and meeting</li>
+          <li>Sort four ways: due date, created, person, A&ndash;Z</li>
+          <li>Show or hide completed tasks</li>
+          <li>Quick-add form right at the top of the task list</li>
+          <li>Tasks surface in Calendar view too &mdash; always in sight</li>
+        </ul>
+      </div>
+      <div class="feat-visual reveal d1">
+        <div class="mockup a"><img src="IMG_9455.jpeg" alt="Task management" loading="lazy"></div>
+        <div class="mockup b"><img src="IMG_9460.jpeg" alt="Tasks modal" loading="lazy"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- How It Works -->
+  <div class="how-section" id="how">
+    <div class="how-inner">
+      <span class="how-eyebrow">How it works</span>
+      <h2 class="how-title">From first conversation to signed offer.</h2>
+      <p class="how-sub">NetworkPro fits naturally into your job search routine. Here's how most people use it.</p>
+      <div class="steps-grid">
+        <div class="step-card reveal">
+          <div class="step-num">01</div>
+          <h3 class="step-title">Add your contacts</h3>
+          <p class="step-desc">Import from a vCard or CSV, or add people one by one as you meet them. Capture email, phone, company, and where you met.</p>
+        </div>
+        <div class="step-card reveal d1">
+          <div class="step-num">02</div>
+          <h3 class="step-title">Log every meeting</h3>
+          <p class="step-desc">After each coffee chat or call, log it in seconds. Add notes on what you discussed and create follow-up tasks on the spot.</p>
+        </div>
+        <div class="step-card reveal d2">
+          <div class="step-num">03</div>
+          <h3 class="step-title">Track your follow-ups</h3>
+          <p class="step-desc">Mark thank-you notes sent. Complete tasks. Log outreach. Your calendar makes it easy to see if you're keeping up your momentum.</p>
+        </div>
+        <div class="step-card reveal d3">
+          <div class="step-num">04</div>
+          <h3 class="step-title">Grow your network</h3>
+          <p class="step-desc">When contacts suggest new people to meet, log those connections. Build a map of warm introductions that shortens your path to the right role.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-wrap">
+    <div class="cta-card reveal">
+      <span class="cta-eyebrow">Ready to start?</span>
+      <h2 class="cta-title">Your next job starts with<br><em>the right conversation.</em></h2>
+      <p class="cta-sub">Sign up free. Works on desktop and mobile &mdash; use it anywhere your networking takes you.</p>
+      <div class="cta-actions">
+        <a href="https://www.kristindohn.com/NetworkPro/" class="btn-primary">Create your free account &rarr;</a>
+        <a href="https://www.kristindohn.com/NetworkPro/" class="btn-ghost">Sign in</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-inner">
+      <a href="https://www.kristindohn.com/NetworkPro/" class="footer-logo">
+        <img src="NetworkPro_logo-light.png" alt="NetworkPro" />
+      </a>
+      <ul class="footer-links">
+        <li><a href="privacy.html">Privacy Policy</a></li>
+        <li><a href="tos.html">Terms of Service</a></li>
+        <li><a href="https://www.kristindohn.com/NetworkPro/">Sign In</a></li>
+      </ul>
+      <p class="footer-copy">&copy; 2026 NetworkPro &middot; Built for job seekers</p>
+    </div>
+  </footer>
+
+  <script>
+    const revealEls = document.querySelectorAll('.reveal');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.12 });
+    revealEls.forEach(el => io.observe(el));
+  </script>
+</body>
+</html>

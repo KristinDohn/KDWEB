@@ -1389,7 +1389,11 @@ function LoginScreen({
           /*#__PURE__*/React.createElement("span", { style: { color: "var(--accent)", fontSize: 14, marginTop: 1, flexShrink: 0 } }, f.icon),
           /*#__PURE__*/React.createElement("span", { style: { fontSize: 12, color: "var(--text-muted)", lineHeight: 1.5 } }, f.text)
         ))
-      )
+      ),
+      /*#__PURE__*/React.createElement("a", {
+        href: "./about.html",
+        style: { display: "inline-block", width: "100%", background: "var(--accent)", color: "#fff", borderRadius: 10, padding: "13px 20px", fontSize: 15, fontWeight: 700, textDecoration: "none", fontFamily: "'DM Sans',sans-serif", textAlign: "center", boxShadow: "0 2px 8px rgba(37,99,235,0.22)" }
+      }, "See how it works →")
     ),
     /*#__PURE__*/React.createElement("div", {
       className: `login-card${shake ? " shake" : ""}`,
