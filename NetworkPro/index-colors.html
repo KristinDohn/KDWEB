@@ -210,7 +210,9 @@
     .cal-tab { flex:1; padding:6px 10px; border:none; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif; background:transparent; color:var(--text-muted); transition:all 0.15s; }
     .cal-tab.active { background:var(--accent); color:#fff; }
 
-    /* ── Mobile ── */
+    /* ── Dark mode: brighten contact-colored chips & text ── */
+    [data-theme="dark"] .cal-chip { filter: brightness(1.9) saturate(1.2); background-color: rgba(255,255,255,0.08) !important; }
+    [data-theme="dark"] .contact-color-text { filter: brightness(1.9) saturate(1.2); }
     @media (max-width: 640px) {
       .sidebar { display: none; }
       .mobile-overlay.open { display: block; }
@@ -1709,6 +1711,7 @@ function TaskModal({
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: { color: t.contact.color, fontWeight: 600, cursor: onNavigate ? "pointer" : "default", textDecoration: onNavigate ? "underline" : "none" },
+    className: "contact-color-text",
     onClick: e => { if (onNavigate) { e.stopPropagation(); onNavigate(t.contact.id); } }
   }, fullName(t.contact)), /*#__PURE__*/React.createElement("span", null, "\u00B7"), /*#__PURE__*/React.createElement("span", null, fmtDate(t.meeting.date))))))), done.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -4043,6 +4046,7 @@ function CalendarView({
       }
     }, dt.getDate())), dm.map(m => /*#__PURE__*/React.createElement("div", {
       key: m.id,
+      className: "cal-chip",
       style: {
         fontSize: 10,
         background: m.contact.color + "33",
