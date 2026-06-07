@@ -32,80 +32,74 @@
   <style>
     /* ── CSS custom properties (light = default) ── */
     :root {
-      /* Brand palette
-         Teal (primary):   #00aaad
-         Pink (secondary): #ec008c
-         Purple (tertiary):#801d7f
-         Yellow (accent):  #f5c800  — use sparingly for contrast
-      */
-      --bg-page:      #edf5f7;
-      --bg-card:      #ffffff;
-      --bg-input:     #f0f7f8;
-      --bg-hover:     #d6e9f0;
-      --border:       #9ac5d6;
-      --border-alpha: rgba(9,132,173,0.13);
-      --border-alpha2: rgba(9,132,173,0.18);
-      --border-alpha3: rgba(9,132,173,0.22);
-      --text-body:    #0d2b2c;
-      --text-head:    #001c1c;
-      --text-muted:   #5a8a8c;
-      --text-dim:     #3d6e70;
-      --accent:       #0984ad;
-      --accent-dark:  #066e92;
-      --accent-alpha: rgba(9,132,173,0.12);
-      --accent-alpha2: rgba(9,132,173,0.18);
-      --green:        #066e92;
-      --green-alpha:  rgba(9,132,173,0.12);
-      --green-alpha2: rgba(9,132,173,0.20);
-      --amber:        #b38900;
-      --amber-alpha:  rgba(179,137,0,0.13);
-      --red:          #c0004e;
-      --red-alpha:    rgba(192,0,78,0.18);
-      --purple:       #801d7f;
-      --purple-alpha: rgba(128,29,127,0.12);
-      --pink:         #ec008c;
-      --scrollbar-thumb: #9ac5d6;
+      --bg-page:      #F0F4F8;
+      --bg-card:      #FFFFFF;
+      --bg-input:     #F8FAFC;
+      --bg-hover:     #F1F5F9;
+      --border:       #CBD5E1;
+      --border-alpha: rgba(203,213,225,0.2);
+      --border-alpha2: rgba(203,213,225,0.27);
+      --border-alpha3: rgba(203,213,225,0.27);
+      --text-body:    #1E293B;
+      --text-head:    #0F172A;
+      --text-muted:   #94A3B8;
+      --text-dim:     #64748B;
+      --accent:       #2563EB;
+      --accent-dark:  #1D4ED8;
+      --accent-alpha: rgba(37,99,235,0.1);
+      --accent-alpha2: rgba(37,99,235,0.13);
+      --green:        #16A34A;
+      --green-alpha:  rgba(22,163,74,0.13);
+      --green-alpha2: rgba(22,163,74,0.2);
+      --amber:        #D97706;
+      --amber-alpha:  rgba(217,119,6,0.13);
+      --red:          #DC2626;
+      --red-alpha:    rgba(220,38,38,0.2);
+      --purple:       #7C3AED;
+      --purple-alpha: rgba(124,58,237,0.1);
+      --pink:         #DB2777;
+      --scrollbar-thumb: #CBD5E1;
       --cal-picker-filter: invert(0);
-      --overlay:      rgba(0,28,28,0.45);
-      --shadow-card:  0 4px 24px rgba(0,170,173,0.10);
-      --shadow-login: 0 4px 24px rgba(0,170,173,0.18);
-      --today-banner-bg: linear-gradient(135deg,#d4eaf2,#bcd8e8);
+      --overlay:      rgba(0,0,0,0.45);
+      --shadow-card:  0 4px 24px rgba(0,0,0,0.08);
+      --shadow-login: 0 4px 24px rgba(0,0,0,0.18);
+      --today-banner-bg: linear-gradient(135deg,#EFF6FF,#DBEAFE);
     }
 
     /* ── Dark mode overrides ── */
     [data-theme="dark"] {
-      --bg-page:      #010a0d;
-      --bg-card:      #051418;
-      --bg-input:     #081e24;
-      --bg-hover:     #0c2830;
-      --border:       #0d3d52;
-      --border-alpha: rgba(9,132,173,0.13);
-      --border-alpha2: rgba(9,132,173,0.18);
-      --border-alpha3: rgba(9,132,173,0.22);
-      --text-body:    #c8e8e9;
-      --text-head:    #e0f4f5;
-      --text-muted:   #4a8082;
-      --text-dim:     #3a6668;
-      --accent:       #22b4e0;
-      --accent-dark:  #6dd0ef;
-      --accent-alpha: rgba(9,132,173,0.15);
-      --accent-alpha2: rgba(9,132,173,0.22);
-      --green:        #22b4e0;
-      --green-alpha:  rgba(9,132,173,0.13);
-      --green-alpha2: rgba(9,132,173,0.22);
-      --amber:        #f5c800;
-      --amber-alpha:  rgba(245,200,0,0.13);
-      --red:          #ff5fa8;
-      --red-alpha:    rgba(236,0,140,0.25);
-      --purple:       #c060bf;
-      --purple-alpha: rgba(128,29,127,0.18);
-      --pink:         #ff3daa;
-      --scrollbar-thumb: #0d3d52;
-      --cal-picker-filter: invert(0.6) hue-rotate(150deg);
+      --bg-page:      #080F1A;
+      --bg-card:      #0D1B2E;
+      --bg-input:     #0A1628;
+      --bg-hover:     #0D2137;
+      --border:       #1E3A5F;
+      --border-alpha: rgba(30,58,95,0.13);
+      --border-alpha2: rgba(30,58,95,0.2);
+      --border-alpha3: rgba(30,58,95,0.27);
+      --text-body:    #E2E8F0;
+      --text-head:    #F1F5F9;
+      --text-muted:   #64748B;
+      --text-dim:     #475569;
+      --accent:       #60A5FA;
+      --accent-dark:  #93C5FD;
+      --accent-alpha: rgba(30,58,95,0.13);
+      --accent-alpha2: rgba(30,58,95,0.2);
+      --green:        #4ADE80;
+      --green-alpha:  rgba(20,83,45,0.13);
+      --green-alpha2: rgba(20,83,45,0.27);
+      --amber:        #F59E0B;
+      --amber-alpha:  rgba(120,53,15,0.13);
+      --red:          #F87171;
+      --red-alpha:    rgba(127,29,29,0.27);
+      --purple:       #A78BFA;
+      --purple-alpha: rgba(124,58,237,0.13);
+      --pink:         #FF1493;
+      --scrollbar-thumb: #1E3A5F;
+      --cal-picker-filter: invert(0.5);
       --overlay:      rgba(0,0,0,0.65);
-      --shadow-card:  0 4px 24px rgba(0,0,0,0.4);
-      --shadow-login: 0 4px 24px rgba(0,0,0,0.6);
-      --today-banner-bg: linear-gradient(135deg,#0c2830,#051418);
+      --shadow-card:  0 4px 24px rgba(0,0,0,0.35);
+      --shadow-login: 0 4px 24px rgba(0,0,0,0.55);
+      --today-banner-bg: linear-gradient(135deg,#1E3A5F,#0F172A);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -208,11 +202,9 @@
     /* ── Calendar view tabs ── */
     .cal-tabs { display:flex; gap:4px; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:3px; }
     .cal-tab { flex:1; padding:6px 10px; border:none; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif; background:transparent; color:var(--text-muted); transition:all 0.15s; }
-    .cal-tab.active { background:var(--accent); color:#fff; }
+    .cal-tab.active { background:#2563EB; color:#fff; }
 
-    /* ── Dark mode: brighten contact-colored chips & text ── */
-    [data-theme="dark"] .cal-chip { filter: brightness(1.9) saturate(1.2); background-color: rgba(255,255,255,0.08) !important; }
-    [data-theme="dark"] .contact-color-text { filter: brightness(1.9) saturate(1.2); }
+    /* ── Mobile ── */
     @media (max-width: 640px) {
       .sidebar { display: none; }
       .mobile-overlay.open { display: block; }
@@ -418,6 +410,17 @@ async function sendAccessRequestEmail(firstName, lastName, email) {
     })
   });
 }
+async function sendFeatureRequestEmail(name, email, type, description) {
+  await fetch("https://fxxunfpgqkhsmrrlmcoo.supabase.co/functions/v1/send-feature-request", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "apikey": SB_KEY,
+      "Authorization": "Bearer " + SB_KEY
+    },
+    body: JSON.stringify({ name, email, type, description })
+  });
+}
 async function logAccessRequest(firstName, lastName, email) {
   try {
     await fetch(`${SB_URL}/rest/v1/access_requests`, {
@@ -614,7 +617,7 @@ const PAGE_TITLES = {
   overview: "Overview",
   tasks: "Task Management"
 };
-const COLORS = ["#0984ad", "#801d7f", "#ec008c", "#066e92", "#5a1f7f", "#c0006e", "#0d3d52", "#9e2b9e"];
+const COLORS = ["#2A6B8A", "#5B4A8A", "#2A7A52", "#8A4A2A", "#6B2A8A", "#2A4A8A", "#7A2A5B", "#2A5B7A"];
 
 // ── Style tokens ─────────────────────────────────────────────────────────────
 const T = {
@@ -1293,6 +1296,24 @@ function LoginScreen({
   const [reqLast, setReqLast] = useState("");
   const [reqEmail, setReqEmail] = useState("");
   const [reqErr, setReqErr] = useState("");
+  // Feature request form
+  const [frName, setFrName] = useState("");
+  const [frEmail, setFrEmail] = useState("");
+  const [frType, setFrType] = useState("enhancement");
+  const [frDesc, setFrDesc] = useState("");
+  const [frErr, setFrErr] = useState("");
+  async function submitFeatureRequest() {
+    if (!frDesc.trim()) { setFrErr("Please describe your request."); return; }
+    if (frEmail && !/\S+@\S+\.\S+/.test(frEmail)) { setFrErr("Please enter a valid email."); return; }
+    setLoading(true); setFrErr("");
+    try {
+      await sendFeatureRequestEmail(frName.trim(), frEmail.trim(), frType, frDesc.trim());
+      setMode("frSent");
+    } catch(e) {
+      setFrErr("Something went wrong. Please try again.");
+    }
+    setLoading(false);
+  }
   async function attemptLogin() {
     if (!email || !password) return;
     setLoading(true);
@@ -1489,7 +1510,7 @@ function LoginScreen({
   }, /*#__PURE__*/React.createElement("div", { style: { flex: 1, height: 1, background: "var(--border)" } }), /*#__PURE__*/React.createElement("span", { style: { fontSize: 12, color: "var(--text-muted)" } }, "or"), /*#__PURE__*/React.createElement("div", { style: { flex: 1, height: 1, background: "var(--border)" } })), /*#__PURE__*/React.createElement("button", {
     onClick: sbSignInWithGoogle,
     style: {
-      width: "100%", background: "#fff", color: "var(--text-body)", border: "1px solid var(--border)",
+      width: "100%", background: "#fff", color: "var(--text-body)", border: "1px solid #CBD5E1",
       borderRadius: 8, padding: "12px", fontSize: 14, fontWeight: 600,
       cursor: "pointer", fontFamily: "'DM Sans',sans-serif",
       display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 12
@@ -1612,7 +1633,60 @@ function LoginScreen({
       width: "100%",
       padding: "11px"
     }
-  }, "\u2190 Back to Sign In"))));
+  }, "\u2190 Back to Sign In")),
+  mode === "frRequest" && /*#__PURE__*/React.createElement("div", null,
+    /*#__PURE__*/React.createElement("h3", { style: { margin: "0 0 4px", fontSize: 16, color: "var(--text-head)", fontFamily: "'DM Serif Display',serif" } }, "Submit a Feature Request"),
+    /*#__PURE__*/React.createElement("p", { style: { fontSize: 12, color: "var(--text-muted)", marginBottom: 20, lineHeight: 1.5 } }, "Have an idea or spotted a bug? We'd love to hear from you."),
+    /*#__PURE__*/React.createElement("div", { style: { marginBottom: 12 } },
+      /*#__PURE__*/React.createElement("label", { style: T.label }, "Type"),
+      /*#__PURE__*/React.createElement("select", {
+        value: frType,
+        onChange: e => { setFrType(e.target.value); setFrErr(""); },
+        style: { width: "100%", background: "var(--bg-input)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-body)", padding: "12px 14px", fontSize: 14, outline: "none", fontFamily: "'DM Sans',sans-serif", boxSizing: "border-box" }
+      },
+        /*#__PURE__*/React.createElement("option", { value: "enhancement" }, "\u2728 Enhancement"),
+        /*#__PURE__*/React.createElement("option", { value: "bug" }, "\uD83D\uDC1B Bug Fix"),
+        /*#__PURE__*/React.createElement("option", { value: "ux" }, "\uD83C\uDFA8 UX Improvement")
+      )
+    ),
+    /*#__PURE__*/React.createElement("div", { style: { marginBottom: 12 } },
+      /*#__PURE__*/React.createElement("label", { style: T.label }, "Your Name (optional)"),
+      /*#__PURE__*/React.createElement("input", { type: "text", value: frName, onChange: e => { setFrName(e.target.value); setFrErr(""); }, placeholder: "Jane Smith", style: inputStyle(false) })
+    ),
+    /*#__PURE__*/React.createElement("div", { style: { marginBottom: 12 } },
+      /*#__PURE__*/React.createElement("label", { style: T.label }, "Your Email (optional)"),
+      /*#__PURE__*/React.createElement("input", { type: "email", value: frEmail, onChange: e => { setFrEmail(e.target.value); setFrErr(""); }, placeholder: "you@example.com", style: inputStyle(false) })
+    ),
+    /*#__PURE__*/React.createElement("div", { style: { marginBottom: 16 } },
+      /*#__PURE__*/React.createElement("label", { style: T.label }, "Description \u2022 Required"),
+      /*#__PURE__*/React.createElement("textarea", {
+        value: frDesc,
+        onChange: e => { setFrDesc(e.target.value); setFrErr(""); },
+        placeholder: "Describe the enhancement, bug, or UX issue\u2026",
+        rows: 5,
+        style: { width: "100%", background: "var(--bg-input)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-body)", padding: "12px 14px", fontSize: 14, outline: "none", fontFamily: "'DM Sans',sans-serif", boxSizing: "border-box", resize: "vertical", lineHeight: 1.55 }
+      }),
+      frErr && /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: "var(--red)", marginTop: 6 } }, frErr)
+    ),
+    /*#__PURE__*/React.createElement("button", {
+      onClick: submitFeatureRequest,
+      disabled: !frDesc.trim() || loading,
+      style: { width: "100%", background: frDesc.trim() && !loading ? "var(--accent)" : "var(--border)", color: frDesc.trim() && !loading ? "#fff" : "var(--text-body)", border: "none", borderRadius: 8, padding: "13px", fontSize: 15, fontWeight: 700, cursor: frDesc.trim() ? "pointer" : "default", fontFamily: "'DM Sans',sans-serif", marginBottom: 10 }
+    }, loading ? "Sending\u2026" : "Submit Request"),
+    /*#__PURE__*/React.createElement("button", { onClick: () => { setMode("login"); setFrErr(""); setFrName(""); setFrEmail(""); setFrDesc(""); setFrType("enhancement"); }, style: { width: "100%", background: "transparent", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-body)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", padding: "9px" } }, "\u2190 Back to Sign In")
+  ),
+  mode === "frSent" && /*#__PURE__*/React.createElement("div", { style: { textAlign: "center", padding: "20px 0" } },
+    /*#__PURE__*/React.createElement("div", { style: { fontSize: 36, marginBottom: 12 } }, "\uD83D\uDE4F"),
+    /*#__PURE__*/React.createElement("h3", { style: { margin: "0 0 8px", fontSize: 16, color: "var(--green)", fontFamily: "'DM Serif Display',serif" } }, "Request Submitted"),
+    /*#__PURE__*/React.createElement("p", { style: { fontSize: 13, color: "var(--text-body)", marginBottom: 24, lineHeight: 1.6 } }, "Thanks for the feedback! Your request has been sent."),
+    /*#__PURE__*/React.createElement("button", { onClick: () => { setMode("login"); setFrName(""); setFrEmail(""); setFrDesc(""); setFrType("enhancement"); }, style: { ...T.btn("ghost"), width: "100%", padding: "11px" } }, "\u2190 Back to Sign In")
+  ),
+  /*#__PURE__*/React.createElement("div", { style: { marginTop: 20, paddingTop: 16, borderTop: "1px solid var(--border)" } },
+    /*#__PURE__*/React.createElement("button", {
+      onClick: () => { setMode("frRequest"); setErr(""); setFrErr(""); },
+      style: { width: "100%", background: "transparent", border: "1.5px solid var(--accent)", borderRadius: 8, color: "var(--accent)", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", padding: "11px", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }
+    }, "\uD83D\uDCA1 Submit a Feature Request")
+  )));
 }
 
 // ── Task Modal ────────────────────────────────────────────────────────────────
@@ -1711,7 +1785,6 @@ function TaskModal({
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: { color: t.contact.color, fontWeight: 600, cursor: onNavigate ? "pointer" : "default", textDecoration: onNavigate ? "underline" : "none" },
-    className: "contact-color-text",
     onClick: e => { if (onNavigate) { e.stopPropagation(); onNavigate(t.contact.id); } }
   }, fullName(t.contact)), /*#__PURE__*/React.createElement("span", null, "\u00B7"), /*#__PURE__*/React.createElement("span", null, fmtDate(t.meeting.date))))))), done.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -1943,21 +2016,11 @@ function SidebarInner({
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 8
-    }
-  }, /*#__PURE__*/React.createElement("img", {
-    src: "./NetworkPro_mark.png",
-    alt: "",
-    style: { width: 22, height: 22, objectFit: "contain", flexShrink: 0 }
-  }), /*#__PURE__*/React.createElement("div", {
-    style: {
       fontFamily: "'DM Serif Display',serif",
       fontSize: 16,
       color: "var(--accent)"
     }
-  }, "NetworkPro"))), /*#__PURE__*/React.createElement("div", {
+  }, "NetworkPro")), /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 12,
       flex: 1
@@ -2066,7 +2129,7 @@ function SidebarInner({
     }, x.val));
   }), /*#__PURE__*/React.createElement("div", {
     style: {
-      borderTop: "1px solid var(--border)",
+      borderTop: "1px solid #E8EEF5",
       marginTop: 10,
       paddingTop: 10,
       display: "flex",
@@ -4056,7 +4119,6 @@ function CalendarView({
       }
     }, dt.getDate())), dm.map(m => /*#__PURE__*/React.createElement("div", {
       key: m.id,
-      className: "cal-chip",
       style: {
         fontSize: 10,
         background: m.contact.color + "33",
