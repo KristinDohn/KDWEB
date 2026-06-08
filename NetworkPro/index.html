@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D8C6YG1G09"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-D8C6YG1G09');
+  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NetworkPro — Kristin Dohn</title>
@@ -399,6 +408,17 @@ async function sendAccessRequestEmail(firstName, lastName, email) {
       lastName,
       email
     })
+  });
+}
+async function sendFeatureRequestEmail(name, email, type, description) {
+  await fetch("https://fxxunfpgqkhsmrrlmcoo.supabase.co/functions/v1/send-feature-request", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "apikey": SB_KEY,
+      "Authorization": "Bearer " + SB_KEY
+    },
+    body: JSON.stringify({ name, email, type, description })
   });
 }
 async function logAccessRequest(firstName, lastName, email) {
@@ -1275,6 +1295,24 @@ function LoginScreen({
   const [reqLast, setReqLast] = useState("");
   const [reqEmail, setReqEmail] = useState("");
   const [reqErr, setReqErr] = useState("");
+  // Feature request form
+  const [frName, setFrName] = useState("");
+  const [frEmail, setFrEmail] = useState("");
+  const [frType, setFrType] = useState("enhancement");
+  const [frDesc, setFrDesc] = useState("");
+  const [frErr, setFrErr] = useState("");
+  async function submitFeatureRequest() {
+    if (!frDesc.trim()) { setFrErr("Please describe your request."); return; }
+    if (frEmail && !/\S+@\S+\.\S+/.test(frEmail)) { setFrErr("Please enter a valid email."); return; }
+    setLoading(true); setFrErr("");
+    try {
+      await sendFeatureRequestEmail(frName.trim(), frEmail.trim(), frType, frDesc.trim());
+      setMode("frSent");
+    } catch(e) {
+      setFrErr("Something went wrong. Please try again.");
+    }
+    setLoading(false);
+  }
   async function attemptLogin() {
     if (!email || !password) return;
     setLoading(true);
@@ -1587,7 +1625,60 @@ function LoginScreen({
       width: "100%",
       padding: "11px"
     }
-  }, "\u2190 Back to Sign In"))));
+  }, "\u2190 Back to Sign In")),
+  mode === "frRequest" && /*#__PURE__*/React.createElement("div", null,
+    /*#__PURE__*/React.createElement("h3", { style: { margin: "0 0 4px", fontSize: 16, color: "var(--text-head)", fontFamily: "'DM Serif Display',serif" } }, "Submit a Feature Request"),
+    /*#__PURE__*/React.createElement("p", { style: { fontSize: 12, color: "var(--text-muted)", marginBottom: 20, lineHeight: 1.5 } }, "Have an idea or spotted a bug? We'd love to hear from you."),
+    /*#__PURE__*/React.createElement("div", { style: { marginBottom: 12 } },
+      /*#__PURE__*/React.createElement("label", { style: T.label }, "Type"),
+      /*#__PURE__*/React.createElement("select", {
+        value: frType,
+        onChange: e => { setFrType(e.target.value); setFrErr(""); },
+        style: { width: "100%", background: "var(--bg-input)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-body)", padding: "12px 14px", fontSize: 14, outline: "none", fontFamily: "'DM Sans',sans-serif", boxSizing: "border-box" }
+      },
+        /*#__PURE__*/React.createElement("option", { value: "enhancement" }, "\u2728 Enhancement"),
+        /*#__PURE__*/React.createElement("option", { value: "bug" }, "\uD83D\uDC1B Bug Fix"),
+        /*#__PURE__*/React.createElement("option", { value: "ux" }, "\uD83C\uDFA8 UX Improvement")
+      )
+    ),
+    /*#__PURE__*/React.createElement("div", { style: { marginBottom: 12 } },
+      /*#__PURE__*/React.createElement("label", { style: T.label }, "Your Name (optional)"),
+      /*#__PURE__*/React.createElement("input", { type: "text", value: frName, onChange: e => { setFrName(e.target.value); setFrErr(""); }, placeholder: "Jane Smith", style: inputStyle(false) })
+    ),
+    /*#__PURE__*/React.createElement("div", { style: { marginBottom: 12 } },
+      /*#__PURE__*/React.createElement("label", { style: T.label }, "Your Email (optional)"),
+      /*#__PURE__*/React.createElement("input", { type: "email", value: frEmail, onChange: e => { setFrEmail(e.target.value); setFrErr(""); }, placeholder: "you@example.com", style: inputStyle(false) })
+    ),
+    /*#__PURE__*/React.createElement("div", { style: { marginBottom: 16 } },
+      /*#__PURE__*/React.createElement("label", { style: T.label }, "Description \u2022 Required"),
+      /*#__PURE__*/React.createElement("textarea", {
+        value: frDesc,
+        onChange: e => { setFrDesc(e.target.value); setFrErr(""); },
+        placeholder: "Describe the enhancement, bug, or UX issue\u2026",
+        rows: 5,
+        style: { width: "100%", background: "var(--bg-input)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-body)", padding: "12px 14px", fontSize: 14, outline: "none", fontFamily: "'DM Sans',sans-serif", boxSizing: "border-box", resize: "vertical", lineHeight: 1.55 }
+      }),
+      frErr && /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: "var(--red)", marginTop: 6 } }, frErr)
+    ),
+    /*#__PURE__*/React.createElement("button", {
+      onClick: submitFeatureRequest,
+      disabled: !frDesc.trim() || loading,
+      style: { width: "100%", background: frDesc.trim() && !loading ? "var(--accent)" : "var(--border)", color: frDesc.trim() && !loading ? "#fff" : "var(--text-body)", border: "none", borderRadius: 8, padding: "13px", fontSize: 15, fontWeight: 700, cursor: frDesc.trim() ? "pointer" : "default", fontFamily: "'DM Sans',sans-serif", marginBottom: 10 }
+    }, loading ? "Sending\u2026" : "Submit Request"),
+    /*#__PURE__*/React.createElement("button", { onClick: () => { setMode("login"); setFrErr(""); setFrName(""); setFrEmail(""); setFrDesc(""); setFrType("enhancement"); }, style: { width: "100%", background: "transparent", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-body)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", padding: "9px" } }, "\u2190 Back to Sign In")
+  ),
+  mode === "frSent" && /*#__PURE__*/React.createElement("div", { style: { textAlign: "center", padding: "20px 0" } },
+    /*#__PURE__*/React.createElement("div", { style: { fontSize: 36, marginBottom: 12 } }, "\uD83D\uDE4F"),
+    /*#__PURE__*/React.createElement("h3", { style: { margin: "0 0 8px", fontSize: 16, color: "var(--green)", fontFamily: "'DM Serif Display',serif" } }, "Request Submitted"),
+    /*#__PURE__*/React.createElement("p", { style: { fontSize: 13, color: "var(--text-body)", marginBottom: 24, lineHeight: 1.6 } }, "Thanks for the feedback! Your request has been sent."),
+    /*#__PURE__*/React.createElement("button", { onClick: () => { setMode("login"); setFrName(""); setFrEmail(""); setFrDesc(""); setFrType("enhancement"); }, style: { ...T.btn("ghost"), width: "100%", padding: "11px" } }, "\u2190 Back to Sign In")
+  ),
+  /*#__PURE__*/React.createElement("div", { style: { marginTop: 20, paddingTop: 16, borderTop: "1px solid var(--border)" } },
+    /*#__PURE__*/React.createElement("button", {
+      onClick: () => { setMode("frRequest"); setErr(""); setFrErr(""); },
+      style: { width: "100%", background: "transparent", border: "1.5px solid var(--accent)", borderRadius: 8, color: "var(--accent)", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", padding: "11px", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }
+    }, "\uD83D\uDCA1 Submit a Feature Request")
+  )));
 }
 
 // ── Task Modal ────────────────────────────────────────────────────────────────
@@ -5871,6 +5962,15 @@ function App() {
       })
     }));
   }
+  function removeTask(cId, mId, tId) {
+    setContacts(prev => prev.map(c => c.id !== cId ? c : {
+      ...c,
+      meetings: c.meetings.map(m => m.id !== mId ? m : {
+        ...m,
+        tasks: (m.tasks||[]).filter(t => t.id !== tId)
+      })
+    }));
+  }
   function addTaskToMeeting(cId, mId, task) {
     setContacts(prev => prev.map(c => c.id !== cId ? c : {
       ...c,
@@ -6344,7 +6444,7 @@ function App() {
     addOutreach: addOutreach,
     setSelectedId: setSelectedId,
     setView: setView
-  }), view === "tasks" && React.createElement(TaskManagementView, { contacts: contacts, addTaskToMeeting: addTaskToMeeting, updateTask: updateTask, toggleTask: toggleTask, setSelectedId: setSelectedId, setView: setView }), view === "overview" && React.createElement(OverviewView, { contacts: contacts, setSelectedId: setSelectedId, setView: setView, onQuickLog: () => setQuickLogModal(true) }), view === "import" && /*#__PURE__*/React.createElement(ImportView, {
+  }), view === "tasks" && React.createElement(TaskManagementView, { contacts: contacts, addTaskToMeeting: addTaskToMeeting, updateTask: updateTask, removeTask: removeTask, toggleTask: toggleTask, setSelectedId: setSelectedId, setView: setView }), view === "overview" && React.createElement(OverviewView, { contacts: contacts, setSelectedId: setSelectedId, setView: setView, onQuickLog: () => setQuickLogModal(true) }), view === "import" && /*#__PURE__*/React.createElement(ImportView, {
     onImport: importContacts,
     onNavigate: navigate
   })), /*#__PURE__*/React.createElement("nav", {
