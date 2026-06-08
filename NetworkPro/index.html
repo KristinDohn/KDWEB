@@ -186,7 +186,7 @@
     /* ── Calendar view tabs ── */
     .cal-tabs { display:flex; gap:4px; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:3px; }
     .cal-tab { flex:1; padding:6px 10px; border:none; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif; background:transparent; color:var(--text-muted); transition:all 0.15s; }
-    .cal-tab.active { background:#2563EB; color:#fff; }
+    .cal-tab.active { background:var(--accent); color:#fff; }
 
     /* ── Mobile ── */
     @media (max-width: 640px) {
@@ -1464,7 +1464,7 @@ function LoginScreen({
   }, /*#__PURE__*/React.createElement("div", { style: { flex: 1, height: 1, background: "var(--border)" } }), /*#__PURE__*/React.createElement("span", { style: { fontSize: 12, color: "var(--text-muted)" } }, "or"), /*#__PURE__*/React.createElement("div", { style: { flex: 1, height: 1, background: "var(--border)" } })), /*#__PURE__*/React.createElement("button", {
     onClick: sbSignInWithGoogle,
     style: {
-      width: "100%", background: "#fff", color: "var(--text-body)", border: "none",
+      width: "100%", background: "#fff", color: "var(--text-body)", border: "1px solid #CBD5E1",
       borderRadius: 8, padding: "12px", fontSize: 14, fontWeight: 600,
       cursor: "pointer", fontFamily: "'DM Sans',sans-serif",
       display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 12
