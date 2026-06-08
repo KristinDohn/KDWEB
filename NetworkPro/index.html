@@ -1,26 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D8C6YG1G09"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-    gtag('config', 'G-D8C6YG1G09');
-  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NetworkPro</title>
-  <meta name="description" content="Personal networking tracker: Meet, connect, find your next role" />
-  <meta property="og:title" content="NetworkPro" />
-  <meta property="og:description" content="Personal networking tracker: Meet, connect, find your next role" />
-  <meta property="og:image" content="https://kristindohn.com/NetworkPro/NetworkPro_meta.jpg" />
-  <meta property="og:url" content="https://kristindohn.com/NetworkPro/" />
-  <meta property="og:type" content="website" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:image" content="https://kristindohn.com/NetworkPro/NetworkPro_meta.jpg" />
+  <title>NetworkPro — Kristin Dohn</title>
+  <meta name="description" content="Personal networking tracker" />
   <meta name="theme-color" content="var(--bg-page)" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icon-192.png" />
@@ -408,17 +392,6 @@ async function sendAccessRequestEmail(firstName, lastName, email) {
       lastName,
       email
     })
-  });
-}
-async function sendFeatureRequestEmail(name, email, type, description) {
-  await fetch("https://fxxunfpgqkhsmrrlmcoo.supabase.co/functions/v1/send-feature-request", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "apikey": SB_KEY,
-      "Authorization": "Bearer " + SB_KEY
-    },
-    body: JSON.stringify({ name, email, type, description })
   });
 }
 async function logAccessRequest(firstName, lastName, email) {
@@ -822,7 +795,6 @@ function ThemeToggle() {
 }
 
 // ── Contact Form (shared by Add and Edit) ─────────────────────────────────────
-
 function ContactForm({
   initial,
   onSave,
@@ -1296,24 +1268,6 @@ function LoginScreen({
   const [reqLast, setReqLast] = useState("");
   const [reqEmail, setReqEmail] = useState("");
   const [reqErr, setReqErr] = useState("");
-  // Feature request form
-  const [frName, setFrName] = useState("");
-  const [frEmail, setFrEmail] = useState("");
-  const [frType, setFrType] = useState("enhancement");
-  const [frDesc, setFrDesc] = useState("");
-  const [frErr, setFrErr] = useState("");
-  async function submitFeatureRequest() {
-    if (!frDesc.trim()) { setFrErr("Please describe your request."); return; }
-    if (frEmail && !/\S+@\S+\.\S+/.test(frEmail)) { setFrErr("Please enter a valid email."); return; }
-    setLoading(true); setFrErr("");
-    try {
-      await sendFeatureRequestEmail(frName.trim(), frEmail.trim(), frType, frDesc.trim());
-      setMode("frSent");
-    } catch(e) {
-      setFrErr("Something went wrong. Please try again.");
-    }
-    setLoading(false);
-  }
   async function attemptLogin() {
     if (!email || !password) return;
     setLoading(true);
@@ -1510,7 +1464,7 @@ function LoginScreen({
   }, /*#__PURE__*/React.createElement("div", { style: { flex: 1, height: 1, background: "var(--border)" } }), /*#__PURE__*/React.createElement("span", { style: { fontSize: 12, color: "var(--text-muted)" } }, "or"), /*#__PURE__*/React.createElement("div", { style: { flex: 1, height: 1, background: "var(--border)" } })), /*#__PURE__*/React.createElement("button", {
     onClick: sbSignInWithGoogle,
     style: {
-      width: "100%", background: "#fff", color: "var(--text-body)", border: "1px solid #CBD5E1",
+      width: "100%", background: "#fff", color: "var(--text-body)", border: "none",
       borderRadius: 8, padding: "12px", fontSize: 14, fontWeight: 600,
       cursor: "pointer", fontFamily: "'DM Sans',sans-serif",
       display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 12
@@ -1594,14 +1548,7 @@ function LoginScreen({
             err && React.createElement("div", { style: { fontSize: 12, color: "var(--red)", marginTop: 6 } }, err)
           ),
           React.createElement("button", { onClick: attemptSignup, disabled: !email || !password || !confirmPw || loading, style: { width: "100%", background: email && password && confirmPw && !loading ? "var(--accent)" : "var(--border)", color: email && password && confirmPw && !loading ? "#fff" : "var(--text-body)", border: "none", borderRadius: 8, padding: "13px", fontSize: 15, fontWeight: 700, cursor: email && password && confirmPw ? "pointer" : "default", fontFamily: "'DM Sans',sans-serif" } }, loading ? "Creating account\u2026" : "Create Account"),
-          React.createElement("button", { onClick: () => { setMode("login"); setErr(""); }, style: { marginTop: 10, width: "100%", background: "transparent", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-body)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", padding: "9px" } }, "Already have an account? Sign In"),
-        React.createElement("p", { style: { fontSize: 11, color: "var(--text-muted)", textAlign: "center", marginTop: 14, marginBottom: 0, lineHeight: 1.6 } },
-          "By signing up, you agree to our ",
-          React.createElement("a", { href: "/NetworkPro/tos.html", target: "_blank", style: { color: "var(--accent)", textDecoration: "none" } }, "Terms of Service"),
-          " and ",
-          React.createElement("a", { href: "/NetworkPro/privacy.html", target: "_blank", style: { color: "var(--accent)", textDecoration: "none" } }, "Privacy Policy"),
-          "."
-        )
+          React.createElement("button", { onClick: () => { setMode("login"); setErr(""); }, style: { marginTop: 10, width: "100%", background: "transparent", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-body)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", padding: "9px" } }, "Already have an account? Sign In")
         )
   ), mode === "sent" && /*#__PURE__*/React.createElement("div", {
     style: {
@@ -1633,60 +1580,7 @@ function LoginScreen({
       width: "100%",
       padding: "11px"
     }
-  }, "\u2190 Back to Sign In")),
-  mode === "frRequest" && /*#__PURE__*/React.createElement("div", null,
-    /*#__PURE__*/React.createElement("h3", { style: { margin: "0 0 4px", fontSize: 16, color: "var(--text-head)", fontFamily: "'DM Serif Display',serif" } }, "Submit a Feature Request"),
-    /*#__PURE__*/React.createElement("p", { style: { fontSize: 12, color: "var(--text-muted)", marginBottom: 20, lineHeight: 1.5 } }, "Have an idea or spotted a bug? We'd love to hear from you."),
-    /*#__PURE__*/React.createElement("div", { style: { marginBottom: 12 } },
-      /*#__PURE__*/React.createElement("label", { style: T.label }, "Type"),
-      /*#__PURE__*/React.createElement("select", {
-        value: frType,
-        onChange: e => { setFrType(e.target.value); setFrErr(""); },
-        style: { width: "100%", background: "var(--bg-input)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-body)", padding: "12px 14px", fontSize: 14, outline: "none", fontFamily: "'DM Sans',sans-serif", boxSizing: "border-box" }
-      },
-        /*#__PURE__*/React.createElement("option", { value: "enhancement" }, "\u2728 Enhancement"),
-        /*#__PURE__*/React.createElement("option", { value: "bug" }, "\uD83D\uDC1B Bug Fix"),
-        /*#__PURE__*/React.createElement("option", { value: "ux" }, "\uD83C\uDFA8 UX Improvement")
-      )
-    ),
-    /*#__PURE__*/React.createElement("div", { style: { marginBottom: 12 } },
-      /*#__PURE__*/React.createElement("label", { style: T.label }, "Your Name (optional)"),
-      /*#__PURE__*/React.createElement("input", { type: "text", value: frName, onChange: e => { setFrName(e.target.value); setFrErr(""); }, placeholder: "Jane Smith", style: inputStyle(false) })
-    ),
-    /*#__PURE__*/React.createElement("div", { style: { marginBottom: 12 } },
-      /*#__PURE__*/React.createElement("label", { style: T.label }, "Your Email (optional)"),
-      /*#__PURE__*/React.createElement("input", { type: "email", value: frEmail, onChange: e => { setFrEmail(e.target.value); setFrErr(""); }, placeholder: "you@example.com", style: inputStyle(false) })
-    ),
-    /*#__PURE__*/React.createElement("div", { style: { marginBottom: 16 } },
-      /*#__PURE__*/React.createElement("label", { style: T.label }, "Description \u2022 Required"),
-      /*#__PURE__*/React.createElement("textarea", {
-        value: frDesc,
-        onChange: e => { setFrDesc(e.target.value); setFrErr(""); },
-        placeholder: "Describe the enhancement, bug, or UX issue\u2026",
-        rows: 5,
-        style: { width: "100%", background: "var(--bg-input)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-body)", padding: "12px 14px", fontSize: 14, outline: "none", fontFamily: "'DM Sans',sans-serif", boxSizing: "border-box", resize: "vertical", lineHeight: 1.55 }
-      }),
-      frErr && /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: "var(--red)", marginTop: 6 } }, frErr)
-    ),
-    /*#__PURE__*/React.createElement("button", {
-      onClick: submitFeatureRequest,
-      disabled: !frDesc.trim() || loading,
-      style: { width: "100%", background: frDesc.trim() && !loading ? "var(--accent)" : "var(--border)", color: frDesc.trim() && !loading ? "#fff" : "var(--text-body)", border: "none", borderRadius: 8, padding: "13px", fontSize: 15, fontWeight: 700, cursor: frDesc.trim() ? "pointer" : "default", fontFamily: "'DM Sans',sans-serif", marginBottom: 10 }
-    }, loading ? "Sending\u2026" : "Submit Request"),
-    /*#__PURE__*/React.createElement("button", { onClick: () => { setMode("login"); setFrErr(""); setFrName(""); setFrEmail(""); setFrDesc(""); setFrType("enhancement"); }, style: { width: "100%", background: "transparent", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-body)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", padding: "9px" } }, "\u2190 Back to Sign In")
-  ),
-  mode === "frSent" && /*#__PURE__*/React.createElement("div", { style: { textAlign: "center", padding: "20px 0" } },
-    /*#__PURE__*/React.createElement("div", { style: { fontSize: 36, marginBottom: 12 } }, "\uD83D\uDE4F"),
-    /*#__PURE__*/React.createElement("h3", { style: { margin: "0 0 8px", fontSize: 16, color: "var(--green)", fontFamily: "'DM Serif Display',serif" } }, "Request Submitted"),
-    /*#__PURE__*/React.createElement("p", { style: { fontSize: 13, color: "var(--text-body)", marginBottom: 24, lineHeight: 1.6 } }, "Thanks for the feedback! Your request has been sent."),
-    /*#__PURE__*/React.createElement("button", { onClick: () => { setMode("login"); setFrName(""); setFrEmail(""); setFrDesc(""); setFrType("enhancement"); }, style: { ...T.btn("ghost"), width: "100%", padding: "11px" } }, "\u2190 Back to Sign In")
-  ),
-  /*#__PURE__*/React.createElement("div", { style: { marginTop: 20, paddingTop: 16, borderTop: "1px solid var(--border)" } },
-    /*#__PURE__*/React.createElement("button", {
-      onClick: () => { setMode("frRequest"); setErr(""); setFrErr(""); },
-      style: { width: "100%", background: "transparent", border: "1.5px solid var(--accent)", borderRadius: 8, color: "var(--accent)", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", padding: "11px", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }
-    }, "\uD83D\uDCA1 Submit a Feature Request")
-  )));
+  }, "\u2190 Back to Sign In"))));
 }
 
 // ── Task Modal ────────────────────────────────────────────────────────────────
@@ -1724,7 +1618,7 @@ function TaskModal({
       color: "var(--text-body)",
       marginTop: 2
     }
-  }, open.length, " open \u00B7 ", done.length, " completed")), /*#__PURE__*/React.createElement("button", {
+  }, open.length, " open \xB7 ", done.length, " completed")), /*#__PURE__*/React.createElement("button", {
     onClick: onClose,
     style: {
       ...T.btn("ghost"),
@@ -1786,7 +1680,7 @@ function TaskModal({
   }, /*#__PURE__*/React.createElement("span", {
     style: { color: t.contact.color, fontWeight: 600, cursor: onNavigate ? "pointer" : "default", textDecoration: onNavigate ? "underline" : "none" },
     onClick: e => { if (onNavigate) { e.stopPropagation(); onNavigate(t.contact.id); } }
-  }, fullName(t.contact)), /*#__PURE__*/React.createElement("span", null, "\u00B7"), /*#__PURE__*/React.createElement("span", null, fmtDate(t.meeting.date))))))), done.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  }, fullName(t.contact)), /*#__PURE__*/React.createElement("span", null, "\xB7"), /*#__PURE__*/React.createElement("span", null, fmtDate(t.meeting.date))))))), done.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 11,
       fontWeight: 700,
@@ -1844,7 +1738,7 @@ function TaskModal({
       gap: 8,
       flexWrap: "wrap"
     }
-  }, /*#__PURE__*/React.createElement("span", null, fullName(t.contact)), /*#__PURE__*/React.createElement("span", null, "\u00B7"), /*#__PURE__*/React.createElement("span", null, fmtDate(t.meeting.date))))))), tasks.length === 0 && /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", null, fullName(t.contact)), /*#__PURE__*/React.createElement("span", null, "\xB7"), /*#__PURE__*/React.createElement("span", null, fmtDate(t.meeting.date))))))), tasks.length === 0 && /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: "center",
       color: "var(--text-body)",
@@ -1951,7 +1845,7 @@ function PendingThanksModal({
       color: "var(--text-body)",
       marginTop: 1
     }
-  }, c.company && /*#__PURE__*/React.createElement("span", null, c.company, " \u00B7 "), "Met ", fmtDate(m.date)), m.notes && /*#__PURE__*/React.createElement("div", {
+  }, c.company && /*#__PURE__*/React.createElement("span", null, c.company, " \xB7 "), "Met ", fmtDate(m.date)), m.notes && /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 11,
       color: "var(--text-body)",
@@ -2428,7 +2322,7 @@ function ContactsList({
           color: "var(--text-body)",
           marginTop: 2
         }
-      }, (c.outreaches || []).length, " outreach", (c.outreaches || []).length !== 1 ? "es" : "", " \u00B7 last ", fmtDate(lastO.date));
+      }, (c.outreaches || []).length, " outreach", (c.outreaches || []).length !== 1 ? "es" : "", " \xB7 last ", fmtDate(lastO.date));
     })(), c.contactNotes && /*#__PURE__*/React.createElement("div", {
       style: {
         fontSize: 11,
@@ -3395,7 +3289,7 @@ function ContactDetail({
       fontSize: 13,
       color: "var(--text-body)"
     }
-  }, /*#__PURE__*/React.createElement("a", {href: "mailto:" + selected.email, style: {color: "var(--text-body)", textDecoration: "none"}}, "\u2709 ", selected.email), selected.phone && /*#__PURE__*/React.createElement("span", {style: {display: "inline-flex", alignItems: "center", gap: 10}}, /*#__PURE__*/React.createElement("a", {href: "tel:" + selected.phone.replace(/\D/g,""), style: {color: "var(--text-body)", textDecoration: "none"}}, "\uD83D\uDCDE ", selected.phone), /*#__PURE__*/React.createElement("a", {href: "sms:" + selected.phone.replace(/\D/g,""), style: {color: "var(--accent)", textDecoration: "none", fontSize: 13, fontWeight: 600}}, "\uD83D\uDCAC Text")), selected.linkedin && /*#__PURE__*/React.createElement("a", {href: (selected.linkedin.startsWith("http") ? selected.linkedin : "https://" + selected.linkedin), target: "_blank", rel: "noopener noreferrer", style: {color: "var(--accent)", textDecoration: "none"}}, "\uD83D\uDD17 LinkedIn \u2197")))), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("a", {href: "mailto:" + selected.email, style: {color: "var(--text-body)", textDecoration: "none"}}, "\u2709 ", selected.email), selected.phone && /*#__PURE__*/React.createElement("a", {href: "tel:" + selected.phone.replace(/\D/g,""), style: {color: "var(--text-body)", textDecoration: "none"}}, "\uD83D\uDCDE ", selected.phone), selected.linkedin && /*#__PURE__*/React.createElement("a", {href: (selected.linkedin.startsWith("http") ? selected.linkedin : "https://" + selected.linkedin), target: "_blank", rel: "noopener noreferrer", style: {color: "var(--accent)", textDecoration: "none"}}, "\uD83D\uDD17 LinkedIn \u2197")))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 8,
@@ -4155,7 +4049,7 @@ function CalendarView({
         color: "var(--border)",
         marginTop: 4
       }
-    }, "\u00B7"));
+    }, "\xB7"));
   })), weekDays.some(dt => mtgsOnDay(toISO(dt)).length > 0) && /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 14
@@ -4195,7 +4089,7 @@ function CalendarView({
       fontSize: 11,
       color: "var(--text-body)"
     }
-  }, fmtDateTime(toISO(dt), m.startTime), " \u00B7 ", m.contact.company)), /*#__PURE__*/React.createElement("span", {
+  }, fmtDateTime(toISO(dt), m.startTime), " \xB7 ", m.contact.company)), /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: 12,
       color: "var(--accent)"
@@ -4252,7 +4146,7 @@ function CalendarView({
       fontSize: 11,
       color: "var(--text-body)"
     }
-  }, fmtDateTime(m.date, m.startTime), " \u00B7 ", m.contact.company)), /*#__PURE__*/React.createElement("div", {
+  }, fmtDateTime(m.date, m.startTime), " \xB7 ", m.contact.company)), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
@@ -4351,7 +4245,13 @@ const STATUS_STYLE = {
 
 function OutreachRow({
 
-  s
+  s,
+
+  addOutreach,
+
+  setSelectedId,
+
+  setView
 
 }) {
 
@@ -5050,13 +4950,16 @@ function SuggestedView({
     }
   }, g.title, " (", byStatus[g.key].length, ")"), byStatus[g.key].map(s => /*#__PURE__*/React.createElement(OutreachRow, {
     key: s.contact.id,
-    s: s
+    s: s,
+    addOutreach: addOutreach,
+    setSelectedId: setSelectedId,
+    setView: setView
   }))))));
 }
 
 // ── Stats View ────────────────────────────────────────────────────────────────
 // ── Task Management View ─────────────────────────────────────────────────────────────
-function TaskManagementView({ contacts, addTaskToMeeting, updateTask, removeTask, toggleTask, setSelectedId, setView }) {
+function TaskManagementView({ contacts, addTaskToMeeting, updateTask, toggleTask, setSelectedId, setView }) {
   const today = isoToday();
   const [sortBy, setSortBy] = useState("dueDate"); // dueDate | createdDate | person | alpha
   const [editingTask, setEditingTask] = useState(null); // { cId, mId, tId, text, dueDate }
@@ -5098,16 +5001,10 @@ function TaskManagementView({ contacts, addTaskToMeeting, updateTask, removeTask
 
   function saveEditTask() {
     if (!editingTask || !editingTask.text.trim()) return;
-    const { cId, mId, tId, newCId, newMId, text, dueDate, done } = editingTask;
-    const targetCId = newCId ? Number(newCId) : cId;
-    const targetMId = newMId ? Number(newMId) : mId;
-    if (targetCId !== cId || targetMId !== mId) {
-      // Move task: remove from old, add to new
-      removeTask(cId, mId, tId);
-      addTaskToMeeting(targetCId, targetMId, { id: tId, text: text.trim(), dueDate, done: done || false });
-    } else {
-      updateTask(cId, mId, tId, { text: text.trim(), dueDate });
-    }
+    updateTask(editingTask.cId, editingTask.mId, editingTask.tId, {
+      text: editingTask.text.trim(),
+      dueDate: editingTask.dueDate
+    });
     setEditingTask(null);
   }
   function submitNewTask() {
@@ -5205,45 +5102,18 @@ function TaskManagementView({ contacts, addTaskToMeeting, updateTask, removeTask
           // Content or inline edit
           editingTask && editingTask.tId === t.id
             ? React.createElement("div", { style: { flex: 1 } },
-                // Task text
-                React.createElement("label", { style: { ...T.label, marginBottom: 3 } }, "Task"),
-                React.createElement("input", { style: { ...T.input, marginBottom: 10, fontSize: 13 }, value: editingTask.text, autoFocus: true, onChange: e => setEditingTask(x => ({ ...x, text: e.target.value })), onKeyDown: e => { if (e.key === "Enter") saveEditTask(); if (e.key === "Escape") setEditingTask(null); } }),
-                // Contact dropdown
-                React.createElement("label", { style: { ...T.label, marginBottom: 3 } }, "Contact"),
-                React.createElement("select", {
-                  style: { ...T.input, marginBottom: 10, fontSize: 13 },
-                  value: editingTask.newCId || String(editingTask.cId),
-                  onChange: e => setEditingTask(x => ({ ...x, newCId: e.target.value, newMId: "" }))
-                },
-                  contacts.map(ct => React.createElement("option", { key: ct.id, value: String(ct.id) }, fullName(ct)))
-                ),
-                // Meeting dropdown — filtered to selected contact
-                React.createElement("label", { style: { ...T.label, marginBottom: 3 } }, "Meeting"),
-                React.createElement("select", {
-                  style: { ...T.input, marginBottom: 10, fontSize: 13 },
-                  value: editingTask.newMId || String(editingTask.mId),
-                  onChange: e => setEditingTask(x => ({ ...x, newMId: e.target.value }))
-                },
-                  (contacts.find(ct => ct.id === Number(editingTask.newCId || editingTask.cId))?.meetings || [])
-                    .slice().sort((a,b) => b.date.localeCompare(a.date))
-                    .map(mg => React.createElement("option", { key: mg.id, value: String(mg.id) },
-                      fmtDate(mg.date) + (mg.startTime ? " " + fmtTime(mg.startTime) : "") + (mg.notes ? " — " + mg.notes.slice(0,30) : "")
-                    ))
-                ),
-                // Due date
-                React.createElement("label", { style: { ...T.label, marginBottom: 3 } }, "Due Date"),
-                React.createElement("input", { type: "date", style: { ...T.input, fontSize: 13, marginBottom: 12 }, value: editingTask.dueDate || "", onChange: e => setEditingTask(x => ({ ...x, dueDate: e.target.value })) }),
-                // Buttons
-                React.createElement("div", { style: { display: "flex", gap: 8 } },
-                  React.createElement("button", { style: { ...T.btn("primary"), padding: "7px 16px", fontSize: 13 }, onClick: saveEditTask }, "Save"),
-                  React.createElement("button", { style: { ...T.btn("ghost"), padding: "7px 12px", fontSize: 13 }, onClick: () => setEditingTask(null) }, "Cancel")
+                React.createElement("input", { style: { ...T.input, marginBottom: 6, fontSize: 13 }, value: editingTask.text, autoFocus: true, onChange: e => setEditingTask(x => ({ ...x, text: e.target.value })), onKeyDown: e => { if (e.key === "Enter") saveEditTask(); if (e.key === "Escape") setEditingTask(null); } }),
+                React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8 } },
+                  React.createElement("input", { type: "date", style: { ...T.input, fontSize: 12, padding: "5px 8px" }, value: editingTask.dueDate || "", onChange: e => setEditingTask(x => ({ ...x, dueDate: e.target.value })) }),
+                  React.createElement("button", { style: { ...T.btn("primary"), padding: "5px 12px", fontSize: 12 }, onClick: saveEditTask }, "Save"),
+                  React.createElement("button", { style: { ...T.btn("ghost"), padding: "5px 10px", fontSize: 12 }, onClick: () => setEditingTask(null) }, "Cancel")
                 )
               )
             : React.createElement("div", { style: { flex: 1, minWidth: 0 } },
                 React.createElement("div", { style: { fontSize: 14, color: "var(--text-head)", fontWeight: 500, textDecoration: t.done ? "line-through" : "none", marginBottom: 4 } }, t.text),
                 React.createElement("div", { style: { display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" } },
                   React.createElement("span", { style: { fontSize: 12, color: c.color, fontWeight: 600, cursor: "pointer" }, onClick: () => goToContact(c.id) }, fullName(c)),
-                  React.createElement("span", { style: { fontSize: 11, color: "var(--text-body)" } }, "\u00B7 " + fmtDate(m.date)),
+                  React.createElement("span", { style: { fontSize: 11, color: "var(--text-body)" } }, "\xc2\xb7 " + fmtDate(m.date)),
                   t.dueDate && React.createElement("span", {
                     style: { fontSize: 11, fontWeight: 600, color: !t.done && t.dueDate < today ? "var(--red)" : !t.done && t.dueDate === today ? "var(--amber)" : "var(--text-body)" }
                   }, "Due " + fmtDate(t.dueDate))
@@ -5252,7 +5122,7 @@ function TaskManagementView({ contacts, addTaskToMeeting, updateTask, removeTask
           // Edit button
           !(editingTask && editingTask.tId === t.id) && React.createElement("button", {
             style: { ...T.btn("ghost"), padding: "3px 8px", fontSize: 11, flexShrink: 0, marginTop: 1 },
-            onClick: () => setEditingTask({ cId: c.id, mId: m.id, tId: t.id, text: t.text, dueDate: t.dueDate || "", done: t.done || false, newCId: "", newMId: "" })
+            onClick: () => setEditingTask({ cId: c.id, mId: m.id, tId: t.id, text: t.text, dueDate: t.dueDate || "" })
           }, "\u270E")
         )
       )
@@ -5498,7 +5368,7 @@ function ImportView({onImport, onNavigate}) {
         phone,
         company: orgLine.replace(/;.*$/, '').trim() || '',
         linkedin: '', whereMet: '', contactNotes: '',
-        _display: [firstName, lastName].filter(Boolean).join(' ') + (orgLine ? ' \u00B7 ' + orgLine.replace(/;.*$/, '').trim() : ''),
+        _display: [firstName, lastName].filter(Boolean).join(' ') + (orgLine ? ' \xc2\xb7 ' + orgLine.replace(/;.*$/, '').trim() : ''),
       });
     }
     return contacts;
@@ -5994,15 +5864,6 @@ function App() {
       })
     }));
   }
-  function removeTask(cId, mId, tId) {
-    setContacts(prev => prev.map(c => c.id !== cId ? c : {
-      ...c,
-      meetings: c.meetings.map(m => m.id !== mId ? m : {
-        ...m,
-        tasks: (m.tasks||[]).filter(t => t.id !== tId)
-      })
-    }));
-  }
   function addTaskToMeeting(cId, mId, task) {
     setContacts(prev => prev.map(c => c.id !== cId ? c : {
       ...c,
@@ -6476,7 +6337,7 @@ function App() {
     addOutreach: addOutreach,
     setSelectedId: setSelectedId,
     setView: setView
-  }), view === "tasks" && React.createElement(TaskManagementView, { contacts: contacts, addTaskToMeeting: addTaskToMeeting, updateTask: updateTask, removeTask: removeTask, toggleTask: toggleTask, setSelectedId: setSelectedId, setView: setView }), view === "overview" && React.createElement(OverviewView, { contacts: contacts, setSelectedId: setSelectedId, setView: setView, onQuickLog: () => setQuickLogModal(true) }), view === "import" && /*#__PURE__*/React.createElement(ImportView, {
+  }), view === "tasks" && React.createElement(TaskManagementView, { contacts: contacts, addTaskToMeeting: addTaskToMeeting, updateTask: updateTask, toggleTask: toggleTask, setSelectedId: setSelectedId, setView: setView }), view === "overview" && React.createElement(OverviewView, { contacts: contacts, setSelectedId: setSelectedId, setView: setView, onQuickLog: () => setQuickLogModal(true) }), view === "import" && /*#__PURE__*/React.createElement(ImportView, {
     onImport: importContacts,
     onNavigate: navigate
   })), /*#__PURE__*/React.createElement("nav", {
