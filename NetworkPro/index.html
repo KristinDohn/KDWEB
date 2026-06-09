@@ -1995,7 +1995,7 @@ function SidebarInner({
 }) {
   const pendingThanks = contacts.reduce((s, c) => s + c.meetings.filter(m => !m.thankYouSent && m.date <= isoToday()).length, 0);
   const today = isoToday();
-  const toReachOut = contacts.filter(c => (c.referredBy || c.wantToMeet) && !c.meetings.some(m => m.date >= today)).length;
+  const toReachOut = contacts.filter(c => (c.referredBy || c.wantToMeet) && (!c.referredBy || contacts.find(x => x.id === c.referredBy))).length;
   const STAT_ACTIONS = {
     "Open Tasks": () => onNavigate("calendar"),
     "To Reach Out": () => onNavigate("suggested"),
