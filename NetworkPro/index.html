@@ -2002,7 +2002,7 @@ function SidebarInner({
   const toReachOut = contacts.filter(c => (c.referredBy || c.wantToMeet) && (!c.referredBy || contacts.find(x => x.id === c.referredBy))).length;
   const STAT_ACTIONS = {
     "Open Tasks": () => onNavigate("calendar"),
-    "To Reach Out": () => onNavigate("suggested"),
+    "To Meet": () => onNavigate("suggested"),
     "Pending Thanks": () => onPendingThanksClick()
   };
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
@@ -2092,7 +2092,7 @@ function SidebarInner({
     label: "Open Tasks",
     val: openTasks
   }, {
-    label: "To Reach Out",
+    label: "To Meet",
     val: toReachOut
   }, {
     label: "Pending Thanks",
