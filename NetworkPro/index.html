@@ -1421,7 +1421,11 @@ function LoginScreen({
       /*#__PURE__*/React.createElement("a", {
         href: "./about.html",
         style: { display: "inline-block", width: "100%", background: "var(--accent)", color: "#fff", borderRadius: 10, padding: "13px 20px", fontSize: 15, fontWeight: 700, textDecoration: "none", fontFamily: "'DM Sans',sans-serif", textAlign: "center", boxShadow: "0 2px 8px rgba(37,99,235,0.22)" }
-      }, "See how it works →")
+      }, "See how it works →"),
+      /*#__PURE__*/React.createElement("button", {
+        onClick: () => window.location.reload(),
+        style: { marginTop: 10, width: "100%", background: "transparent", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text-muted)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", padding: "11px", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }
+      }, "↻ Refresh")
     ),
     /*#__PURE__*/React.createElement("div", {
       className: `login-card${shake ? " shake" : ""}`,
@@ -6369,7 +6373,7 @@ function App() {
       setMobileDrawerOpen(o => !o);
     },
     "aria-label": "Toggle menu"
-  }, "\u2630"), /*#__PURE__*/React.createElement("h1", null, PAGE_TITLES[view] || "NetworkPro"), React.createElement(ThemeToggle, null)), /*#__PURE__*/React.createElement("div", {
+  }, "\u2630"), /*#__PURE__*/React.createElement("h1", null, PAGE_TITLES[view] || "NetworkPro"), React.createElement(ThemeToggle, null), React.createElement("button", { onClick: () => window.location.reload(), title: "Refresh app", "aria-label": "Refresh app", style: { background: "transparent", border: "1px solid var(--border)", color: "var(--text-body)", fontSize: 15, cursor: "pointer", padding: "4px 8px", lineHeight: 1, borderRadius: 6, transition: "background 0.15s", fontFamily: "'DM Sans',sans-serif" }, onMouseEnter: e => e.currentTarget.style.background = "var(--border-alpha3)", onMouseLeave: e => e.currentTarget.style.background = "transparent" }, "\u21BB")), /*#__PURE__*/React.createElement("div", {
     className: "main-content"
   }, /*#__PURE__*/React.createElement("div", {
     style: {
