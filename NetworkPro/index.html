@@ -2496,7 +2496,8 @@ function ContactsList({
 function OutreachSection({
   contact,
   addOutreach,
-  updateOutreach
+  updateOutreach,
+  deleteOutreach
 }) {
   const [showForm, setShowForm] = useState(false);
   const [editIdx, setEditIdx] = useState(null); // index in outreaches array being edited
@@ -2732,7 +2733,23 @@ function OutreachSection({
       flexShrink: 0
     },
     onClick: () => startEdit(i)
-  }, "\u270E")))) : !showForm && /*#__PURE__*/React.createElement("div", {
+  }, "\u270E"), /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...T.btn("ghost"),
+      padding: "2px 7px",
+      fontSize: 11,
+      color: "var(--red)",
+      borderColor: "transparent",
+      flexShrink: 0
+    },
+    onClick: () => {
+      if (window.confirm("Delete this outreach entry?")) {
+        const o = outreaches[i];
+        const origIdx = (contact.outreaches || []).findIndex(x => x.date === o.date && x.method === o.method && x.notes === o.notes);
+        deleteOutreach(contact.id, origIdx);
+      }
+    }
+  }, "\u00D7")))) : !showForm && /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 12,
       color: "var(--text-body)",
@@ -3299,6 +3316,7 @@ function ContactDetail({
   updateConnections,
   addOutreach,
   updateOutreach,
+  deleteOutreach,
   setSelectedId,
   onBack,
   onAddContactAndLink
@@ -3743,7 +3761,8 @@ function ContactDetail({
   })())), /*#__PURE__*/React.createElement(OutreachSection, {
     contact: selected,
     addOutreach: addOutreach,
-    updateOutreach: updateOutreach
+    updateOutreach: updateOutreach,
+    deleteOutreach: deleteOutreach
   }), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
@@ -6138,6 +6157,12 @@ function App() {
       } : o)
     }));
   }
+  function deleteOutreach(cId, idx) {
+    setContacts(prev => prev.map(c => c.id !== cId ? c : {
+      ...c,
+      outreaches: (c.outreaches || []).filter((_, i) => i !== idx)
+    }));
+  }
   function addContactAndLink(form, referredById) {
     const color = COLORS[contacts.length % COLORS.length];
     const newId = Date.now();
@@ -6424,6 +6449,7 @@ function App() {
     updateConnections: updateConnections,
     addOutreach: addOutreach,
     updateOutreach: updateOutreach,
+    deleteOutreach: deleteOutreach,
     setSelectedId: setSelectedId,
     onBack: () => { try { sessionStorage.setItem("networkpro_view","contacts"); sessionStorage.removeItem("networkpro_selectedId"); } catch(e) {} setView("contacts"); setSelectedId(null); setMobileDrawerOpen(false); },
     onAddContactAndLink: addContactAndLink
