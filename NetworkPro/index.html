@@ -2143,7 +2143,11 @@ function ContactsList({
   }, l))), /*#__PURE__*/React.createElement("button", {
     style: T.btn("primary"),
     onClick: () => setShowAddContact(true)
-  }, "+ Add"))), /*#__PURE__*/React.createElement("input", {
+  }, "+ Add"), /*#__PURE__*/React.createElement("button", {
+    style: { ...T.btn("ghost"), fontSize: 12, padding: "6px 11px" },
+    onClick: () => onNavigate && onNavigate("import"),
+    title: "Import contacts from a file"
+  }, "\u2191 Import"))), /*#__PURE__*/React.createElement("input", {
     style: {
       ...T.input,
       marginBottom: 14
