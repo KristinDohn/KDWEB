@@ -12,7 +12,7 @@
   </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NetworkPro — Kristin Dohn</title>
+  <title>NetworkPro</title>
   <meta name="description" content="Personal networking tracker: Meet, connect, find your next role" />
   <meta property="og:title" content="NetworkPro" />
   <meta property="og:description" content="Personal networking tracker: Meet, connect, find your next role" />
@@ -32,74 +32,80 @@
   <style>
     /* ── CSS custom properties (light = default) ── */
     :root {
-      --bg-page:      #F0F4F8;
-      --bg-card:      #FFFFFF;
-      --bg-input:     #F8FAFC;
-      --bg-hover:     #F1F5F9;
-      --border:       #CBD5E1;
-      --border-alpha: rgba(203,213,225,0.2);
-      --border-alpha2: rgba(203,213,225,0.27);
-      --border-alpha3: rgba(203,213,225,0.27);
-      --text-body:    #1E293B;
-      --text-head:    #0F172A;
-      --text-muted:   #94A3B8;
-      --text-dim:     #64748B;
+      /* Brand palette
+         Teal (primary):   #00aaad
+         Pink (secondary): #ec008c
+         Purple (tertiary):#801d7f
+         Yellow (accent):  #f5c800  — use sparingly for contrast
+      */
+      --bg-page:      #edf5f7;
+      --bg-card:      #ffffff;
+      --bg-input:     #f0f7f8;
+      --bg-hover:     #d6e9f0;
+      --border:       #9ac5d6;
+      --border-alpha: rgba(9,132,173,0.13);
+      --border-alpha2: rgba(9,132,173,0.18);
+      --border-alpha3: rgba(9,132,173,0.22);
+      --text-body:    #0d2b2c;
+      --text-head:    #001c1c;
+      --text-muted:   #5a8a8c;
+      --text-dim:     #3d6e70;
       --accent:       #0984ad;
       --accent-dark:  #066e92;
-      --accent-alpha: rgba(9,132,173,0.1);
-      --accent-alpha2: rgba(9,132,173,0.13);
-      --green:        #16A34A;
-      --green-alpha:  rgba(22,163,74,0.13);
-      --green-alpha2: rgba(22,163,74,0.2);
-      --amber:        #D97706;
-      --amber-alpha:  rgba(217,119,6,0.13);
-      --red:          #DC2626;
-      --red-alpha:    rgba(220,38,38,0.2);
-      --purple:       #7C3AED;
-      --purple-alpha: rgba(124,58,237,0.1);
-      --pink:         #DB2777;
-      --scrollbar-thumb: #CBD5E1;
+      --accent-alpha: rgba(9,132,173,0.12);
+      --accent-alpha2: rgba(9,132,173,0.18);
+      --green:        #066e92;
+      --green-alpha:  rgba(9,132,173,0.12);
+      --green-alpha2: rgba(9,132,173,0.20);
+      --amber:        #b38900;
+      --amber-alpha:  rgba(179,137,0,0.13);
+      --red:          #c0004e;
+      --red-alpha:    rgba(192,0,78,0.18);
+      --purple:       #801d7f;
+      --purple-alpha: rgba(128,29,127,0.12);
+      --pink:         #ec008c;
+      --scrollbar-thumb: #9ac5d6;
       --cal-picker-filter: invert(0);
-      --overlay:      rgba(0,0,0,0.45);
-      --shadow-card:  0 4px 24px rgba(0,0,0,0.08);
-      --shadow-login: 0 4px 24px rgba(0,0,0,0.18);
-      --today-banner-bg: linear-gradient(135deg,#EFF6FF,#DBEAFE);
+      --overlay:      rgba(0,28,28,0.45);
+      --shadow-card:  0 4px 24px rgba(0,170,173,0.10);
+      --shadow-login: 0 4px 24px rgba(0,170,173,0.18);
+      --today-banner-bg: linear-gradient(135deg,#d4eaf2,#bcd8e8);
     }
 
     /* ── Dark mode overrides ── */
     [data-theme="dark"] {
-      --bg-page:      #080F1A;
-      --bg-card:      #0D1B2E;
-      --bg-input:     #0A1628;
-      --bg-hover:     #0D2137;
-      --border:       #1E3A5F;
-      --border-alpha: rgba(30,58,95,0.13);
-      --border-alpha2: rgba(30,58,95,0.2);
-      --border-alpha3: rgba(30,58,95,0.27);
-      --text-body:    #E2E8F0;
-      --text-head:    #F1F5F9;
-      --text-muted:   #64748B;
-      --text-dim:     #475569;
+      --bg-page:      #010a0d;
+      --bg-card:      #051418;
+      --bg-input:     #081e24;
+      --bg-hover:     #0c2830;
+      --border:       #0d3d52;
+      --border-alpha: rgba(9,132,173,0.13);
+      --border-alpha2: rgba(9,132,173,0.18);
+      --border-alpha3: rgba(9,132,173,0.22);
+      --text-body:    #c8e8e9;
+      --text-head:    #e0f4f5;
+      --text-muted:   #4a8082;
+      --text-dim:     #3a6668;
       --accent:       #22b4e0;
-      --accent-dark:  #0984ad;
-      --accent-alpha: rgba(9,132,173,0.13);
-      --accent-alpha2: rgba(9,132,173,0.2);
-      --green:        #4ADE80;
-      --green-alpha:  rgba(20,83,45,0.13);
-      --green-alpha2: rgba(20,83,45,0.27);
-      --amber:        #F59E0B;
-      --amber-alpha:  rgba(120,53,15,0.13);
-      --red:          #F87171;
-      --red-alpha:    rgba(127,29,29,0.27);
-      --purple:       #A78BFA;
-      --purple-alpha: rgba(124,58,237,0.13);
-      --pink:         #FF1493;
-      --scrollbar-thumb: #1E3A5F;
-      --cal-picker-filter: invert(0.5);
+      --accent-dark:  #6dd0ef;
+      --accent-alpha: rgba(9,132,173,0.15);
+      --accent-alpha2: rgba(9,132,173,0.22);
+      --green:        #22b4e0;
+      --green-alpha:  rgba(9,132,173,0.13);
+      --green-alpha2: rgba(9,132,173,0.22);
+      --amber:        #f5c800;
+      --amber-alpha:  rgba(245,200,0,0.13);
+      --red:          #ff5fa8;
+      --red-alpha:    rgba(236,0,140,0.25);
+      --purple:       #c060bf;
+      --purple-alpha: rgba(128,29,127,0.18);
+      --pink:         #ff3daa;
+      --scrollbar-thumb: #0d3d52;
+      --cal-picker-filter: invert(0.6) hue-rotate(150deg);
       --overlay:      rgba(0,0,0,0.65);
-      --shadow-card:  0 4px 24px rgba(0,0,0,0.35);
-      --shadow-login: 0 4px 24px rgba(0,0,0,0.55);
-      --today-banner-bg: linear-gradient(135deg,#1E3A5F,#0F172A);
+      --shadow-card:  0 4px 24px rgba(0,0,0,0.4);
+      --shadow-login: 0 4px 24px rgba(0,0,0,0.6);
+      --today-banner-bg: linear-gradient(135deg,#0c2830,#051418);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -204,7 +210,9 @@
     .cal-tab { flex:1; padding:6px 10px; border:none; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif; background:transparent; color:var(--text-muted); transition:all 0.15s; }
     .cal-tab.active { background:var(--accent); color:#fff; }
 
-    /* ── Mobile ── */
+    /* ── Dark mode: brighten contact-colored chips & text ── */
+    [data-theme="dark"] .cal-chip { filter: brightness(1.9) saturate(1.2); background-color: rgba(255,255,255,0.08) !important; }
+    [data-theme="dark"] .contact-color-text { filter: brightness(1.9) saturate(1.2); }
     @media (max-width: 640px) {
       .sidebar { display: none; }
       .mobile-overlay.open { display: block; }
@@ -410,17 +418,6 @@ async function sendAccessRequestEmail(firstName, lastName, email) {
     })
   });
 }
-async function sendFeatureRequestEmail(name, email, type, description) {
-  await fetch("https://fxxunfpgqkhsmrrlmcoo.supabase.co/functions/v1/send-feature-request", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "apikey": SB_KEY,
-      "Authorization": "Bearer " + SB_KEY
-    },
-    body: JSON.stringify({ name, email, type, description })
-  });
-}
 async function logAccessRequest(firstName, lastName, email) {
   try {
     await fetch(`${SB_URL}/rest/v1/access_requests`, {
@@ -617,7 +614,7 @@ const PAGE_TITLES = {
   overview: "Overview",
   tasks: "Task Management"
 };
-const COLORS = ["#2A6B8A", "#5B4A8A", "#2A7A52", "#8A4A2A", "#6B2A8A", "#2A4A8A", "#7A2A5B", "#2A5B7A"];
+const COLORS = ["#0984ad", "#801d7f", "#ec008c", "#066e92", "#5a1f7f", "#c0006e", "#0d3d52", "#9e2b9e"];
 
 // ── Style tokens ─────────────────────────────────────────────────────────────
 const T = {
@@ -822,6 +819,7 @@ function ThemeToggle() {
 }
 
 // ── Contact Form (shared by Add and Edit) ─────────────────────────────────────
+
 function ContactForm({
   initial,
   onSave,
@@ -1295,24 +1293,6 @@ function LoginScreen({
   const [reqLast, setReqLast] = useState("");
   const [reqEmail, setReqEmail] = useState("");
   const [reqErr, setReqErr] = useState("");
-  // Feature request form
-  const [frName, setFrName] = useState("");
-  const [frEmail, setFrEmail] = useState("");
-  const [frType, setFrType] = useState("enhancement");
-  const [frDesc, setFrDesc] = useState("");
-  const [frErr, setFrErr] = useState("");
-  async function submitFeatureRequest() {
-    if (!frDesc.trim()) { setFrErr("Please describe your request."); return; }
-    if (frEmail && !/\S+@\S+\.\S+/.test(frEmail)) { setFrErr("Please enter a valid email."); return; }
-    setLoading(true); setFrErr("");
-    try {
-      await sendFeatureRequestEmail(frName.trim(), frEmail.trim(), frType, frDesc.trim());
-      setMode("frSent");
-    } catch(e) {
-      setFrErr("Something went wrong. Please try again.");
-    }
-    setLoading(false);
-  }
   async function attemptLogin() {
     if (!email || !password) return;
     setLoading(true);
@@ -1421,11 +1401,7 @@ function LoginScreen({
       /*#__PURE__*/React.createElement("a", {
         href: "./about.html",
         style: { display: "inline-block", width: "100%", background: "var(--accent)", color: "#fff", borderRadius: 10, padding: "13px 20px", fontSize: 15, fontWeight: 700, textDecoration: "none", fontFamily: "'DM Sans',sans-serif", textAlign: "center", boxShadow: "0 2px 8px rgba(37,99,235,0.22)" }
-      }, "See how it works →"),
-      /*#__PURE__*/React.createElement("button", {
-        onClick: () => window.location.reload(),
-        style: { marginTop: 10, width: "100%", background: "transparent", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text-muted)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", padding: "11px", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }
-      }, "↻ Refresh")
+      }, "See how it works →")
     ),
     /*#__PURE__*/React.createElement("div", {
       className: `login-card${shake ? " shake" : ""}`,
@@ -1513,7 +1489,7 @@ function LoginScreen({
   }, /*#__PURE__*/React.createElement("div", { style: { flex: 1, height: 1, background: "var(--border)" } }), /*#__PURE__*/React.createElement("span", { style: { fontSize: 12, color: "var(--text-muted)" } }, "or"), /*#__PURE__*/React.createElement("div", { style: { flex: 1, height: 1, background: "var(--border)" } })), /*#__PURE__*/React.createElement("button", {
     onClick: sbSignInWithGoogle,
     style: {
-      width: "100%", background: "#fff", color: "var(--text-body)", border: "1px solid #CBD5E1",
+      width: "100%", background: "#fff", color: "var(--text-body)", border: "1px solid var(--border)",
       borderRadius: 8, padding: "12px", fontSize: 14, fontWeight: 600,
       cursor: "pointer", fontFamily: "'DM Sans',sans-serif",
       display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 12
@@ -1597,7 +1573,14 @@ function LoginScreen({
             err && React.createElement("div", { style: { fontSize: 12, color: "var(--red)", marginTop: 6 } }, err)
           ),
           React.createElement("button", { onClick: attemptSignup, disabled: !email || !password || !confirmPw || loading, style: { width: "100%", background: email && password && confirmPw && !loading ? "var(--accent)" : "var(--border)", color: email && password && confirmPw && !loading ? "#fff" : "var(--text-body)", border: "none", borderRadius: 8, padding: "13px", fontSize: 15, fontWeight: 700, cursor: email && password && confirmPw ? "pointer" : "default", fontFamily: "'DM Sans',sans-serif" } }, loading ? "Creating account\u2026" : "Create Account"),
-          React.createElement("button", { onClick: () => { setMode("login"); setErr(""); }, style: { marginTop: 10, width: "100%", background: "transparent", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-body)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", padding: "9px" } }, "Already have an account? Sign In")
+          React.createElement("button", { onClick: () => { setMode("login"); setErr(""); }, style: { marginTop: 10, width: "100%", background: "transparent", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-body)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", padding: "9px" } }, "Already have an account? Sign In"),
+        React.createElement("p", { style: { fontSize: 11, color: "var(--text-muted)", textAlign: "center", marginTop: 14, marginBottom: 0, lineHeight: 1.6 } },
+          "By signing up, you agree to our ",
+          React.createElement("a", { href: "/NetworkPro/tos.html", target: "_blank", style: { color: "var(--accent)", textDecoration: "none" } }, "Terms of Service"),
+          " and ",
+          React.createElement("a", { href: "/NetworkPro/privacy.html", target: "_blank", style: { color: "var(--accent)", textDecoration: "none" } }, "Privacy Policy"),
+          "."
+        )
         )
   ), mode === "sent" && /*#__PURE__*/React.createElement("div", {
     style: {
@@ -1629,60 +1612,7 @@ function LoginScreen({
       width: "100%",
       padding: "11px"
     }
-  }, "\u2190 Back to Sign In")),
-  mode === "frRequest" && /*#__PURE__*/React.createElement("div", null,
-    /*#__PURE__*/React.createElement("h3", { style: { margin: "0 0 4px", fontSize: 16, color: "var(--text-head)", fontFamily: "'DM Serif Display',serif" } }, "Submit a Feature Request"),
-    /*#__PURE__*/React.createElement("p", { style: { fontSize: 12, color: "var(--text-muted)", marginBottom: 20, lineHeight: 1.5 } }, "Have an idea or spotted a bug? We'd love to hear from you."),
-    /*#__PURE__*/React.createElement("div", { style: { marginBottom: 12 } },
-      /*#__PURE__*/React.createElement("label", { style: T.label }, "Type"),
-      /*#__PURE__*/React.createElement("select", {
-        value: frType,
-        onChange: e => { setFrType(e.target.value); setFrErr(""); },
-        style: { width: "100%", background: "var(--bg-input)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-body)", padding: "12px 14px", fontSize: 14, outline: "none", fontFamily: "'DM Sans',sans-serif", boxSizing: "border-box" }
-      },
-        /*#__PURE__*/React.createElement("option", { value: "enhancement" }, "\u2728 Enhancement"),
-        /*#__PURE__*/React.createElement("option", { value: "bug" }, "\uD83D\uDC1B Bug Fix"),
-        /*#__PURE__*/React.createElement("option", { value: "ux" }, "\uD83C\uDFA8 UX Improvement")
-      )
-    ),
-    /*#__PURE__*/React.createElement("div", { style: { marginBottom: 12 } },
-      /*#__PURE__*/React.createElement("label", { style: T.label }, "Your Name (optional)"),
-      /*#__PURE__*/React.createElement("input", { type: "text", value: frName, onChange: e => { setFrName(e.target.value); setFrErr(""); }, placeholder: "Jane Smith", style: inputStyle(false) })
-    ),
-    /*#__PURE__*/React.createElement("div", { style: { marginBottom: 12 } },
-      /*#__PURE__*/React.createElement("label", { style: T.label }, "Your Email (optional)"),
-      /*#__PURE__*/React.createElement("input", { type: "email", value: frEmail, onChange: e => { setFrEmail(e.target.value); setFrErr(""); }, placeholder: "you@example.com", style: inputStyle(false) })
-    ),
-    /*#__PURE__*/React.createElement("div", { style: { marginBottom: 16 } },
-      /*#__PURE__*/React.createElement("label", { style: T.label }, "Description \u2022 Required"),
-      /*#__PURE__*/React.createElement("textarea", {
-        value: frDesc,
-        onChange: e => { setFrDesc(e.target.value); setFrErr(""); },
-        placeholder: "Describe the enhancement, bug, or UX issue\u2026",
-        rows: 5,
-        style: { width: "100%", background: "var(--bg-input)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-body)", padding: "12px 14px", fontSize: 14, outline: "none", fontFamily: "'DM Sans',sans-serif", boxSizing: "border-box", resize: "vertical", lineHeight: 1.55 }
-      }),
-      frErr && /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: "var(--red)", marginTop: 6 } }, frErr)
-    ),
-    /*#__PURE__*/React.createElement("button", {
-      onClick: submitFeatureRequest,
-      disabled: !frDesc.trim() || loading,
-      style: { width: "100%", background: frDesc.trim() && !loading ? "var(--accent)" : "var(--border)", color: frDesc.trim() && !loading ? "#fff" : "var(--text-body)", border: "none", borderRadius: 8, padding: "13px", fontSize: 15, fontWeight: 700, cursor: frDesc.trim() ? "pointer" : "default", fontFamily: "'DM Sans',sans-serif", marginBottom: 10 }
-    }, loading ? "Sending\u2026" : "Submit Request"),
-    /*#__PURE__*/React.createElement("button", { onClick: () => { setMode("login"); setFrErr(""); setFrName(""); setFrEmail(""); setFrDesc(""); setFrType("enhancement"); }, style: { width: "100%", background: "transparent", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-body)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", padding: "9px" } }, "\u2190 Back to Sign In")
-  ),
-  mode === "frSent" && /*#__PURE__*/React.createElement("div", { style: { textAlign: "center", padding: "20px 0" } },
-    /*#__PURE__*/React.createElement("div", { style: { fontSize: 36, marginBottom: 12 } }, "\uD83D\uDE4F"),
-    /*#__PURE__*/React.createElement("h3", { style: { margin: "0 0 8px", fontSize: 16, color: "var(--green)", fontFamily: "'DM Serif Display',serif" } }, "Request Submitted"),
-    /*#__PURE__*/React.createElement("p", { style: { fontSize: 13, color: "var(--text-body)", marginBottom: 24, lineHeight: 1.6 } }, "Thanks for the feedback! Your request has been sent."),
-    /*#__PURE__*/React.createElement("button", { onClick: () => { setMode("login"); setFrName(""); setFrEmail(""); setFrDesc(""); setFrType("enhancement"); }, style: { ...T.btn("ghost"), width: "100%", padding: "11px" } }, "\u2190 Back to Sign In")
-  ),
-  /*#__PURE__*/React.createElement("div", { style: { marginTop: 20, paddingTop: 16, borderTop: "1px solid var(--border)" } },
-    /*#__PURE__*/React.createElement("button", {
-      onClick: () => { setMode("frRequest"); setErr(""); setFrErr(""); },
-      style: { width: "100%", background: "transparent", border: "1.5px solid var(--accent)", borderRadius: 8, color: "var(--accent)", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", padding: "11px", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }
-    }, "\uD83D\uDCA1 Submit a Feature Request")
-  )));
+  }, "\u2190 Back to Sign In"))));
 }
 
 // ── Task Modal ────────────────────────────────────────────────────────────────
@@ -1720,7 +1650,7 @@ function TaskModal({
       color: "var(--text-body)",
       marginTop: 2
     }
-  }, open.length, " open \xB7 ", done.length, " completed")), /*#__PURE__*/React.createElement("button", {
+  }, open.length, " open \u00B7 ", done.length, " completed")), /*#__PURE__*/React.createElement("button", {
     onClick: onClose,
     style: {
       ...T.btn("ghost"),
@@ -1781,8 +1711,9 @@ function TaskModal({
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: { color: t.contact.color, fontWeight: 600, cursor: onNavigate ? "pointer" : "default", textDecoration: onNavigate ? "underline" : "none" },
+    className: "contact-color-text",
     onClick: e => { if (onNavigate) { e.stopPropagation(); onNavigate(t.contact.id); } }
-  }, fullName(t.contact)), /*#__PURE__*/React.createElement("span", null, "\xB7"), /*#__PURE__*/React.createElement("span", null, fmtDate(t.meeting.date))))))), done.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  }, fullName(t.contact)), /*#__PURE__*/React.createElement("span", null, "\u00B7"), /*#__PURE__*/React.createElement("span", null, fmtDate(t.meeting.date))))))), done.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 11,
       fontWeight: 700,
@@ -1840,7 +1771,7 @@ function TaskModal({
       gap: 8,
       flexWrap: "wrap"
     }
-  }, /*#__PURE__*/React.createElement("span", null, fullName(t.contact)), /*#__PURE__*/React.createElement("span", null, "\xB7"), /*#__PURE__*/React.createElement("span", null, fmtDate(t.meeting.date))))))), tasks.length === 0 && /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", null, fullName(t.contact)), /*#__PURE__*/React.createElement("span", null, "\u00B7"), /*#__PURE__*/React.createElement("span", null, fmtDate(t.meeting.date))))))), tasks.length === 0 && /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: "center",
       color: "var(--text-body)",
@@ -1947,7 +1878,7 @@ function PendingThanksModal({
       color: "var(--text-body)",
       marginTop: 1
     }
-  }, c.company && /*#__PURE__*/React.createElement("span", null, c.company, " \xB7 "), "Met ", fmtDate(m.date)), m.notes && /*#__PURE__*/React.createElement("div", {
+  }, c.company && /*#__PURE__*/React.createElement("span", null, c.company, " \u00B7 "), "Met ", fmtDate(m.date)), m.notes && /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 11,
       color: "var(--text-body)",
@@ -1999,10 +1930,10 @@ function SidebarInner({
 }) {
   const pendingThanks = contacts.reduce((s, c) => s + c.meetings.filter(m => !m.thankYouSent && m.date <= isoToday()).length, 0);
   const today = isoToday();
-  const toReachOut = contacts.filter(c => (c.referredBy || c.wantToMeet) && (!c.referredBy || contacts.find(x => x.id === c.referredBy))).length;
+  const toReachOut = contacts.filter(c => (c.referredBy || c.wantToMeet) && !c.meetings.some(m => m.date >= today)).length;
   const STAT_ACTIONS = {
     "Open Tasks": () => onNavigate("calendar"),
-    "To Meet": () => onNavigate("suggested"),
+    "To Reach Out": () => onNavigate("suggested"),
     "Pending Thanks": () => onPendingThanksClick()
   };
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
@@ -2012,21 +1943,11 @@ function SidebarInner({
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 8
-    }
-  }, /*#__PURE__*/React.createElement("img", {
-    src: "./NetworkPro_mark.png",
-    alt: "",
-    style: { width: 22, height: 22, display: "block", flexShrink: 0 }
-  }), /*#__PURE__*/React.createElement("span", {
-    style: {
       fontFamily: "'DM Serif Display',serif",
       fontSize: 16,
       color: "var(--accent)"
     }
-  }, "NetworkPro"))), /*#__PURE__*/React.createElement("div", {
+  }, "NetworkPro")), /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 12,
       flex: 1
@@ -2092,7 +2013,7 @@ function SidebarInner({
     label: "Open Tasks",
     val: openTasks
   }, {
-    label: "To Meet",
+    label: "To Reach Out",
     val: toReachOut
   }, {
     label: "Pending Thanks",
@@ -2135,7 +2056,7 @@ function SidebarInner({
     }, x.val));
   }), /*#__PURE__*/React.createElement("div", {
     style: {
-      borderTop: "1px solid #E8EEF5",
+      borderTop: "1px solid var(--border)",
       marginTop: 10,
       paddingTop: 10,
       display: "flex",
@@ -2424,7 +2345,7 @@ function ContactsList({
           color: "var(--text-body)",
           marginTop: 2
         }
-      }, (c.outreaches || []).length, " outreach", (c.outreaches || []).length !== 1 ? "es" : "", " \xB7 last ", fmtDate(lastO.date));
+      }, (c.outreaches || []).length, " outreach", (c.outreaches || []).length !== 1 ? "es" : "", " \u00B7 last ", fmtDate(lastO.date));
     })(), c.contactNotes && /*#__PURE__*/React.createElement("div", {
       style: {
         fontSize: 11,
@@ -2496,8 +2417,7 @@ function ContactsList({
 function OutreachSection({
   contact,
   addOutreach,
-  updateOutreach,
-  deleteOutreach
+  updateOutreach
 }) {
   const [showForm, setShowForm] = useState(false);
   const [editIdx, setEditIdx] = useState(null); // index in outreaches array being edited
@@ -2733,23 +2653,7 @@ function OutreachSection({
       flexShrink: 0
     },
     onClick: () => startEdit(i)
-  }, "\u270E"), /*#__PURE__*/React.createElement("button", {
-    style: {
-      ...T.btn("ghost"),
-      padding: "2px 7px",
-      fontSize: 11,
-      color: "var(--red)",
-      borderColor: "transparent",
-      flexShrink: 0
-    },
-    onClick: () => {
-      if (window.confirm("Delete this outreach entry?")) {
-        const o = outreaches[i];
-        const origIdx = (contact.outreaches || []).findIndex(x => x.date === o.date && x.method === o.method && x.notes === o.notes);
-        deleteOutreach(contact.id, origIdx);
-      }
-    }
-  }, "\u00D7")))) : !showForm && /*#__PURE__*/React.createElement("div", {
+  }, "\u270E")))) : !showForm && /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 12,
       color: "var(--text-body)",
@@ -3316,7 +3220,6 @@ function ContactDetail({
   updateConnections,
   addOutreach,
   updateOutreach,
-  deleteOutreach,
   setSelectedId,
   onBack,
   onAddContactAndLink
@@ -3409,7 +3312,7 @@ function ContactDetail({
       fontSize: 13,
       color: "var(--text-body)"
     }
-  }, /*#__PURE__*/React.createElement("a", {href: "mailto:" + selected.email, style: {color: "var(--text-body)", textDecoration: "none"}}, "\u2709 ", selected.email), selected.phone && /*#__PURE__*/React.createElement("a", {href: "tel:" + selected.phone.replace(/\D/g,""), style: {color: "var(--text-body)", textDecoration: "none"}}, "\uD83D\uDCDE ", selected.phone), selected.linkedin && /*#__PURE__*/React.createElement("a", {href: (selected.linkedin.startsWith("http") ? selected.linkedin : "https://" + selected.linkedin), target: "_blank", rel: "noopener noreferrer", style: {color: "var(--accent)", textDecoration: "none"}}, "\uD83D\uDD17 LinkedIn \u2197")))), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("a", {href: "mailto:" + selected.email, style: {color: "var(--text-body)", textDecoration: "none"}}, "\u2709 ", selected.email), selected.phone && /*#__PURE__*/React.createElement("span", {style: {display: "inline-flex", alignItems: "center", gap: 10}}, /*#__PURE__*/React.createElement("a", {href: "tel:" + selected.phone.replace(/\D/g,""), style: {color: "var(--text-body)", textDecoration: "none"}}, "\uD83D\uDCDE ", selected.phone), /*#__PURE__*/React.createElement("a", {href: "sms:" + selected.phone.replace(/\D/g,""), style: {color: "var(--accent)", textDecoration: "none", fontSize: 13, fontWeight: 600}}, "\uD83D\uDCAC Text")), selected.linkedin && /*#__PURE__*/React.createElement("a", {href: (selected.linkedin.startsWith("http") ? selected.linkedin : "https://" + selected.linkedin), target: "_blank", rel: "noopener noreferrer", style: {color: "var(--accent)", textDecoration: "none"}}, "\uD83D\uDD17 LinkedIn \u2197")))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 8,
@@ -3761,8 +3664,7 @@ function ContactDetail({
   })())), /*#__PURE__*/React.createElement(OutreachSection, {
     contact: selected,
     addOutreach: addOutreach,
-    updateOutreach: updateOutreach,
-    deleteOutreach: deleteOutreach
+    updateOutreach: updateOutreach
   }), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
@@ -4144,6 +4046,7 @@ function CalendarView({
       }
     }, dt.getDate())), dm.map(m => /*#__PURE__*/React.createElement("div", {
       key: m.id,
+      className: "cal-chip",
       style: {
         fontSize: 10,
         background: m.contact.color + "33",
@@ -4170,7 +4073,7 @@ function CalendarView({
         color: "var(--border)",
         marginTop: 4
       }
-    }, "\xB7"));
+    }, "\u00B7"));
   })), weekDays.some(dt => mtgsOnDay(toISO(dt)).length > 0) && /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 14
@@ -4210,7 +4113,7 @@ function CalendarView({
       fontSize: 11,
       color: "var(--text-body)"
     }
-  }, fmtDateTime(toISO(dt), m.startTime), " \xB7 ", m.contact.company)), /*#__PURE__*/React.createElement("span", {
+  }, fmtDateTime(toISO(dt), m.startTime), " \u00B7 ", m.contact.company)), /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: 12,
       color: "var(--accent)"
@@ -4267,7 +4170,7 @@ function CalendarView({
       fontSize: 11,
       color: "var(--text-body)"
     }
-  }, fmtDateTime(m.date, m.startTime), " \xB7 ", m.contact.company)), /*#__PURE__*/React.createElement("div", {
+  }, fmtDateTime(m.date, m.startTime), " \u00B7 ", m.contact.company)), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
@@ -4366,13 +4269,7 @@ const STATUS_STYLE = {
 
 function OutreachRow({
 
-  s,
-
-  addOutreach,
-
-  setSelectedId,
-
-  setView
+  s
 
 }) {
 
@@ -5071,16 +4968,13 @@ function SuggestedView({
     }
   }, g.title, " (", byStatus[g.key].length, ")"), byStatus[g.key].map(s => /*#__PURE__*/React.createElement(OutreachRow, {
     key: s.contact.id,
-    s: s,
-    addOutreach: addOutreach,
-    setSelectedId: setSelectedId,
-    setView: setView
+    s: s
   }))))));
 }
 
 // ── Stats View ────────────────────────────────────────────────────────────────
 // ── Task Management View ─────────────────────────────────────────────────────────────
-function TaskManagementView({ contacts, addTaskToMeeting, updateTask, toggleTask, setSelectedId, setView }) {
+function TaskManagementView({ contacts, addTaskToMeeting, updateTask, removeTask, toggleTask, setSelectedId, setView }) {
   const today = isoToday();
   const [sortBy, setSortBy] = useState("dueDate"); // dueDate | createdDate | person | alpha
   const [editingTask, setEditingTask] = useState(null); // { cId, mId, tId, text, dueDate }
@@ -5122,10 +5016,16 @@ function TaskManagementView({ contacts, addTaskToMeeting, updateTask, toggleTask
 
   function saveEditTask() {
     if (!editingTask || !editingTask.text.trim()) return;
-    updateTask(editingTask.cId, editingTask.mId, editingTask.tId, {
-      text: editingTask.text.trim(),
-      dueDate: editingTask.dueDate
-    });
+    const { cId, mId, tId, newCId, newMId, text, dueDate, done } = editingTask;
+    const targetCId = newCId ? Number(newCId) : cId;
+    const targetMId = newMId ? Number(newMId) : mId;
+    if (targetCId !== cId || targetMId !== mId) {
+      // Move task: remove from old, add to new
+      removeTask(cId, mId, tId);
+      addTaskToMeeting(targetCId, targetMId, { id: tId, text: text.trim(), dueDate, done: done || false });
+    } else {
+      updateTask(cId, mId, tId, { text: text.trim(), dueDate });
+    }
     setEditingTask(null);
   }
   function submitNewTask() {
@@ -5223,11 +5123,38 @@ function TaskManagementView({ contacts, addTaskToMeeting, updateTask, toggleTask
           // Content or inline edit
           editingTask && editingTask.tId === t.id
             ? React.createElement("div", { style: { flex: 1 } },
-                React.createElement("input", { style: { ...T.input, marginBottom: 6, fontSize: 13 }, value: editingTask.text, autoFocus: true, onChange: e => setEditingTask(x => ({ ...x, text: e.target.value })), onKeyDown: e => { if (e.key === "Enter") saveEditTask(); if (e.key === "Escape") setEditingTask(null); } }),
-                React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8 } },
-                  React.createElement("input", { type: "date", style: { ...T.input, fontSize: 12, padding: "5px 8px" }, value: editingTask.dueDate || "", onChange: e => setEditingTask(x => ({ ...x, dueDate: e.target.value })) }),
-                  React.createElement("button", { style: { ...T.btn("primary"), padding: "5px 12px", fontSize: 12 }, onClick: saveEditTask }, "Save"),
-                  React.createElement("button", { style: { ...T.btn("ghost"), padding: "5px 10px", fontSize: 12 }, onClick: () => setEditingTask(null) }, "Cancel")
+                // Task text
+                React.createElement("label", { style: { ...T.label, marginBottom: 3 } }, "Task"),
+                React.createElement("input", { style: { ...T.input, marginBottom: 10, fontSize: 13 }, value: editingTask.text, autoFocus: true, onChange: e => setEditingTask(x => ({ ...x, text: e.target.value })), onKeyDown: e => { if (e.key === "Enter") saveEditTask(); if (e.key === "Escape") setEditingTask(null); } }),
+                // Contact dropdown
+                React.createElement("label", { style: { ...T.label, marginBottom: 3 } }, "Contact"),
+                React.createElement("select", {
+                  style: { ...T.input, marginBottom: 10, fontSize: 13 },
+                  value: editingTask.newCId || String(editingTask.cId),
+                  onChange: e => setEditingTask(x => ({ ...x, newCId: e.target.value, newMId: "" }))
+                },
+                  contacts.map(ct => React.createElement("option", { key: ct.id, value: String(ct.id) }, fullName(ct)))
+                ),
+                // Meeting dropdown — filtered to selected contact
+                React.createElement("label", { style: { ...T.label, marginBottom: 3 } }, "Meeting"),
+                React.createElement("select", {
+                  style: { ...T.input, marginBottom: 10, fontSize: 13 },
+                  value: editingTask.newMId || String(editingTask.mId),
+                  onChange: e => setEditingTask(x => ({ ...x, newMId: e.target.value }))
+                },
+                  (contacts.find(ct => ct.id === Number(editingTask.newCId || editingTask.cId))?.meetings || [])
+                    .slice().sort((a,b) => b.date.localeCompare(a.date))
+                    .map(mg => React.createElement("option", { key: mg.id, value: String(mg.id) },
+                      fmtDate(mg.date) + (mg.startTime ? " " + fmtTime(mg.startTime) : "") + (mg.notes ? " — " + mg.notes.slice(0,30) : "")
+                    ))
+                ),
+                // Due date
+                React.createElement("label", { style: { ...T.label, marginBottom: 3 } }, "Due Date"),
+                React.createElement("input", { type: "date", style: { ...T.input, fontSize: 13, marginBottom: 12 }, value: editingTask.dueDate || "", onChange: e => setEditingTask(x => ({ ...x, dueDate: e.target.value })) }),
+                // Buttons
+                React.createElement("div", { style: { display: "flex", gap: 8 } },
+                  React.createElement("button", { style: { ...T.btn("primary"), padding: "7px 16px", fontSize: 13 }, onClick: saveEditTask }, "Save"),
+                  React.createElement("button", { style: { ...T.btn("ghost"), padding: "7px 12px", fontSize: 13 }, onClick: () => setEditingTask(null) }, "Cancel")
                 )
               )
             : React.createElement("div", { style: { flex: 1, minWidth: 0 } },
@@ -5243,7 +5170,7 @@ function TaskManagementView({ contacts, addTaskToMeeting, updateTask, toggleTask
           // Edit button
           !(editingTask && editingTask.tId === t.id) && React.createElement("button", {
             style: { ...T.btn("ghost"), padding: "3px 8px", fontSize: 11, flexShrink: 0, marginTop: 1 },
-            onClick: () => setEditingTask({ cId: c.id, mId: m.id, tId: t.id, text: t.text, dueDate: t.dueDate || "" })
+            onClick: () => setEditingTask({ cId: c.id, mId: m.id, tId: t.id, text: t.text, dueDate: t.dueDate || "", done: t.done || false, newCId: "", newMId: "" })
           }, "\u270E")
         )
       )
@@ -5489,7 +5416,7 @@ function ImportView({onImport, onNavigate}) {
         phone,
         company: orgLine.replace(/;.*$/, '').trim() || '',
         linkedin: '', whereMet: '', contactNotes: '',
-        _display: [firstName, lastName].filter(Boolean).join(' ') + (orgLine ? ' \xc2\xb7 ' + orgLine.replace(/;.*$/, '').trim() : ''),
+        _display: [firstName, lastName].filter(Boolean).join(' ') + (orgLine ? ' \u00B7 ' + orgLine.replace(/;.*$/, '').trim() : ''),
       });
     }
     return contacts;
@@ -6157,12 +6084,6 @@ function App() {
       } : o)
     }));
   }
-  function deleteOutreach(cId, idx) {
-    setContacts(prev => prev.map(c => c.id !== cId ? c : {
-      ...c,
-      outreaches: (c.outreaches || []).filter((_, i) => i !== idx)
-    }));
-  }
   function addContactAndLink(form, referredById) {
     const color = COLORS[contacts.length % COLORS.length];
     const newId = Date.now();
@@ -6398,7 +6319,7 @@ function App() {
       setMobileDrawerOpen(o => !o);
     },
     "aria-label": "Toggle menu"
-  }, "\u2630"), /*#__PURE__*/React.createElement("h1", null, PAGE_TITLES[view] || "NetworkPro"), React.createElement(ThemeToggle, null), React.createElement("button", { onClick: () => window.location.reload(), title: "Refresh app", "aria-label": "Refresh app", style: { background: "transparent", border: "1px solid var(--border)", color: "var(--text-body)", fontSize: 15, cursor: "pointer", padding: "4px 8px", lineHeight: 1, borderRadius: 6, transition: "background 0.15s", fontFamily: "'DM Sans',sans-serif" }, onMouseEnter: e => e.currentTarget.style.background = "var(--border-alpha3)", onMouseLeave: e => e.currentTarget.style.background = "transparent" }, "\u21BB")), /*#__PURE__*/React.createElement("div", {
+  }, "\u2630"), /*#__PURE__*/React.createElement("h1", null, PAGE_TITLES[view] || "NetworkPro"), React.createElement(ThemeToggle, null)), /*#__PURE__*/React.createElement("div", {
     className: "main-content"
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -6449,7 +6370,6 @@ function App() {
     updateConnections: updateConnections,
     addOutreach: addOutreach,
     updateOutreach: updateOutreach,
-    deleteOutreach: deleteOutreach,
     setSelectedId: setSelectedId,
     onBack: () => { try { sessionStorage.setItem("networkpro_view","contacts"); sessionStorage.removeItem("networkpro_selectedId"); } catch(e) {} setView("contacts"); setSelectedId(null); setMobileDrawerOpen(false); },
     onAddContactAndLink: addContactAndLink
