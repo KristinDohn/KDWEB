@@ -4269,11 +4269,19 @@ const STATUS_STYLE = {
 
 function OutreachRow({
 
-  s
+  s,
+
+  addOutreach,
+
+  setSelectedId,
+
+  setView
 
 }) {
 
   const [showLog, setShowLog] = useState(false);
+
+  const today = isoToday();
 
   const [logForm, setLogForm] = useState({
 
@@ -4968,7 +4976,10 @@ function SuggestedView({
     }
   }, g.title, " (", byStatus[g.key].length, ")"), byStatus[g.key].map(s => /*#__PURE__*/React.createElement(OutreachRow, {
     key: s.contact.id,
-    s: s
+    s: s,
+    addOutreach: addOutreach,
+    setSelectedId: setSelectedId,
+    setView: setView
   }))))));
 }
 
